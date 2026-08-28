@@ -341,16 +341,43 @@ function showCityPanel(city) {
   const isCN = city.country === '中国';
   const fmt = n => n != null ? '¥' + Math.round(n).toLocaleString() : '—';
   const fmtSqm = n => n != null ? '¥' + Math.round(n).toLocaleString() + '/㎡' : '—';
-  const hasData = city.salary != null || city.rent != null || city.meal != null || city.price_per_sqm != null;
+
+  // 优先使用 citycost API 拉取的实时数据 (中文城市名)
+  const costMap = citycostData || {};
+  const cn = isCN ? city.name : null;
+  let cost = costMap[cn] || costMap[city.name] || costMap[city.name_en] || {};
+
+  // citycost 字段映射到面板字段
+  // API 返回的字段可能是长名(全量)或短名(简化版)
+  const merged = {
+    salary: cost['平均税后月薪'] ?? cost['salary'] ?? city.salary,
+    rent: cost['市中心一居室月租'] ?? cost['rent'] ?? city.rent,
+    meal: cost['普通餐厅一餐'] ?? cost['meal'] ?? city.meal,
+    restaurant: cost['麦当劳套餐'] ?? cost['restaurant'] ?? city.restaurant,
+    price_per_sqm: cost['二手房均价(元/㎡,房天下)'] ?? cost['二手房均价'] ?? cost['price_per_sqm'] ?? city.price_per_sqm,
+    bus: cost['公交月票'] ?? cost['bus'] ?? null,
+    beer_local: cost['国产啤酒(0.5L)'] ?? cost['beer_local'] ?? null,
+    coffee: cost['卡布奇诺'] ?? cost['coffee'] ?? null,
+    new_home_price: cost['新房均价(元/㎡,房天下)'] ?? cost['新房均价'] ?? cost['new_home_price'] ?? null,
+    cpi_idx_new: cost['新建住宅同比指数(统计局)'] ?? cost['cpi_idx_new'] ?? null,
+  };
+
+  const hasData = merged.salary != null || merged.rent != null || merged.meal != null || merged.price_per_sqm != null;
+  const dataSource = (cn && costMap[cn]) ? 'citycost.cn (实时)' : '本地数据';
   const costSection = hasData ? `
     <div class="panel-section">
-      <div class="panel-section-title">💰 生活成本</div>
+      <div class="panel-section-title">💰 生活成本${dataSource ? ` <span style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:400;">· ${dataSource}</span>` : ''}</div>
       <div class="stat-grid">
-        <div class="stat-item"><div class="stat-label">平均月薪</div><div class="stat-value">${fmt(city.salary)}</div></div>
-        <div class="stat-item"><div class="stat-label">平均房租</div><div class="stat-value">${fmt(city.rent)}</div></div>
-        <div class="stat-item"><div class="stat-label">快餐/人均</div><div class="stat-value">${fmt(city.meal)}</div></div>
-        <div class="stat-item"><div class="stat-label">餐厅/人均</div><div class="stat-value">${fmt(city.restaurant)}</div></div>
-        <div class="stat-item full"><div class="stat-label">房价 (每平米)</div><div class="stat-value">${fmtSqm(city.price_per_sqm)}</div></div>
+        <div class="stat-item"><div class="stat-label">平均月薪</div><div class="stat-value">${fmt(merged.salary)}</div></div>
+        <div class="stat-item"><div class="stat-label">一居室月租</div><div class="stat-value">${fmt(merged.rent)}</div></div>
+        <div class="stat-item"><div class="stat-label">快餐/人均</div><div class="stat-value">${fmt(merged.meal)}</div></div>
+        <div class="stat-item"><div class="stat-label">麦当劳套餐</div><div class="stat-value">${fmt(merged.restaurant)}</div></div>
+        <div class="stat-item"><div class="stat-label">二手房均价</div><div class="stat-value">${fmtSqm(merged.price_per_sqm)}</div></div>
+        <div class="stat-item"><div class="stat-label">新房均价</div><div class="stat-value">${fmtSqm(merged.new_home_price)}</div></div>
+        <div class="stat-item"><div class="stat-label">公交月票</div><div class="stat-value">${fmt(merged.bus)}</div></div>
+        <div class="stat-item"><div class="stat-label">国产啤酒</div><div class="stat-value">${fmt(merged.beer_local)}</div></div>
+        <div class="stat-item"><div class="stat-label">卡布奇诺</div><div class="stat-value">${fmt(merged.coffee)}</div></div>
+        ${merged.cpi_idx_new != null ? `<div class="stat-item full"><div class="stat-label">新建住宅同比指数</div><div class="stat-value">${merged.cpi_idx_new}</div></div>` : ''}
       </div>
     </div>` : `
     <div class="panel-section">
@@ -361,12 +388,13 @@ function showCityPanel(city) {
     <div class="panel-header">
       <div class="panel-city-name">${city.name}</div>
       <div class="panel-country">${city.country}${city.name_en && city.name_en !== city.name ? ' · ' + city.name_en : ''}</div>
-      <span class="panel-badge">📍 ${hasData ? '有成本数据' : '数据待补充'}</span>
+      <span class="panel-badge">📍 ${hasData ? '有成本数据 · ' + dataSource : '数据待补充'}</span>
     </div>
     ${costSection}
     <div class="panel-section">
       <div class="panel-section-title">🔗 链接</div>
       ${city.wiki ? `<a class="panel-link" href="${city.wiki}" target="_blank" rel="noopener">📚 Wikipedia</a>` : ''}
+      <a class="panel-link" href="https://citycost.cn" target="_blank" rel="noopener">💰 citycost.cn 生活成本</a>
     </div>`;
   document.getElementById('city-panel').classList.add('open');
 }
@@ -1454,6 +1482,10 @@ document.getElementById('toggle-timezones')?.addEventListener('change', e => {
 let gnData = null;
 let gnReady = false;
 
+// citycost API 生活成本数据 (从 https://citycost.cn/api/cities.json 拉取)
+let citycostData = null;
+let citycostReady = false;
+
 async function loadGeoNames() {
   try {
     const r = await fetch('/data/cities_top1500.json');
@@ -1464,6 +1496,33 @@ async function loadGeoNames() {
   } catch(e) { console.warn('GeoNames load failed', e); }
 }
 loadGeoNames();
+
+// 从 citycost API 拉取生活成本数据, 合并到城市对象上
+async function loadCitycost() {
+  // 多个备选 URL (开发服务器 vs 生产服务器 vs 本地)
+  const urls = [
+    'https://citycost.cn/api/cities.json',       // 生产 (citycost.cn)
+    'http://citycost.cn/api/cities.json',       // 生产 http 备选
+    '/data/cities_cost.json'                    // 本地 fallback (打包在 App 里)
+  ];
+  for (const url of urls) {
+    try {
+      const r = await fetch(url, { mode: 'cors' });
+      if (!r.ok) continue;
+      const d = await r.json();
+      if (d && d.cities) {
+        citycostData = d.cities;
+        citycostReady = true;
+        console.log(`[citycost] loaded ${Object.keys(d.cities).length} cities from ${url}`);
+        return;
+      }
+    } catch(e) {
+      console.warn(`[citycost] ${url} failed`, e.message);
+    }
+  }
+  console.warn('[citycost] no source available, will use local fallback');
+}
+loadCitycost();
 
 // 重写搜索逻辑：GeoNames 优先，内部城市次之
 const origSearchHandler = document.getElementById('search-input').oninput;
