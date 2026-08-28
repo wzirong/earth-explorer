@@ -1,0 +1,3974 @@
+{
+ "generated": "2026-08-28",
+ "count": 548,
+ "cities": {
+  "北京": {
+   "lat": 39.9042,
+   "lon": 116.4074,
+   "pinyin": "Beijing",
+   "en_name": "Beijing",
+   "country_zh": "北京",
+   "is_special": true
+  },
+  "天津": {
+   "lat": 39.0842,
+   "lon": 117.201,
+   "pinyin": "Tianjin",
+   "en_name": "Tianjin",
+   "country_zh": "天津",
+   "is_special": true
+  },
+  "上海": {
+   "lat": 31.2304,
+   "lon": 121.4737,
+   "pinyin": "Shanghai",
+   "en_name": "Shanghai",
+   "country_zh": "上海",
+   "is_special": true
+  },
+  "重庆": {
+   "lat": 29.563,
+   "lon": 106.5516,
+   "pinyin": "Chongqing",
+   "en_name": "Chongqing",
+   "country_zh": "重庆",
+   "is_special": true
+  },
+  "香港": {
+   "lat": 22.302711,
+   "lon": 114.177216,
+   "pinyin": "Hong Kong",
+   "en_name": "Hong Kong",
+   "country_zh": "香港",
+   "is_special": true
+  },
+  "澳门": {
+   "lat": 22.198745,
+   "lon": 113.543873,
+   "pinyin": "Macau",
+   "en_name": "Macau",
+   "country_zh": "澳门",
+   "is_special": true
+  },
+  "台北": {
+   "lat": 25.033964,
+   "lon": 121.564468,
+   "pinyin": "Taipei",
+   "en_name": "Taipei",
+   "country_zh": "台北",
+   "is_special": true
+  },
+  "石家庄": {
+   "lat": 38.04139,
+   "lon": 114.47861,
+   "pinyin": "Shijiazhuang",
+   "en_name": "Shijiazhuang",
+   "country_zh": "中国",
+   "gb_code": "1301"
+  },
+  "唐山": {
+   "lat": 39.64381,
+   "lon": 118.18319,
+   "pinyin": "Tangshan",
+   "en_name": "Tangshan",
+   "country_zh": "中国",
+   "gb_code": "1302"
+  },
+  "秦皇岛": {
+   "lat": 39.94104,
+   "lon": 119.58936,
+   "pinyin": "Qinhuangdao",
+   "en_name": "Qinhuangdao",
+   "country_zh": "中国",
+   "gb_code": "1303"
+  },
+  "邯郸": {
+   "lat": 36.60999,
+   "lon": 114.48764,
+   "pinyin": "Handan",
+   "en_name": "Handan",
+   "country_zh": "中国",
+   "gb_code": "1304"
+  },
+  "邢台": {
+   "lat": 37.06217,
+   "lon": 114.49272,
+   "pinyin": "Xingtai",
+   "en_name": "Xingtai",
+   "country_zh": "中国",
+   "gb_code": "1305"
+  },
+  "保定": {
+   "lat": 38.87288,
+   "lon": 115.46246,
+   "pinyin": "Baoding",
+   "en_name": "Baoding",
+   "country_zh": "中国",
+   "gb_code": "1306"
+  },
+  "张家口": {
+   "lat": 40.78341,
+   "lon": 114.87139,
+   "pinyin": "Zhangjiakou",
+   "en_name": "Zhangjiakou",
+   "country_zh": "中国",
+   "gb_code": "1307"
+  },
+  "承德": {
+   "lat": 40.9519,
+   "lon": 117.95883,
+   "pinyin": "Chengde",
+   "en_name": "Chengde",
+   "country_zh": "中国",
+   "gb_code": "1308"
+  },
+  "沧州": {
+   "lat": 38.31124,
+   "lon": 116.85334,
+   "pinyin": "Cangzhou",
+   "en_name": "Cangzhou",
+   "country_zh": "中国",
+   "gb_code": "1309"
+  },
+  "廊坊": {
+   "lat": 39.52079,
+   "lon": 116.71471,
+   "pinyin": "Langfang",
+   "en_name": "Langfang",
+   "country_zh": "中国",
+   "gb_code": "1310"
+  },
+  "衡水": {
+   "lat": 37.73908,
+   "lon": 115.68348,
+   "pinyin": "Hengshui",
+   "en_name": "Hengshui",
+   "country_zh": "中国",
+   "gb_code": "1311"
+  },
+  "太原": {
+   "lat": 37.86944,
+   "lon": 112.56028,
+   "pinyin": "Taiyuan",
+   "en_name": "Taiyuan",
+   "country_zh": "中国",
+   "gb_code": "1401"
+  },
+  "大同": {
+   "lat": 32.62082,
+   "lon": 117.06319,
+   "pinyin": "Datong",
+   "en_name": "Datong",
+   "country_zh": "中国",
+   "gb_code": "1402"
+  },
+  "阳泉": {
+   "lat": 37.8575,
+   "lon": 113.56333,
+   "pinyin": "Yangquan",
+   "en_name": "Yangquan",
+   "country_zh": "中国",
+   "gb_code": "1403"
+  },
+  "长治": {
+   "lat": 36.1955,
+   "lon": 113.1163,
+   "pinyin": "Zhangzhi",
+   "en_name": "Zhangzhi",
+   "country_zh": "中国",
+   "gb_code": "1404"
+  },
+  "晋城": {
+   "lat": 35.50222,
+   "lon": 112.83278,
+   "pinyin": "Jincheng",
+   "en_name": "Jincheng",
+   "country_zh": "中国",
+   "gb_code": "1405"
+  },
+  "朔州": {
+   "lat": 39.31583,
+   "lon": 112.4225,
+   "pinyin": "Shuozhou",
+   "en_name": "Shuozhou",
+   "country_zh": "中国",
+   "gb_code": "1406"
+  },
+  "晋中": {
+   "lat": 37.68403,
+   "lon": 112.75471,
+   "pinyin": "Jinzhong",
+   "en_name": "Jinzhong",
+   "country_zh": "中国",
+   "gb_code": "1407"
+  },
+  "运城": {
+   "lat": 35.59833,
+   "lon": 115.93472,
+   "pinyin": "Yuncheng",
+   "en_name": "Yuncheng",
+   "country_zh": "中国",
+   "gb_code": "1408"
+  },
+  "忻州": {
+   "lat": 38.40917,
+   "lon": 112.73333,
+   "pinyin": "Xinzhou",
+   "en_name": "Xinzhou",
+   "country_zh": "中国",
+   "gb_code": "1409"
+  },
+  "临汾": {
+   "lat": 36.08889,
+   "lon": 111.51889,
+   "pinyin": "Linfen",
+   "en_name": "Linfen",
+   "country_zh": "中国",
+   "gb_code": "1410"
+  },
+  "吕梁": {
+   "lat": 37.5185,
+   "lon": 111.1342,
+   "pinyin": "Lvliang",
+   "en_name": "Lvliang",
+   "country_zh": "中国",
+   "gb_code": "1411"
+  },
+  "呼和浩特": {
+   "lat": 40.8426,
+   "lon": 111.7491,
+   "pinyin": "Huhehaote",
+   "en_name": "Huhehaote",
+   "country_zh": "中国",
+   "gb_code": "1501"
+  },
+  "包头": {
+   "lat": 40.6516,
+   "lon": 109.84389,
+   "pinyin": "Baotou",
+   "en_name": "Baotou",
+   "country_zh": "中国",
+   "gb_code": "1502"
+  },
+  "乌海": {
+   "lat": 39.68442,
+   "lon": 106.81583,
+   "pinyin": "Wuhai",
+   "en_name": "Wuhai",
+   "country_zh": "中国",
+   "gb_code": "1503"
+  },
+  "赤峰": {
+   "lat": 42.26833,
+   "lon": 118.96361,
+   "pinyin": "Chifeng",
+   "en_name": "Chifeng",
+   "country_zh": "中国",
+   "gb_code": "1504"
+  },
+  "通辽": {
+   "lat": 43.6125,
+   "lon": 122.26528,
+   "pinyin": "Tongliao",
+   "en_name": "Tongliao",
+   "country_zh": "中国",
+   "gb_code": "1505"
+  },
+  "鄂尔多斯": {
+   "lat": 39.6086,
+   "lon": 109.7814,
+   "pinyin": "Eerduosi",
+   "en_name": "Eerduosi",
+   "country_zh": "中国",
+   "gb_code": "1506"
+  },
+  "呼伦贝尔": {
+   "lat": 49.212,
+   "lon": 119.7585,
+   "pinyin": "Hulunbeier",
+   "en_name": "Hulunbeier",
+   "country_zh": "中国",
+   "gb_code": "1507"
+  },
+  "巴彦淖尔": {
+   "lat": 40.7574,
+   "lon": 107.4163,
+   "pinyin": "Bayannaoer",
+   "en_name": "Bayannaoer",
+   "country_zh": "中国",
+   "gb_code": "1508"
+  },
+  "乌兰察布": {
+   "lat": 41.0341,
+   "lon": 113.1145,
+   "pinyin": "Wulanchabu",
+   "en_name": "Wulanchabu",
+   "country_zh": "中国",
+   "gb_code": "1509"
+  },
+  "兴安": {
+   "lat": 46.0764,
+   "lon": 122.0383,
+   "pinyin": "Xingan",
+   "en_name": "Xingan",
+   "country_zh": "中国",
+   "gb_code": "1522"
+  },
+  "锡林郭勒": {
+   "lat": 43.9333,
+   "lon": 116.0906,
+   "pinyin": "Xilinguolei",
+   "en_name": "Xilinguolei",
+   "country_zh": "中国",
+   "gb_code": "1525"
+  },
+  "阿拉善": {
+   "lat": 38.8513,
+   "lon": 105.7287,
+   "pinyin": "Alashan",
+   "en_name": "Alashan",
+   "country_zh": "中国",
+   "gb_code": "1529"
+  },
+  "沈阳": {
+   "lat": 41.79222,
+   "lon": 123.43278,
+   "pinyin": "Shenyang",
+   "en_name": "Shenyang",
+   "country_zh": "中国",
+   "gb_code": "2101"
+  },
+  "大连": {
+   "lat": 38.91222,
+   "lon": 121.60222,
+   "pinyin": "Dalian",
+   "en_name": "Dalian",
+   "country_zh": "中国",
+   "gb_code": "2102"
+  },
+  "鞍山": {
+   "lat": 41.12361,
+   "lon": 122.99,
+   "pinyin": "Anshan",
+   "en_name": "Anshan",
+   "country_zh": "中国",
+   "gb_code": "2103"
+  },
+  "抚顺": {
+   "lat": 41.88669,
+   "lon": 123.94363,
+   "pinyin": "Fushun",
+   "en_name": "Fushun",
+   "country_zh": "中国",
+   "gb_code": "2104"
+  },
+  "本溪": {
+   "lat": 41.28861,
+   "lon": 123.765,
+   "pinyin": "Benxi",
+   "en_name": "Benxi",
+   "country_zh": "中国",
+   "gb_code": "2105"
+  },
+  "丹东": {
+   "lat": 40.12917,
+   "lon": 124.39472,
+   "pinyin": "Dandong",
+   "en_name": "Dandong",
+   "country_zh": "中国",
+   "gb_code": "2106"
+  },
+  "锦州": {
+   "lat": 39.1,
+   "lon": 121.71667,
+   "pinyin": "Jinzhou",
+   "en_name": "Jinzhou",
+   "country_zh": "中国",
+   "gb_code": "2107"
+  },
+  "营口": {
+   "lat": 40.66472,
+   "lon": 122.23176,
+   "pinyin": "Yingkou",
+   "en_name": "Yingkou",
+   "country_zh": "中国",
+   "gb_code": "2108"
+  },
+  "阜新": {
+   "lat": 42.01556,
+   "lon": 121.65889,
+   "pinyin": "Fuxin",
+   "en_name": "Fuxin",
+   "country_zh": "中国",
+   "gb_code": "2109"
+  },
+  "辽阳": {
+   "lat": 37.07977,
+   "lon": 113.33986,
+   "pinyin": "Liaoyang",
+   "en_name": "Liaoyang",
+   "country_zh": "中国",
+   "gb_code": "2110"
+  },
+  "盘锦": {
+   "lat": 41.121,
+   "lon": 122.0739,
+   "pinyin": "Panjin",
+   "en_name": "Panjin",
+   "country_zh": "中国",
+   "gb_code": "2111"
+  },
+  "铁岭": {
+   "lat": 42.29306,
+   "lon": 123.84139,
+   "pinyin": "Tieling",
+   "en_name": "Tieling",
+   "country_zh": "中国",
+   "gb_code": "2112"
+  },
+  "朝阳": {
+   "lat": 41.5765,
+   "lon": 120.4509,
+   "pinyin": "Zhaoyang",
+   "en_name": "Zhaoyang",
+   "country_zh": "中国",
+   "gb_code": "2113"
+  },
+  "葫芦岛": {
+   "lat": 40.75243,
+   "lon": 120.83552,
+   "pinyin": "Huludao",
+   "en_name": "Huludao",
+   "country_zh": "中国",
+   "gb_code": "2114"
+  },
+  "长春": {
+   "lat": 43.88,
+   "lon": 125.32278,
+   "pinyin": "Changchun",
+   "en_name": "Changchun",
+   "country_zh": "中国",
+   "gb_code": "2201"
+  },
+  "吉林": {
+   "lat": 43.84652,
+   "lon": 126.5608,
+   "pinyin": "Jilin",
+   "en_name": "Jilin",
+   "country_zh": "中国",
+   "gb_code": "2202"
+  },
+  "四平": {
+   "lat": 43.16143,
+   "lon": 124.37785,
+   "pinyin": "Siping",
+   "en_name": "Siping",
+   "country_zh": "中国",
+   "gb_code": "2203"
+  },
+  "辽源": {
+   "lat": 42.8881,
+   "lon": 125.145,
+   "pinyin": "Liaoyuan",
+   "en_name": "Liaoyuan",
+   "country_zh": "中国",
+   "gb_code": "2204"
+  },
+  "通化": {
+   "lat": 41.71972,
+   "lon": 125.92639,
+   "pinyin": "Tonghua",
+   "en_name": "Tonghua",
+   "country_zh": "中国",
+   "gb_code": "2205"
+  },
+  "白山": {
+   "lat": 41.93853,
+   "lon": 126.41965,
+   "pinyin": "Baishan",
+   "en_name": "Baishan",
+   "country_zh": "中国",
+   "gb_code": "2206"
+  },
+  "松原": {
+   "lat": 27.62167,
+   "lon": 119.05917,
+   "pinyin": "Songyuan",
+   "en_name": "Songyuan",
+   "country_zh": "中国",
+   "gb_code": "2207"
+  },
+  "白城": {
+   "lat": 45.61751,
+   "lon": 122.83302,
+   "pinyin": "Baicheng",
+   "en_name": "Baicheng",
+   "country_zh": "中国",
+   "gb_code": "2208"
+  },
+  "延边": {
+   "lat": 42.9046,
+   "lon": 129.5135,
+   "pinyin": "Yanbian",
+   "en_name": "Yanbian",
+   "country_zh": "中国",
+   "gb_code": "2224"
+  },
+  "哈尔滨": {
+   "lat": 45.8038,
+   "lon": 126.534,
+   "pinyin": "Haerbin",
+   "en_name": "Haerbin",
+   "country_zh": "中国",
+   "gb_code": "2301"
+  },
+  "齐齐哈尔": {
+   "lat": 47.3543,
+   "lon": 123.9182,
+   "pinyin": "Qiqihaer",
+   "en_name": "Qiqihaer",
+   "country_zh": "中国",
+   "gb_code": "2302"
+  },
+  "鸡西": {
+   "lat": 45.29322,
+   "lon": 130.96217,
+   "pinyin": "Jixi",
+   "en_name": "Jixi",
+   "country_zh": "中国",
+   "gb_code": "2303"
+  },
+  "鹤岗": {
+   "lat": 47.34727,
+   "lon": 130.29033,
+   "pinyin": "Hegang",
+   "en_name": "Hegang",
+   "country_zh": "中国",
+   "gb_code": "2304"
+  },
+  "双鸭山": {
+   "lat": 46.67686,
+   "lon": 131.13273,
+   "pinyin": "Shuangyashan",
+   "en_name": "Shuangyashan",
+   "country_zh": "中国",
+   "gb_code": "2305"
+  },
+  "大庆": {
+   "lat": 46.58333,
+   "lon": 125.0,
+   "pinyin": "Daqing",
+   "en_name": "Daqing",
+   "country_zh": "中国",
+   "gb_code": "2306"
+  },
+  "伊春": {
+   "lat": 27.83333,
+   "lon": 114.4,
+   "pinyin": "Yichun",
+   "en_name": "Yichun",
+   "country_zh": "中国",
+   "gb_code": "2307"
+  },
+  "佳木斯": {
+   "lat": 46.79711,
+   "lon": 130.31118,
+   "pinyin": "Jiamusi",
+   "en_name": "Jiamusi",
+   "country_zh": "中国",
+   "gb_code": "2308"
+  },
+  "七台河": {
+   "lat": 45.768,
+   "lon": 130.9953,
+   "pinyin": "Qitaihe",
+   "en_name": "Qitaihe",
+   "country_zh": "中国",
+   "gb_code": "2309"
+  },
+  "牡丹江": {
+   "lat": 44.54804,
+   "lon": 129.62594,
+   "pinyin": "Mudanjiang",
+   "en_name": "Mudanjiang",
+   "country_zh": "中国",
+   "gb_code": "2310"
+  },
+  "黑河": {
+   "lat": 50.24413,
+   "lon": 127.49016,
+   "pinyin": "Heihe",
+   "en_name": "Heihe",
+   "country_zh": "中国",
+   "gb_code": "2311"
+  },
+  "绥化": {
+   "lat": 46.64814,
+   "lon": 126.96656,
+   "pinyin": "Suihua",
+   "en_name": "Suihua",
+   "country_zh": "中国",
+   "gb_code": "2312"
+  },
+  "大兴安岭": {
+   "lat": 50.4117,
+   "lon": 124.7113,
+   "pinyin": "Daxinganling",
+   "en_name": "Daxinganling",
+   "country_zh": "中国",
+   "gb_code": "2327"
+  },
+  "南京": {
+   "lat": 32.06167,
+   "lon": 118.77778,
+   "pinyin": "Nanjing",
+   "en_name": "Nanjing",
+   "country_zh": "中国",
+   "gb_code": "3201"
+  },
+  "无锡": {
+   "lat": 31.56887,
+   "lon": 120.28857,
+   "pinyin": "Wuxi",
+   "en_name": "Wuxi",
+   "country_zh": "中国",
+   "gb_code": "3202"
+  },
+  "徐州": {
+   "lat": 34.20442,
+   "lon": 117.28386,
+   "pinyin": "Xuzhou",
+   "en_name": "Xuzhou",
+   "country_zh": "中国",
+   "gb_code": "3203"
+  },
+  "常州": {
+   "lat": 31.77359,
+   "lon": 119.95401,
+   "pinyin": "Changzhou",
+   "en_name": "Changzhou",
+   "country_zh": "中国",
+   "gb_code": "3204"
+  },
+  "苏州": {
+   "lat": 33.63611,
+   "lon": 116.97889,
+   "pinyin": "Suzhou",
+   "en_name": "Suzhou",
+   "country_zh": "中国",
+   "gb_code": "3205"
+  },
+  "南通": {
+   "lat": 32.03028,
+   "lon": 120.87472,
+   "pinyin": "Nantong",
+   "en_name": "Nantong",
+   "country_zh": "中国",
+   "gb_code": "3206"
+  },
+  "连云港": {
+   "lat": 34.59845,
+   "lon": 119.21556,
+   "pinyin": "Lianyungang",
+   "en_name": "Lianyungang",
+   "country_zh": "中国",
+   "gb_code": "3207"
+  },
+  "淮安": {
+   "lat": 33.591,
+   "lon": 119.0212,
+   "pinyin": "Huaian",
+   "en_name": "Huaian",
+   "country_zh": "中国",
+   "gb_code": "3208"
+  },
+  "盐城": {
+   "lat": 33.59782,
+   "lon": 114.00938,
+   "pinyin": "Yancheng",
+   "en_name": "Yancheng",
+   "country_zh": "中国",
+   "gb_code": "3209"
+  },
+  "扬州": {
+   "lat": 32.39722,
+   "lon": 119.43583,
+   "pinyin": "Yangzhou",
+   "en_name": "Yangzhou",
+   "country_zh": "中国",
+   "gb_code": "3210"
+  },
+  "镇江": {
+   "lat": 32.21086,
+   "lon": 119.45508,
+   "pinyin": "Zhenjiang",
+   "en_name": "Zhenjiang",
+   "country_zh": "中国",
+   "gb_code": "3211"
+  },
+  "泰州": {
+   "lat": 32.49069,
+   "lon": 119.90812,
+   "pinyin": "Taizhou",
+   "en_name": "Taizhou",
+   "country_zh": "中国",
+   "gb_code": "3212"
+  },
+  "宿迁": {
+   "lat": 33.94917,
+   "lon": 118.29583,
+   "pinyin": "Suqian",
+   "en_name": "Suqian",
+   "country_zh": "中国",
+   "gb_code": "3213"
+  },
+  "杭州": {
+   "lat": 30.29365,
+   "lon": 120.16142,
+   "pinyin": "Hangzhou",
+   "en_name": "Hangzhou",
+   "country_zh": "中国",
+   "gb_code": "3301"
+  },
+  "宁波": {
+   "lat": 29.87819,
+   "lon": 121.54945,
+   "pinyin": "Ningbo",
+   "en_name": "Ningbo",
+   "country_zh": "中国",
+   "gb_code": "3302"
+  },
+  "温州": {
+   "lat": 27.99942,
+   "lon": 120.66682,
+   "pinyin": "Wenzhou",
+   "en_name": "Wenzhou",
+   "country_zh": "中国",
+   "gb_code": "3303"
+  },
+  "嘉兴": {
+   "lat": 30.7522,
+   "lon": 120.75,
+   "pinyin": "Jiaxing",
+   "en_name": "Jiaxing",
+   "country_zh": "中国",
+   "gb_code": "3304"
+  },
+  "湖州": {
+   "lat": 30.8703,
+   "lon": 120.0933,
+   "pinyin": "Huzhou",
+   "en_name": "Huzhou",
+   "country_zh": "中国",
+   "gb_code": "3305"
+  },
+  "绍兴": {
+   "lat": 30.00237,
+   "lon": 120.57864,
+   "pinyin": "Shaoxing",
+   "en_name": "Shaoxing",
+   "country_zh": "中国",
+   "gb_code": "3306"
+  },
+  "金华": {
+   "lat": 26.538,
+   "lon": 99.91715,
+   "pinyin": "Jinhua",
+   "en_name": "Jinhua",
+   "country_zh": "中国",
+   "gb_code": "3307"
+  },
+  "衢州": {
+   "lat": 36.77414,
+   "lon": 114.95044,
+   "pinyin": "Quzhou",
+   "en_name": "Quzhou",
+   "country_zh": "中国",
+   "gb_code": "3308"
+  },
+  "舟山": {
+   "lat": 29.98869,
+   "lon": 122.20488,
+   "pinyin": "Zhoushan",
+   "en_name": "Zhoushan",
+   "country_zh": "中国",
+   "gb_code": "3309"
+  },
+  "台州": {
+   "lat": 32.49069,
+   "lon": 119.90812,
+   "pinyin": "Taizhou",
+   "en_name": "Taizhou",
+   "country_zh": "中国",
+   "gb_code": "3310"
+  },
+  "丽水": {
+   "lat": 28.46042,
+   "lon": 119.91029,
+   "pinyin": "Lishui",
+   "en_name": "Lishui",
+   "country_zh": "中国",
+   "gb_code": "3311"
+  },
+  "合肥": {
+   "lat": 31.86389,
+   "lon": 117.28083,
+   "pinyin": "Hefei",
+   "en_name": "Hefei",
+   "country_zh": "中国",
+   "gb_code": "3401"
+  },
+  "芜湖": {
+   "lat": 31.35259,
+   "lon": 118.42947,
+   "pinyin": "Wuhu",
+   "en_name": "Wuhu",
+   "country_zh": "中国",
+   "gb_code": "3402"
+  },
+  "蚌埠": {
+   "lat": 32.94083,
+   "lon": 117.36083,
+   "pinyin": "Bengbu",
+   "en_name": "Bengbu",
+   "country_zh": "中国",
+   "gb_code": "3403"
+  },
+  "淮南": {
+   "lat": 32.62639,
+   "lon": 116.99694,
+   "pinyin": "Huainan",
+   "en_name": "Huainan",
+   "country_zh": "中国",
+   "gb_code": "3404"
+  },
+  "马鞍山": {
+   "lat": 31.67,
+   "lon": 118.506,
+   "pinyin": "Maanshan",
+   "en_name": "Maanshan",
+   "country_zh": "中国",
+   "gb_code": "3405"
+  },
+  "淮北": {
+   "lat": 33.97444,
+   "lon": 116.79167,
+   "pinyin": "Huaibei",
+   "en_name": "Huaibei",
+   "country_zh": "中国",
+   "gb_code": "3406"
+  },
+  "铜陵": {
+   "lat": 30.95,
+   "lon": 117.78333,
+   "pinyin": "Tongling",
+   "en_name": "Tongling",
+   "country_zh": "中国",
+   "gb_code": "3407"
+  },
+  "安庆": {
+   "lat": 30.51365,
+   "lon": 117.04723,
+   "pinyin": "Anqing",
+   "en_name": "Anqing",
+   "country_zh": "中国",
+   "gb_code": "3408"
+  },
+  "黄山": {
+   "lat": 29.71139,
+   "lon": 118.3125,
+   "pinyin": "Huangshan",
+   "en_name": "Huangshan",
+   "country_zh": "中国",
+   "gb_code": "3410"
+  },
+  "滁州": {
+   "lat": 32.32194,
+   "lon": 118.29778,
+   "pinyin": "Chuzhou",
+   "en_name": "Chuzhou",
+   "country_zh": "中国",
+   "gb_code": "3411"
+  },
+  "阜阳": {
+   "lat": 32.9,
+   "lon": 115.81667,
+   "pinyin": "Fuyang",
+   "en_name": "Fuyang",
+   "country_zh": "中国",
+   "gb_code": "3412"
+  },
+  "宿州": {
+   "lat": 33.63611,
+   "lon": 116.97889,
+   "pinyin": "Suzhou",
+   "en_name": "Suzhou",
+   "country_zh": "中国",
+   "gb_code": "3413"
+  },
+  "六安": {
+   "lat": 31.7338,
+   "lon": 116.5076,
+   "pinyin": "Luan",
+   "en_name": "Luan",
+   "country_zh": "中国",
+   "gb_code": "3415"
+  },
+  "亳州": {
+   "lat": 33.87722,
+   "lon": 115.77028,
+   "pinyin": "Bozhou",
+   "en_name": "Bozhou",
+   "country_zh": "中国",
+   "gb_code": "3416"
+  },
+  "池州": {
+   "lat": 30.66134,
+   "lon": 117.47783,
+   "pinyin": "Chizhou",
+   "en_name": "Chizhou",
+   "country_zh": "中国",
+   "gb_code": "3417"
+  },
+  "宣城": {
+   "lat": 30.9525,
+   "lon": 118.75528,
+   "pinyin": "Xuancheng",
+   "en_name": "Xuancheng",
+   "country_zh": "中国",
+   "gb_code": "3418"
+  },
+  "福州": {
+   "lat": 27.95999,
+   "lon": 116.33333,
+   "pinyin": "Fuzhou",
+   "en_name": "Fuzhou",
+   "country_zh": "中国",
+   "gb_code": "3501"
+  },
+  "厦门": {
+   "lat": 24.47979,
+   "lon": 118.08187,
+   "pinyin": "Xiamen",
+   "en_name": "Xiamen",
+   "country_zh": "中国",
+   "gb_code": "3502"
+  },
+  "莆田": {
+   "lat": 25.43944,
+   "lon": 119.01028,
+   "pinyin": "Putian",
+   "en_name": "Putian",
+   "country_zh": "中国",
+   "gb_code": "3503"
+  },
+  "三明": {
+   "lat": 26.24861,
+   "lon": 117.61861,
+   "pinyin": "Sanming",
+   "en_name": "Sanming",
+   "country_zh": "中国",
+   "gb_code": "3504"
+  },
+  "泉州": {
+   "lat": 25.93545,
+   "lon": 111.06752,
+   "pinyin": "Quanzhou",
+   "en_name": "Quanzhou",
+   "country_zh": "中国",
+   "gb_code": "3505"
+  },
+  "漳州": {
+   "lat": 24.51333,
+   "lon": 117.65556,
+   "pinyin": "Zhangzhou",
+   "en_name": "Zhangzhou",
+   "country_zh": "中国",
+   "gb_code": "3506"
+  },
+  "南平": {
+   "lat": 29.08639,
+   "lon": 106.98722,
+   "pinyin": "Nanping",
+   "en_name": "Nanping",
+   "country_zh": "中国",
+   "gb_code": "3507"
+  },
+  "龙岩": {
+   "lat": 25.07485,
+   "lon": 117.01775,
+   "pinyin": "Longyan",
+   "en_name": "Longyan",
+   "country_zh": "中国",
+   "gb_code": "3508"
+  },
+  "宁德": {
+   "lat": 26.66167,
+   "lon": 119.52278,
+   "pinyin": "Ningde",
+   "en_name": "Ningde",
+   "country_zh": "中国",
+   "gb_code": "3509"
+  },
+  "南昌": {
+   "lat": 28.68396,
+   "lon": 115.85306,
+   "pinyin": "Nanchang",
+   "en_name": "Nanchang",
+   "country_zh": "中国",
+   "gb_code": "3601"
+  },
+  "景德镇": {
+   "lat": 29.2947,
+   "lon": 117.20789,
+   "pinyin": "Jingdezhen",
+   "en_name": "Jingdezhen",
+   "country_zh": "中国",
+   "gb_code": "3602"
+  },
+  "萍乡": {
+   "lat": 35.2079,
+   "lon": 105.25058,
+   "pinyin": "Pingxiang",
+   "en_name": "Pingxiang",
+   "country_zh": "中国",
+   "gb_code": "3603"
+  },
+  "九江": {
+   "lat": 29.70475,
+   "lon": 116.00206,
+   "pinyin": "Jiujiang",
+   "en_name": "Jiujiang",
+   "country_zh": "中国",
+   "gb_code": "3604"
+  },
+  "新余": {
+   "lat": 27.80429,
+   "lon": 114.93335,
+   "pinyin": "Xinyu",
+   "en_name": "Xinyu",
+   "country_zh": "中国",
+   "gb_code": "3605"
+  },
+  "鹰潭": {
+   "lat": 28.23333,
+   "lon": 117.0,
+   "pinyin": "Yingtan",
+   "en_name": "Yingtan",
+   "country_zh": "中国",
+   "gb_code": "3606"
+  },
+  "赣州": {
+   "lat": 25.84664,
+   "lon": 114.9326,
+   "pinyin": "Ganzhou",
+   "en_name": "Ganzhou",
+   "country_zh": "中国",
+   "gb_code": "3607"
+  },
+  "吉安": {
+   "lat": 27.114,
+   "lon": 114.9866,
+   "pinyin": "Jian",
+   "en_name": "Jian",
+   "country_zh": "中国",
+   "gb_code": "3608"
+  },
+  "宜春": {
+   "lat": 27.83333,
+   "lon": 114.4,
+   "pinyin": "Yichun",
+   "en_name": "Yichun",
+   "country_zh": "中国",
+   "gb_code": "3609"
+  },
+  "抚州": {
+   "lat": 27.95999,
+   "lon": 116.33333,
+   "pinyin": "Fuzhou",
+   "en_name": "Fuzhou",
+   "country_zh": "中国",
+   "gb_code": "3610"
+  },
+  "上饶": {
+   "lat": 28.45179,
+   "lon": 117.94287,
+   "pinyin": "Shangrao",
+   "en_name": "Shangrao",
+   "country_zh": "中国",
+   "gb_code": "3611"
+  },
+  "济南": {
+   "lat": 36.66833,
+   "lon": 116.99722,
+   "pinyin": "Jinan",
+   "en_name": "Jinan",
+   "country_zh": "中国",
+   "gb_code": "3701"
+  },
+  "青岛": {
+   "lat": 36.06488,
+   "lon": 120.38042,
+   "pinyin": "Qingdao",
+   "en_name": "Qingdao",
+   "country_zh": "中国",
+   "gb_code": "3702"
+  },
+  "淄博": {
+   "lat": 36.79056,
+   "lon": 118.06333,
+   "pinyin": "Zibo",
+   "en_name": "Zibo",
+   "country_zh": "中国",
+   "gb_code": "3703"
+  },
+  "枣庄": {
+   "lat": 34.86472,
+   "lon": 117.55417,
+   "pinyin": "Zaozhuang",
+   "en_name": "Zaozhuang",
+   "country_zh": "中国",
+   "gb_code": "3704"
+  },
+  "东营": {
+   "lat": 37.46271,
+   "lon": 118.49165,
+   "pinyin": "Dongying",
+   "en_name": "Dongying",
+   "country_zh": "中国",
+   "gb_code": "3705"
+  },
+  "烟台": {
+   "lat": 37.47649,
+   "lon": 121.44081,
+   "pinyin": "Yantai",
+   "en_name": "Yantai",
+   "country_zh": "中国",
+   "gb_code": "3706"
+  },
+  "潍坊": {
+   "lat": 36.71,
+   "lon": 119.10194,
+   "pinyin": "Weifang",
+   "en_name": "Weifang",
+   "country_zh": "中国",
+   "gb_code": "3707"
+  },
+  "济宁": {
+   "lat": 35.405,
+   "lon": 116.58139,
+   "pinyin": "Jining",
+   "en_name": "Jining",
+   "country_zh": "中国",
+   "gb_code": "3708"
+  },
+  "泰安": {
+   "lat": 36.1939,
+   "lon": 117.0875,
+   "pinyin": "Taian",
+   "en_name": "Taian",
+   "country_zh": "中国",
+   "gb_code": "3709"
+  },
+  "威海": {
+   "lat": 37.50914,
+   "lon": 122.11356,
+   "pinyin": "Weihai",
+   "en_name": "Weihai",
+   "country_zh": "中国",
+   "gb_code": "3710"
+  },
+  "日照": {
+   "lat": 35.41414,
+   "lon": 119.52908,
+   "pinyin": "Rizhao",
+   "en_name": "Rizhao",
+   "country_zh": "中国",
+   "gb_code": "3711"
+  },
+  "临沂": {
+   "lat": 35.06306,
+   "lon": 118.34278,
+   "pinyin": "Linyi",
+   "en_name": "Linyi",
+   "country_zh": "中国",
+   "gb_code": "3713"
+  },
+  "德州": {
+   "lat": 37.44661,
+   "lon": 116.36706,
+   "pinyin": "Dezhou",
+   "en_name": "Dezhou",
+   "country_zh": "中国",
+   "gb_code": "3714"
+  },
+  "聊城": {
+   "lat": 36.45064,
+   "lon": 116.00247,
+   "pinyin": "Liaocheng",
+   "en_name": "Liaocheng",
+   "country_zh": "中国",
+   "gb_code": "3715"
+  },
+  "滨州": {
+   "lat": 37.36667,
+   "lon": 118.01667,
+   "pinyin": "Binzhou",
+   "en_name": "Binzhou",
+   "country_zh": "中国",
+   "gb_code": "3716"
+  },
+  "菏泽": {
+   "lat": 35.23929,
+   "lon": 115.47358,
+   "pinyin": "Heze",
+   "en_name": "Heze",
+   "country_zh": "中国",
+   "gb_code": "3717"
+  },
+  "郑州": {
+   "lat": 34.75778,
+   "lon": 113.64861,
+   "pinyin": "Zhengzhou",
+   "en_name": "Zhengzhou",
+   "country_zh": "中国",
+   "gb_code": "4101"
+  },
+  "开封": {
+   "lat": 34.7986,
+   "lon": 114.30742,
+   "pinyin": "Kaifeng",
+   "en_name": "Kaifeng",
+   "country_zh": "中国",
+   "gb_code": "4102"
+  },
+  "洛阳": {
+   "lat": 34.67345,
+   "lon": 112.43684,
+   "pinyin": "Luoyang",
+   "en_name": "Luoyang",
+   "country_zh": "中国",
+   "gb_code": "4103"
+  },
+  "平顶山": {
+   "lat": 33.73091,
+   "lon": 113.31554,
+   "pinyin": "Pingdingshan",
+   "en_name": "Pingdingshan",
+   "country_zh": "中国",
+   "gb_code": "4104"
+  },
+  "安阳": {
+   "lat": 36.096,
+   "lon": 114.38278,
+   "pinyin": "Anyang",
+   "en_name": "Anyang",
+   "country_zh": "中国",
+   "gb_code": "4105"
+  },
+  "鹤壁": {
+   "lat": 35.73231,
+   "lon": 114.28616,
+   "pinyin": "Hebi",
+   "en_name": "Hebi",
+   "country_zh": "中国",
+   "gb_code": "4106"
+  },
+  "新乡": {
+   "lat": 35.19033,
+   "lon": 113.80151,
+   "pinyin": "Xinxiang",
+   "en_name": "Xinxiang",
+   "country_zh": "中国",
+   "gb_code": "4107"
+  },
+  "焦作": {
+   "lat": 35.23925,
+   "lon": 113.23914,
+   "pinyin": "Jiaozuo",
+   "en_name": "Jiaozuo",
+   "country_zh": "中国",
+   "gb_code": "4108"
+  },
+  "濮阳": {
+   "lat": 29.45679,
+   "lon": 119.88872,
+   "pinyin": "Puyang",
+   "en_name": "Puyang",
+   "country_zh": "中国",
+   "gb_code": "4109"
+  },
+  "许昌": {
+   "lat": 34.03189,
+   "lon": 113.86299,
+   "pinyin": "Xuchang",
+   "en_name": "Xuchang",
+   "country_zh": "中国",
+   "gb_code": "4110"
+  },
+  "漯河": {
+   "lat": 52.32148,
+   "lon": 124.69761,
+   "pinyin": "Tahe",
+   "en_name": "Tahe",
+   "country_zh": "中国",
+   "gb_code": "4111"
+  },
+  "三门峡": {
+   "lat": 34.78081,
+   "lon": 111.19287,
+   "pinyin": "Sanmenxia",
+   "en_name": "Sanmenxia",
+   "country_zh": "中国",
+   "gb_code": "4112"
+  },
+  "南阳": {
+   "lat": 33.00524,
+   "lon": 112.54659,
+   "pinyin": "Nanyang",
+   "en_name": "Nanyang",
+   "country_zh": "中国",
+   "gb_code": "4113"
+  },
+  "商丘": {
+   "lat": 34.4143,
+   "lon": 115.65613,
+   "pinyin": "Shangqiu",
+   "en_name": "Shangqiu",
+   "country_zh": "中国",
+   "gb_code": "4114"
+  },
+  "信阳": {
+   "lat": 32.12278,
+   "lon": 114.06556,
+   "pinyin": "Xinyang",
+   "en_name": "Xinyang",
+   "country_zh": "中国",
+   "gb_code": "4115"
+  },
+  "周口": {
+   "lat": 33.63333,
+   "lon": 114.63333,
+   "pinyin": "Zhoukou",
+   "en_name": "Zhoukou",
+   "country_zh": "中国",
+   "gb_code": "4116"
+  },
+  "驻马店": {
+   "lat": 32.98385,
+   "lon": 114.02586,
+   "pinyin": "Zhumadian",
+   "en_name": "Zhumadian",
+   "country_zh": "中国",
+   "gb_code": "4117"
+  },
+  "武汉": {
+   "lat": 30.58333,
+   "lon": 114.26667,
+   "pinyin": "Wuhan",
+   "en_name": "Wuhan",
+   "country_zh": "中国",
+   "gb_code": "4201"
+  },
+  "黄石": {
+   "lat": 30.24706,
+   "lon": 115.04814,
+   "pinyin": "Huangshi",
+   "en_name": "Huangshi",
+   "country_zh": "中国",
+   "gb_code": "4202"
+  },
+  "十堰": {
+   "lat": 32.6475,
+   "lon": 110.77806,
+   "pinyin": "Shiyan",
+   "en_name": "Shiyan",
+   "country_zh": "中国",
+   "gb_code": "4203"
+  },
+  "宜昌": {
+   "lat": 30.71444,
+   "lon": 111.28472,
+   "pinyin": "Yichang",
+   "en_name": "Yichang",
+   "country_zh": "中国",
+   "gb_code": "4205"
+  },
+  "襄阳": {
+   "lat": 32.0422,
+   "lon": 112.14479,
+   "pinyin": "Xiangyang",
+   "en_name": "Xiangyang",
+   "country_zh": "中国",
+   "gb_code": "4206"
+  },
+  "鄂州": {
+   "lat": 30.4,
+   "lon": 114.83333,
+   "pinyin": "Ezhou",
+   "en_name": "Ezhou",
+   "country_zh": "中国",
+   "gb_code": "4207"
+  },
+  "荆门": {
+   "lat": 31.03361,
+   "lon": 112.20472,
+   "pinyin": "Jingmen",
+   "en_name": "Jingmen",
+   "country_zh": "中国",
+   "gb_code": "4208"
+  },
+  "孝感": {
+   "lat": 30.92689,
+   "lon": 113.92221,
+   "pinyin": "Xiaogan",
+   "en_name": "Xiaogan",
+   "country_zh": "中国",
+   "gb_code": "4209"
+  },
+  "荆州": {
+   "lat": 30.35028,
+   "lon": 112.19028,
+   "pinyin": "Jingzhou",
+   "en_name": "Jingzhou",
+   "country_zh": "中国",
+   "gb_code": "4210"
+  },
+  "黄冈": {
+   "lat": 23.67704,
+   "lon": 116.99961,
+   "pinyin": "Huanggang",
+   "en_name": "Huanggang",
+   "country_zh": "中国",
+   "gb_code": "4211"
+  },
+  "咸宁": {
+   "lat": 29.84347,
+   "lon": 114.32201,
+   "pinyin": "Xianning",
+   "en_name": "Xianning",
+   "country_zh": "中国",
+   "gb_code": "4212"
+  },
+  "随州": {
+   "lat": 31.71111,
+   "lon": 113.36306,
+   "pinyin": "Suizhou",
+   "en_name": "Suizhou",
+   "country_zh": "中国",
+   "gb_code": "4213"
+  },
+  "恩施": {
+   "lat": 30.3,
+   "lon": 109.48333,
+   "pinyin": "Enshi",
+   "en_name": "Enshi",
+   "country_zh": "中国",
+   "gb_code": "4228"
+  },
+  "长沙": {
+   "lat": 22.38124,
+   "lon": 112.68492,
+   "pinyin": "Changsha",
+   "en_name": "Changsha",
+   "country_zh": "中国",
+   "gb_code": "4301"
+  },
+  "株洲": {
+   "lat": 27.83333,
+   "lon": 113.15,
+   "pinyin": "Zhuzhou",
+   "en_name": "Zhuzhou",
+   "country_zh": "中国",
+   "gb_code": "4302"
+  },
+  "湘潭": {
+   "lat": 27.85,
+   "lon": 112.9,
+   "pinyin": "Xiangtan",
+   "en_name": "Xiangtan",
+   "country_zh": "中国",
+   "gb_code": "4303"
+  },
+  "衡阳": {
+   "lat": 26.88946,
+   "lon": 112.61888,
+   "pinyin": "Hengyang",
+   "en_name": "Hengyang",
+   "country_zh": "中国",
+   "gb_code": "4304"
+  },
+  "邵阳": {
+   "lat": 27.23818,
+   "lon": 111.46214,
+   "pinyin": "Shaoyang",
+   "en_name": "Shaoyang",
+   "country_zh": "中国",
+   "gb_code": "4305"
+  },
+  "岳阳": {
+   "lat": 36.2896,
+   "lon": 111.91454,
+   "pinyin": "Yueyang",
+   "en_name": "Yueyang",
+   "country_zh": "中国",
+   "gb_code": "4306"
+  },
+  "常德": {
+   "lat": 29.03205,
+   "lon": 111.69844,
+   "pinyin": "Changde",
+   "en_name": "Changde",
+   "country_zh": "中国",
+   "gb_code": "4307"
+  },
+  "张家界": {
+   "lat": 29.12944,
+   "lon": 110.47833,
+   "pinyin": "Zhangjiajie",
+   "en_name": "Zhangjiajie",
+   "country_zh": "中国",
+   "gb_code": "4308"
+  },
+  "益阳": {
+   "lat": 34.51711,
+   "lon": 112.18713,
+   "pinyin": "Yiyang",
+   "en_name": "Yiyang",
+   "country_zh": "中国",
+   "gb_code": "4309"
+  },
+  "郴州": {
+   "lat": 25.8,
+   "lon": 113.03333,
+   "pinyin": "Chenzhou",
+   "en_name": "Chenzhou",
+   "country_zh": "中国",
+   "gb_code": "4310"
+  },
+  "永州": {
+   "lat": 26.42389,
+   "lon": 111.61306,
+   "pinyin": "Yongzhou",
+   "en_name": "Yongzhou",
+   "country_zh": "中国",
+   "gb_code": "4311"
+  },
+  "怀化": {
+   "lat": 27.56337,
+   "lon": 110.00404,
+   "pinyin": "Huaihua",
+   "en_name": "Huaihua",
+   "country_zh": "中国",
+   "gb_code": "4312"
+  },
+  "娄底": {
+   "lat": 27.73444,
+   "lon": 111.99444,
+   "pinyin": "Loudi",
+   "en_name": "Loudi",
+   "country_zh": "中国",
+   "gb_code": "4313"
+  },
+  "湘西": {
+   "lat": 28.3144,
+   "lon": 109.7388,
+   "pinyin": "Xiangxi",
+   "en_name": "Xiangxi",
+   "country_zh": "中国",
+   "gb_code": "4331"
+  },
+  "广州": {
+   "lat": 23.11667,
+   "lon": 113.25,
+   "pinyin": "Guangzhou",
+   "en_name": "Guangzhou",
+   "country_zh": "中国",
+   "gb_code": "4401"
+  },
+  "韶关": {
+   "lat": 24.8,
+   "lon": 113.58333,
+   "pinyin": "Shaoguan",
+   "en_name": "Shaoguan",
+   "country_zh": "中国",
+   "gb_code": "4402"
+  },
+  "深圳": {
+   "lat": 22.54554,
+   "lon": 114.0683,
+   "pinyin": "Shenzhen",
+   "en_name": "Shenzhen",
+   "country_zh": "中国",
+   "gb_code": "4403"
+  },
+  "珠海": {
+   "lat": 22.27694,
+   "lon": 113.56778,
+   "pinyin": "Zhuhai",
+   "en_name": "Zhuhai",
+   "country_zh": "中国",
+   "gb_code": "4404"
+  },
+  "汕头": {
+   "lat": 23.35489,
+   "lon": 116.67876,
+   "pinyin": "Shantou",
+   "en_name": "Shantou",
+   "country_zh": "中国",
+   "gb_code": "4405"
+  },
+  "佛山": {
+   "lat": 23.02677,
+   "lon": 113.13148,
+   "pinyin": "Foshan",
+   "en_name": "Foshan",
+   "country_zh": "中国",
+   "gb_code": "4406"
+  },
+  "江门": {
+   "lat": 22.58333,
+   "lon": 113.08333,
+   "pinyin": "Jiangmen",
+   "en_name": "Jiangmen",
+   "country_zh": "中国",
+   "gb_code": "4407"
+  },
+  "湛江": {
+   "lat": 21.23391,
+   "lon": 110.38749,
+   "pinyin": "Zhanjiang",
+   "en_name": "Zhanjiang",
+   "country_zh": "中国",
+   "gb_code": "4408"
+  },
+  "茂名": {
+   "lat": 21.66625,
+   "lon": 110.91364,
+   "pinyin": "Maoming",
+   "en_name": "Maoming",
+   "country_zh": "中国",
+   "gb_code": "4409"
+  },
+  "肇庆": {
+   "lat": 23.04893,
+   "lon": 112.46091,
+   "pinyin": "Zhaoqing",
+   "en_name": "Zhaoqing",
+   "country_zh": "中国",
+   "gb_code": "4412"
+  },
+  "惠州": {
+   "lat": 23.11147,
+   "lon": 114.41523,
+   "pinyin": "Huizhou",
+   "en_name": "Huizhou",
+   "country_zh": "中国",
+   "gb_code": "4413"
+  },
+  "梅州": {
+   "lat": 24.28859,
+   "lon": 116.11768,
+   "pinyin": "Meizhou",
+   "en_name": "Meizhou",
+   "country_zh": "中国",
+   "gb_code": "4414"
+  },
+  "汕尾": {
+   "lat": 22.78199,
+   "lon": 115.3475,
+   "pinyin": "Shanwei",
+   "en_name": "Shanwei",
+   "country_zh": "中国",
+   "gb_code": "4415"
+  },
+  "河源": {
+   "lat": 23.73333,
+   "lon": 114.68333,
+   "pinyin": "Heyuan",
+   "en_name": "Heyuan",
+   "country_zh": "中国",
+   "gb_code": "4416"
+  },
+  "阳江": {
+   "lat": 21.85563,
+   "lon": 111.96272,
+   "pinyin": "Yangjiang",
+   "en_name": "Yangjiang",
+   "country_zh": "中国",
+   "gb_code": "4417"
+  },
+  "清远": {
+   "lat": 35.13674,
+   "lon": 104.2221,
+   "pinyin": "Qingyuan",
+   "en_name": "Qingyuan",
+   "country_zh": "中国",
+   "gb_code": "4418"
+  },
+  "东莞": {
+   "lat": 39.01732,
+   "lon": 111.12674,
+   "pinyin": "Dongguan",
+   "en_name": "Dongguan",
+   "country_zh": "中国",
+   "gb_code": "4419"
+  },
+  "中山": {
+   "lat": 24.52913,
+   "lon": 111.29704,
+   "pinyin": "Zhongshan",
+   "en_name": "Zhongshan",
+   "country_zh": "中国",
+   "gb_code": "4420"
+  },
+  "潮州": {
+   "lat": 23.65396,
+   "lon": 116.62262,
+   "pinyin": "Chaozhou",
+   "en_name": "Chaozhou",
+   "country_zh": "中国",
+   "gb_code": "4451"
+  },
+  "揭阳": {
+   "lat": 23.5418,
+   "lon": 116.36581,
+   "pinyin": "Jieyang",
+   "en_name": "Jieyang",
+   "country_zh": "中国",
+   "gb_code": "4452"
+  },
+  "云浮": {
+   "lat": 22.92787,
+   "lon": 112.03809,
+   "pinyin": "Yunfu",
+   "en_name": "Yunfu",
+   "country_zh": "中国",
+   "gb_code": "4453"
+  },
+  "南宁": {
+   "lat": 22.81667,
+   "lon": 108.31667,
+   "pinyin": "Nanning",
+   "en_name": "Nanning",
+   "country_zh": "中国",
+   "gb_code": "4501"
+  },
+  "柳州": {
+   "lat": 24.32405,
+   "lon": 109.40698,
+   "pinyin": "Liuzhou",
+   "en_name": "Liuzhou",
+   "country_zh": "中国",
+   "gb_code": "4502"
+  },
+  "桂林": {
+   "lat": 25.28022,
+   "lon": 110.29639,
+   "pinyin": "Guilin",
+   "en_name": "Guilin",
+   "country_zh": "中国",
+   "gb_code": "4503"
+  },
+  "梧州": {
+   "lat": 23.48054,
+   "lon": 111.28848,
+   "pinyin": "Wuzhou",
+   "en_name": "Wuzhou",
+   "country_zh": "中国",
+   "gb_code": "4504"
+  },
+  "北海": {
+   "lat": 21.48349,
+   "lon": 109.11549,
+   "pinyin": "Beihai",
+   "en_name": "Beihai",
+   "country_zh": "中国",
+   "gb_code": "4505"
+  },
+  "防城港": {
+   "lat": 21.76945,
+   "lon": 108.35661,
+   "pinyin": "Fangchenggang",
+   "en_name": "Fangchenggang",
+   "country_zh": "中国",
+   "gb_code": "4506"
+  },
+  "钦州": {
+   "lat": 21.98247,
+   "lon": 108.65061,
+   "pinyin": "Qinzhou",
+   "en_name": "Qinzhou",
+   "country_zh": "中国",
+   "gb_code": "4507"
+  },
+  "贵港": {
+   "lat": 23.11603,
+   "lon": 109.59472,
+   "pinyin": "Guigang",
+   "en_name": "Guigang",
+   "country_zh": "中国",
+   "gb_code": "4508"
+  },
+  "玉林": {
+   "lat": 22.6305,
+   "lon": 110.14686,
+   "pinyin": "Yulin",
+   "en_name": "Yulin",
+   "country_zh": "中国",
+   "gb_code": "4509"
+  },
+  "百色": {
+   "lat": 23.89013,
+   "lon": 106.62684,
+   "pinyin": "Baise",
+   "en_name": "Baise",
+   "country_zh": "中国",
+   "gb_code": "4510"
+  },
+  "贺州": {
+   "lat": 24.40357,
+   "lon": 111.56675,
+   "pinyin": "Hezhou",
+   "en_name": "Hezhou",
+   "country_zh": "中国",
+   "gb_code": "4511"
+  },
+  "河池": {
+   "lat": 24.69285,
+   "lon": 108.08376,
+   "pinyin": "Hechi",
+   "en_name": "Hechi",
+   "country_zh": "中国",
+   "gb_code": "4512"
+  },
+  "来宾": {
+   "lat": 23.74743,
+   "lon": 109.22222,
+   "pinyin": "Laibin",
+   "en_name": "Laibin",
+   "country_zh": "中国",
+   "gb_code": "4513"
+  },
+  "崇左": {
+   "lat": 22.38161,
+   "lon": 107.3683,
+   "pinyin": "Chongzuo",
+   "en_name": "Chongzuo",
+   "country_zh": "中国",
+   "gb_code": "4514"
+  },
+  "海口": {
+   "lat": 24.77985,
+   "lon": 102.57548,
+   "pinyin": "Haikou",
+   "en_name": "Haikou",
+   "country_zh": "中国",
+   "gb_code": "4601"
+  },
+  "三亚": {
+   "lat": 18.25435,
+   "lon": 109.50947,
+   "pinyin": "Sanya",
+   "en_name": "Sanya",
+   "country_zh": "中国",
+   "gb_code": "4602"
+  },
+  "三沙": {
+   "lat": 16.83912,
+   "lon": 112.34064,
+   "pinyin": "Sansha",
+   "en_name": "Sansha",
+   "country_zh": "中国",
+   "gb_code": "4603"
+  },
+  "儋州": {
+   "lat": 19.5212,
+   "lon": 109.5807,
+   "pinyin": "Danzhou",
+   "en_name": "Danzhou",
+   "country_zh": "中国",
+   "gb_code": "4604"
+  },
+  "成都": {
+   "lat": 30.66667,
+   "lon": 104.06667,
+   "pinyin": "Chengdu",
+   "en_name": "Chengdu",
+   "country_zh": "中国",
+   "gb_code": "5101"
+  },
+  "自贡": {
+   "lat": 29.34162,
+   "lon": 104.77689,
+   "pinyin": "Zigong",
+   "en_name": "Zigong",
+   "country_zh": "中国",
+   "gb_code": "5103"
+  },
+  "攀枝花": {
+   "lat": 26.58509,
+   "lon": 101.71276,
+   "pinyin": "Panzhihua",
+   "en_name": "Panzhihua",
+   "country_zh": "中国",
+   "gb_code": "5104"
+  },
+  "泸州": {
+   "lat": 28.8903,
+   "lon": 105.42575,
+   "pinyin": "Luzhou",
+   "en_name": "Luzhou",
+   "country_zh": "中国",
+   "gb_code": "5105"
+  },
+  "德阳": {
+   "lat": 31.13019,
+   "lon": 104.38198,
+   "pinyin": "Deyang",
+   "en_name": "Deyang",
+   "country_zh": "中国",
+   "gb_code": "5106"
+  },
+  "绵阳": {
+   "lat": 31.46784,
+   "lon": 104.68168,
+   "pinyin": "Mianyang",
+   "en_name": "Mianyang",
+   "country_zh": "中国",
+   "gb_code": "5107"
+  },
+  "广元": {
+   "lat": 32.44201,
+   "lon": 105.823,
+   "pinyin": "Guangyuan",
+   "en_name": "Guangyuan",
+   "country_zh": "中国",
+   "gb_code": "5108"
+  },
+  "遂宁": {
+   "lat": 30.50802,
+   "lon": 105.57332,
+   "pinyin": "Suining",
+   "en_name": "Suining",
+   "country_zh": "中国",
+   "gb_code": "5109"
+  },
+  "内江": {
+   "lat": 29.58354,
+   "lon": 105.06216,
+   "pinyin": "Neijiang",
+   "en_name": "Neijiang",
+   "country_zh": "中国",
+   "gb_code": "5110"
+  },
+  "乐山": {
+   "lat": 29.56227,
+   "lon": 103.76386,
+   "pinyin": "Leshan",
+   "en_name": "Leshan",
+   "country_zh": "中国",
+   "gb_code": "5111"
+  },
+  "南充": {
+   "lat": 30.79508,
+   "lon": 106.08473,
+   "pinyin": "Nanchong",
+   "en_name": "Nanchong",
+   "country_zh": "中国",
+   "gb_code": "5113"
+  },
+  "眉山": {
+   "lat": 31.72913,
+   "lon": 115.91241,
+   "pinyin": "Meishan",
+   "en_name": "Meishan",
+   "country_zh": "中国",
+   "gb_code": "5114"
+  },
+  "宜宾": {
+   "lat": 28.7593,
+   "lon": 104.63994,
+   "pinyin": "Yibin",
+   "en_name": "Yibin",
+   "country_zh": "中国",
+   "gb_code": "5115"
+  },
+  "广安": {
+   "lat": 30.4567,
+   "lon": 106.6333,
+   "pinyin": "Guangan",
+   "en_name": "Guangan",
+   "country_zh": "中国",
+   "gb_code": "5116"
+  },
+  "达州": {
+   "lat": 30.87887,
+   "lon": 108.49841,
+   "pinyin": "Dazhou",
+   "en_name": "Dazhou",
+   "country_zh": "中国",
+   "gb_code": "5117"
+  },
+  "雅安": {
+   "lat": 29.9805,
+   "lon": 103.001,
+   "pinyin": "Yaan",
+   "en_name": "Yaan",
+   "country_zh": "中国",
+   "gb_code": "5118"
+  },
+  "巴中": {
+   "lat": 31.8557,
+   "lon": 106.772,
+   "pinyin": "Bazhong",
+   "en_name": "Bazhong",
+   "country_zh": "中国",
+   "gb_code": "5119"
+  },
+  "资阳": {
+   "lat": 30.12108,
+   "lon": 104.64811,
+   "pinyin": "Ziyang",
+   "en_name": "Ziyang",
+   "country_zh": "中国",
+   "gb_code": "5120"
+  },
+  "阿坝": {
+   "lat": 32.90594,
+   "lon": 101.70625,
+   "pinyin": "Aba",
+   "en_name": "Aba",
+   "country_zh": "中国",
+   "gb_code": "5132"
+  },
+  "甘孜": {
+   "lat": 31.62744,
+   "lon": 99.99413,
+   "pinyin": "Ganzi",
+   "en_name": "Ganzi",
+   "country_zh": "中国",
+   "gb_code": "5133"
+  },
+  "凉山": {
+   "lat": 35.80259,
+   "lon": 116.09743,
+   "pinyin": "Liangshan",
+   "en_name": "Liangshan",
+   "country_zh": "中国",
+   "gb_code": "5134"
+  },
+  "贵阳": {
+   "lat": 26.58333,
+   "lon": 106.71667,
+   "pinyin": "Guiyang",
+   "en_name": "Guiyang",
+   "country_zh": "中国",
+   "gb_code": "5201"
+  },
+  "六盘水": {
+   "lat": 26.59444,
+   "lon": 104.83333,
+   "pinyin": "Liupanshui",
+   "en_name": "Liupanshui",
+   "country_zh": "中国",
+   "gb_code": "5202"
+  },
+  "遵义": {
+   "lat": 27.68667,
+   "lon": 106.90722,
+   "pinyin": "Zunyi",
+   "en_name": "Zunyi",
+   "country_zh": "中国",
+   "gb_code": "5203"
+  },
+  "安顺": {
+   "lat": 26.25,
+   "lon": 105.93333,
+   "pinyin": "Anshun",
+   "en_name": "Anshun",
+   "country_zh": "中国",
+   "gb_code": "5204"
+  },
+  "毕节": {
+   "lat": 27.30193,
+   "lon": 105.28627,
+   "pinyin": "Bijie",
+   "en_name": "Bijie",
+   "country_zh": "中国",
+   "gb_code": "5205"
+  },
+  "铜仁": {
+   "lat": 27.71722,
+   "lon": 109.18528,
+   "pinyin": "Tongren",
+   "en_name": "Tongren",
+   "country_zh": "中国",
+   "gb_code": "5206"
+  },
+  "黔西南": {
+   "lat": 25.0884,
+   "lon": 104.8978,
+   "pinyin": "Qianxinan",
+   "en_name": "Qianxinan",
+   "country_zh": "中国",
+   "gb_code": "5223"
+  },
+  "黔东南": {
+   "lat": 26.5827,
+   "lon": 107.9772,
+   "pinyin": "Qiandongnan",
+   "en_name": "Qiandongnan",
+   "country_zh": "中国",
+   "gb_code": "5226"
+  },
+  "黔南": {
+   "lat": 26.2587,
+   "lon": 107.5175,
+   "pinyin": "Qiannan",
+   "en_name": "Qiannan",
+   "country_zh": "中国",
+   "gb_code": "5227"
+  },
+  "昆明": {
+   "lat": 25.03889,
+   "lon": 102.71833,
+   "pinyin": "Kunming",
+   "en_name": "Kunming",
+   "country_zh": "中国",
+   "gb_code": "5301"
+  },
+  "曲靖": {
+   "lat": 25.48333,
+   "lon": 103.78333,
+   "pinyin": "Qujing",
+   "en_name": "Qujing",
+   "country_zh": "中国",
+   "gb_code": "5303"
+  },
+  "玉溪": {
+   "lat": 24.355,
+   "lon": 102.54222,
+   "pinyin": "Yuxi",
+   "en_name": "Yuxi",
+   "country_zh": "中国",
+   "gb_code": "5304"
+  },
+  "保山": {
+   "lat": 25.11626,
+   "lon": 99.16366,
+   "pinyin": "Baoshan",
+   "en_name": "Baoshan",
+   "country_zh": "中国",
+   "gb_code": "5305"
+  },
+  "昭通": {
+   "lat": 27.31667,
+   "lon": 103.71667,
+   "pinyin": "Zhaotong",
+   "en_name": "Zhaotong",
+   "country_zh": "中国",
+   "gb_code": "5306"
+  },
+  "丽江": {
+   "lat": 23.5711,
+   "lon": 102.00417,
+   "pinyin": "Lijiang",
+   "en_name": "Lijiang",
+   "country_zh": "中国",
+   "gb_code": "5307"
+  },
+  "普洱": {
+   "lat": 22.827,
+   "lon": 100.9722,
+   "pinyin": "Puer",
+   "en_name": "Puer",
+   "country_zh": "中国",
+   "gb_code": "5308"
+  },
+  "临沧": {
+   "lat": 23.87972,
+   "lon": 100.09455,
+   "pinyin": "Lincang",
+   "en_name": "Lincang",
+   "country_zh": "中国",
+   "gb_code": "5309"
+  },
+  "楚雄": {
+   "lat": 25.03639,
+   "lon": 101.54556,
+   "pinyin": "Chuxiong",
+   "en_name": "Chuxiong",
+   "country_zh": "中国",
+   "gb_code": "5323"
+  },
+  "红河": {
+   "lat": 36.40278,
+   "lon": 118.91806,
+   "pinyin": "Honghe",
+   "en_name": "Honghe",
+   "country_zh": "中国",
+   "gb_code": "5325"
+  },
+  "文山": {
+   "lat": 23.3697,
+   "lon": 104.244,
+   "pinyin": "Wenshan",
+   "en_name": "Wenshan",
+   "country_zh": "中国",
+   "gb_code": "5326"
+  },
+  "西双版纳": {
+   "lat": 22.0017,
+   "lon": 100.7971,
+   "pinyin": "Xishuangbanna",
+   "en_name": "Xishuangbanna",
+   "country_zh": "中国",
+   "gb_code": "5328"
+  },
+  "大理": {
+   "lat": 34.79586,
+   "lon": 109.93895,
+   "pinyin": "Dali",
+   "en_name": "Dali",
+   "country_zh": "中国",
+   "gb_code": "5329"
+  },
+  "德宏": {
+   "lat": 24.4366,
+   "lon": 98.5784,
+   "pinyin": "Dehong",
+   "en_name": "Dehong",
+   "country_zh": "中国",
+   "gb_code": "5331"
+  },
+  "怒江": {
+   "lat": 25.8533,
+   "lon": 98.8541,
+   "pinyin": "Nujiang",
+   "en_name": "Nujiang",
+   "country_zh": "中国",
+   "gb_code": "5333"
+  },
+  "迪庆": {
+   "lat": 27.8261,
+   "lon": 99.7065,
+   "pinyin": "Diqing",
+   "en_name": "Diqing",
+   "country_zh": "中国",
+   "gb_code": "5334"
+  },
+  "拉萨": {
+   "lat": 46.61783,
+   "lon": 10.69777,
+   "pinyin": "Lasa",
+   "en_name": "Lasa",
+   "country_zh": "中国",
+   "gb_code": "5401"
+  },
+  "日喀则": {
+   "lat": 29.25,
+   "lon": 88.88333,
+   "pinyin": "Rikaze",
+   "en_name": "Rikaze",
+   "country_zh": "中国",
+   "gb_code": "5402"
+  },
+  "昌都": {
+   "lat": 31.1369,
+   "lon": 97.1785,
+   "pinyin": "Changdou",
+   "en_name": "Changdou",
+   "country_zh": "中国",
+   "gb_code": "5403"
+  },
+  "林芝": {
+   "lat": 29.6543,
+   "lon": 94.3624,
+   "pinyin": "Linzhi",
+   "en_name": "Linzhi",
+   "country_zh": "中国",
+   "gb_code": "5404"
+  },
+  "山南": {
+   "lat": 29.2378,
+   "lon": 91.7666,
+   "pinyin": "Shannan",
+   "en_name": "Shannan",
+   "country_zh": "中国",
+   "gb_code": "5405"
+  },
+  "那曲": {
+   "lat": 31.4762,
+   "lon": 92.0516,
+   "pinyin": "Naqu",
+   "en_name": "Naqu",
+   "country_zh": "中国",
+   "gb_code": "5406"
+  },
+  "阿里": {
+   "lat": 28.5161,
+   "lon": 77.30993,
+   "pinyin": "Ali",
+   "en_name": "Ali",
+   "country_zh": "中国",
+   "gb_code": "5425"
+  },
+  "西安": {
+   "lat": 34.3416,
+   "lon": 108.9398,
+   "pinyin": "Xian",
+   "en_name": "Xian",
+   "country_zh": "中国",
+   "gb_code": "6101"
+  },
+  "铜川": {
+   "lat": 31.09407,
+   "lon": 105.08731,
+   "pinyin": "Tongchuan",
+   "en_name": "Tongchuan",
+   "country_zh": "中国",
+   "gb_code": "6102"
+  },
+  "宝鸡": {
+   "lat": 34.36775,
+   "lon": 107.23705,
+   "pinyin": "Baoji",
+   "en_name": "Baoji",
+   "country_zh": "中国",
+   "gb_code": "6103"
+  },
+  "咸阳": {
+   "lat": 34.33778,
+   "lon": 108.70261,
+   "pinyin": "Xianyang",
+   "en_name": "Xianyang",
+   "country_zh": "中国",
+   "gb_code": "6104"
+  },
+  "渭南": {
+   "lat": 34.50355,
+   "lon": 109.50891,
+   "pinyin": "Weinan",
+   "en_name": "Weinan",
+   "country_zh": "中国",
+   "gb_code": "6105"
+  },
+  "延安": {
+   "lat": 36.5853,
+   "lon": 109.4894,
+   "pinyin": "Yanan",
+   "en_name": "Yanan",
+   "country_zh": "中国",
+   "gb_code": "6106"
+  },
+  "汉中": {
+   "lat": 33.07507,
+   "lon": 107.02214,
+   "pinyin": "Hanzhong",
+   "en_name": "Hanzhong",
+   "country_zh": "中国",
+   "gb_code": "6107"
+  },
+  "榆林": {
+   "lat": 22.6305,
+   "lon": 110.14686,
+   "pinyin": "Yulin",
+   "en_name": "Yulin",
+   "country_zh": "中国",
+   "gb_code": "6108"
+  },
+  "安康": {
+   "lat": 32.68,
+   "lon": 109.01722,
+   "pinyin": "Ankang",
+   "en_name": "Ankang",
+   "country_zh": "中国",
+   "gb_code": "6109"
+  },
+  "商洛": {
+   "lat": 33.86667,
+   "lon": 109.93056,
+   "pinyin": "Shangluo",
+   "en_name": "Shangluo",
+   "country_zh": "中国",
+   "gb_code": "6110"
+  },
+  "兰州": {
+   "lat": 36.05701,
+   "lon": 103.83987,
+   "pinyin": "Lanzhou",
+   "en_name": "Lanzhou",
+   "country_zh": "中国",
+   "gb_code": "6201"
+  },
+  "嘉峪关": {
+   "lat": 39.81121,
+   "lon": 98.28618,
+   "pinyin": "Jiayuguan",
+   "en_name": "Jiayuguan",
+   "country_zh": "中国",
+   "gb_code": "6202"
+  },
+  "金昌": {
+   "lat": 38.50062,
+   "lon": 102.19379,
+   "pinyin": "Jinchang",
+   "en_name": "Jinchang",
+   "country_zh": "中国",
+   "gb_code": "6203"
+  },
+  "白银": {
+   "lat": 36.54696,
+   "lon": 104.17023,
+   "pinyin": "Baiyin",
+   "en_name": "Baiyin",
+   "country_zh": "中国",
+   "gb_code": "6204"
+  },
+  "天水": {
+   "lat": 34.57952,
+   "lon": 105.74238,
+   "pinyin": "Tianshui",
+   "en_name": "Tianshui",
+   "country_zh": "中国",
+   "gb_code": "6205"
+  },
+  "武威": {
+   "lat": 37.92672,
+   "lon": 102.63202,
+   "pinyin": "Wuwei",
+   "en_name": "Wuwei",
+   "country_zh": "中国",
+   "gb_code": "6206"
+  },
+  "张掖": {
+   "lat": 38.93417,
+   "lon": 100.45167,
+   "pinyin": "Zhangye",
+   "en_name": "Zhangye",
+   "country_zh": "中国",
+   "gb_code": "6207"
+  },
+  "平凉": {
+   "lat": 35.53917,
+   "lon": 106.68611,
+   "pinyin": "Pingliang",
+   "en_name": "Pingliang",
+   "country_zh": "中国",
+   "gb_code": "6208"
+  },
+  "酒泉": {
+   "lat": 39.74318,
+   "lon": 98.51736,
+   "pinyin": "Jiuquan",
+   "en_name": "Jiuquan",
+   "country_zh": "中国",
+   "gb_code": "6209"
+  },
+  "庆阳": {
+   "lat": 36.20712,
+   "lon": 113.41721,
+   "pinyin": "Qingyang",
+   "en_name": "Qingyang",
+   "country_zh": "中国",
+   "gb_code": "6210"
+  },
+  "定西": {
+   "lat": 35.57088,
+   "lon": 104.62303,
+   "pinyin": "Dingxi",
+   "en_name": "Dingxi",
+   "country_zh": "中国",
+   "gb_code": "6211"
+  },
+  "陇南": {
+   "lat": 24.90478,
+   "lon": 114.79735,
+   "pinyin": "Longnan",
+   "en_name": "Longnan",
+   "country_zh": "中国",
+   "gb_code": "6212"
+  },
+  "临夏": {
+   "lat": 35.5995,
+   "lon": 103.2122,
+   "pinyin": "Linxia",
+   "en_name": "Linxia",
+   "country_zh": "中国",
+   "gb_code": "6229"
+  },
+  "甘南": {
+   "lat": 47.92038,
+   "lon": 123.50046,
+   "pinyin": "Gannan",
+   "en_name": "Gannan",
+   "country_zh": "中国",
+   "gb_code": "6230"
+  },
+  "西宁": {
+   "lat": 36.62554,
+   "lon": 101.75739,
+   "pinyin": "Xining",
+   "en_name": "Xining",
+   "country_zh": "中国",
+   "gb_code": "6301"
+  },
+  "海东": {
+   "lat": 36.4798,
+   "lon": 102.1042,
+   "pinyin": "Haidong",
+   "en_name": "Haidong",
+   "country_zh": "中国",
+   "gb_code": "6302"
+  },
+  "海北": {
+   "lat": 36.9595,
+   "lon": 100.9009,
+   "pinyin": "Haibei",
+   "en_name": "Haibei",
+   "country_zh": "中国",
+   "gb_code": "6322"
+  },
+  "黄南": {
+   "lat": 35.5197,
+   "lon": 102.0193,
+   "pinyin": "Huangnan",
+   "en_name": "Huangnan",
+   "country_zh": "中国",
+   "gb_code": "6323"
+  },
+  "海南": {
+   "lat": 36.2864,
+   "lon": 100.6201,
+   "pinyin": "Hainan",
+   "en_name": "Hainan",
+   "country_zh": "中国",
+   "gb_code": "6325"
+  },
+  "果洛": {
+   "lat": 34.4736,
+   "lon": 100.2451,
+   "pinyin": "Guoluo",
+   "en_name": "Guoluo",
+   "country_zh": "中国",
+   "gb_code": "6326"
+  },
+  "玉树": {
+   "lat": 33.00118,
+   "lon": 97.00893,
+   "pinyin": "Yushu",
+   "en_name": "Yushu",
+   "country_zh": "中国",
+   "gb_code": "6327"
+  },
+  "海西": {
+   "lat": 37.3744,
+   "lon": 97.3705,
+   "pinyin": "Haixi",
+   "en_name": "Haixi",
+   "country_zh": "中国",
+   "gb_code": "6328"
+  },
+  "银川": {
+   "lat": 38.46806,
+   "lon": 106.27306,
+   "pinyin": "Yinchuan",
+   "en_name": "Yinchuan",
+   "country_zh": "中国",
+   "gb_code": "6401"
+  },
+  "石嘴山": {
+   "lat": 38.98082,
+   "lon": 106.3892,
+   "pinyin": "Shizuishan",
+   "en_name": "Shizuishan",
+   "country_zh": "中国",
+   "gb_code": "6402"
+  },
+  "吴忠": {
+   "lat": 37.9867,
+   "lon": 106.201,
+   "pinyin": "Wuzhong",
+   "en_name": "Wuzhong",
+   "country_zh": "中国",
+   "gb_code": "6403"
+  },
+  "固原": {
+   "lat": 36.00667,
+   "lon": 106.28083,
+   "pinyin": "Guyuan",
+   "en_name": "Guyuan",
+   "country_zh": "中国",
+   "gb_code": "6404"
+  },
+  "中卫": {
+   "lat": 37.51129,
+   "lon": 105.19067,
+   "pinyin": "Zhongwei",
+   "en_name": "Zhongwei",
+   "country_zh": "中国",
+   "gb_code": "6405"
+  },
+  "乌鲁木齐": {
+   "lat": 43.8256,
+   "lon": 87.6168,
+   "pinyin": "Wulumuqi",
+   "en_name": "Wulumuqi",
+   "country_zh": "中国",
+   "gb_code": "6501"
+  },
+  "克拉玛依": {
+   "lat": 45.5959,
+   "lon": 84.8898,
+   "pinyin": "Kelamayi",
+   "en_name": "Kelamayi",
+   "country_zh": "中国",
+   "gb_code": "6502"
+  },
+  "吐鲁番": {
+   "lat": 42.9514,
+   "lon": 89.1893,
+   "pinyin": "Tulufan",
+   "en_name": "Tulufan",
+   "country_zh": "中国",
+   "gb_code": "6504"
+  },
+  "哈密": {
+   "lat": 42.83393,
+   "lon": 93.50601,
+   "pinyin": "Hami",
+   "en_name": "Hami",
+   "country_zh": "中国",
+   "gb_code": "6505"
+  },
+  "昌吉": {
+   "lat": 44.00782,
+   "lon": 87.30461,
+   "pinyin": "Changji",
+   "en_name": "Changji",
+   "country_zh": "中国",
+   "gb_code": "6523"
+  },
+  "博尔塔拉": {
+   "lat": 44.9033,
+   "lon": 82.0666,
+   "pinyin": "Boertala",
+   "en_name": "Boertala",
+   "country_zh": "中国",
+   "gb_code": "6527"
+  },
+  "巴音郭楞": {
+   "lat": 41.7641,
+   "lon": 86.1454,
+   "pinyin": "Bayinguoleng",
+   "en_name": "Bayinguoleng",
+   "country_zh": "中国",
+   "gb_code": "6528"
+  },
+  "阿克苏": {
+   "lat": 41.1683,
+   "lon": 80.2647,
+   "pinyin": "Akesu",
+   "en_name": "Akesu",
+   "country_zh": "中国",
+   "gb_code": "6529"
+  },
+  "克孜勒苏": {
+   "lat": 39.7148,
+   "lon": 76.1739,
+   "pinyin": "Kezileisu",
+   "en_name": "Kezileisu",
+   "country_zh": "中国",
+   "gb_code": "6530"
+  },
+  "喀什": {
+   "lat": 39.4677,
+   "lon": 75.9938,
+   "pinyin": "Kashi",
+   "en_name": "Kashi",
+   "country_zh": "中国",
+   "gb_code": "6531"
+  },
+  "和田": {
+   "lat": 37.1107,
+   "lon": 79.9217,
+   "pinyin": "Hetian",
+   "en_name": "Hetian",
+   "country_zh": "中国",
+   "gb_code": "6532"
+  },
+  "伊犁": {
+   "lat": 43.9219,
+   "lon": 81.3171,
+   "pinyin": "Yili",
+   "en_name": "Yili",
+   "country_zh": "中国",
+   "gb_code": "6540"
+  },
+  "塔城": {
+   "lat": 46.74535,
+   "lon": 82.95847,
+   "pinyin": "Tacheng",
+   "en_name": "Tacheng",
+   "country_zh": "中国",
+   "gb_code": "6542"
+  },
+  "阿勒泰": {
+   "lat": 47.8484,
+   "lon": 88.141,
+   "pinyin": "Aleitai",
+   "en_name": "Aleitai",
+   "country_zh": "中国",
+   "gb_code": "6543"
+  },
+  "Lisbon": {
+   "lat": 38.72509,
+   "lon": -9.1498,
+   "en_name": "Lisbon",
+   "country_zh": "葡萄牙"
+  },
+  "Bangkok": {
+   "lat": 13.75398,
+   "lon": 100.50144,
+   "en_name": "Bangkok",
+   "country_zh": "泰国"
+  },
+  "Barcelona": {
+   "lat": 41.3851,
+   "lon": 2.1734,
+   "en_name": "Barcelona",
+   "country_zh": "西班牙"
+  },
+  "Dubai": {
+   "lat": 25.07725,
+   "lon": 55.30927,
+   "en_name": "Dubai",
+   "country_zh": "阿联酋"
+  },
+  "Valencia": {
+   "lat": 39.4699,
+   "lon": -0.3763,
+   "en_name": "Valencia",
+   "country_zh": "西班牙"
+  },
+  "Bali": {
+   "lat": -8.4095,
+   "lon": 115.1889,
+   "en_name": "Bali",
+   "country_zh": "印尼"
+  },
+  "Chiang Mai": {
+   "lat": 18.79038,
+   "lon": 98.98468,
+   "en_name": "Chiang Mai",
+   "country_zh": "泰国"
+  },
+  "Malaga": {
+   "lat": 36.7213,
+   "lon": -4.4214,
+   "en_name": "Malaga",
+   "country_zh": "西班牙"
+  },
+  "Berlin": {
+   "lat": 52.52437,
+   "lon": 13.41053,
+   "en_name": "Berlin",
+   "country_zh": "德国"
+  },
+  "Amsterdam": {
+   "lat": 52.37403,
+   "lon": 4.88969,
+   "en_name": "Amsterdam",
+   "country_zh": "荷兰"
+  },
+  "Tenerife": {
+   "lat": 9.90093,
+   "lon": -74.85985,
+   "en_name": "Tenerife",
+   "country_zh": "西班牙"
+  },
+  "Medellín": {
+   "lat": 6.245,
+   "lon": -75.57151,
+   "en_name": "Medellín",
+   "country_zh": "哥伦比亚"
+  },
+  "Kuala Lumpur": {
+   "lat": 3.1412,
+   "lon": 101.68653,
+   "en_name": "Kuala Lumpur",
+   "country_zh": "马来西亚"
+  },
+  "Madrid": {
+   "lat": 40.4168,
+   "lon": -3.7038,
+   "en_name": "Madrid",
+   "country_zh": "西班牙"
+  },
+  "Tokyo": {
+   "lat": 35.6895,
+   "lon": 139.69171,
+   "en_name": "Tokyo",
+   "country_zh": "日本"
+  },
+  "Porto": {
+   "lat": 41.1579,
+   "lon": -8.6291,
+   "en_name": "Porto",
+   "country_zh": "葡萄牙"
+  },
+  "Prague": {
+   "lat": 50.08804,
+   "lon": 14.42076,
+   "en_name": "Prague",
+   "country_zh": "捷克"
+  },
+  "Gran Canaria": {
+   "lat": 27.92,
+   "lon": -15.55,
+   "en_name": "Gran Canaria",
+   "country_zh": "西班牙"
+  },
+  "Paris": {
+   "lat": 48.8566,
+   "lon": 2.3522,
+   "en_name": "Paris",
+   "country_zh": "法国"
+  },
+  "Mexico City": {
+   "lat": 19.42847,
+   "lon": -99.12766,
+   "en_name": "Mexico City",
+   "country_zh": "墨西哥"
+  },
+  "Miami": {
+   "lat": 25.7617,
+   "lon": -80.1918,
+   "en_name": "Miami",
+   "country_zh": "美国"
+  },
+  "Taipei": {
+   "lat": 25.05306,
+   "lon": 121.52639,
+   "en_name": "Taipei",
+   "country_zh": "台湾"
+  },
+  "Ho Chi Minh City": {
+   "lat": 10.82302,
+   "lon": 106.62965,
+   "en_name": "Ho Chi Minh City",
+   "country_zh": "越南"
+  },
+  "Madeira": {
+   "lat": 39.19089,
+   "lon": -84.36355,
+   "en_name": "Madeira",
+   "country_zh": "葡萄牙"
+  },
+  "Seville": {
+   "lat": 37.3891,
+   "lon": -5.9845,
+   "en_name": "Seville",
+   "country_zh": "西班牙"
+  },
+  "Munich": {
+   "lat": 48.13743,
+   "lon": 11.57549,
+   "en_name": "Munich",
+   "country_zh": "德国"
+  },
+  "Singapore": {
+   "lat": 1.28967,
+   "lon": 103.85007,
+   "en_name": "Singapore",
+   "country_zh": "Singapore"
+  },
+  "Algarve": {
+   "lat": 37.02,
+   "lon": -8.0,
+   "en_name": "Algarve",
+   "country_zh": "葡萄牙"
+  },
+  "Budapest": {
+   "lat": 47.49835,
+   "lon": 19.04045,
+   "en_name": "Budapest",
+   "country_zh": "Ungheria"
+  },
+  "Abu Dhabi": {
+   "lat": 24.45118,
+   "lon": 54.39696,
+   "en_name": "Abu Dhabi",
+   "country_zh": "阿联酋"
+  },
+  "Seoul": {
+   "lat": 37.566,
+   "lon": 126.9784,
+   "en_name": "Seoul",
+   "country_zh": "韩国"
+  },
+  "Sydney": {
+   "lat": -33.86785,
+   "lon": 151.20732,
+   "en_name": "Sydney",
+   "country_zh": "澳大利亚"
+  },
+  "Vienna": {
+   "lat": 48.20849,
+   "lon": 16.37208,
+   "en_name": "Vienna",
+   "country_zh": "奥地利"
+  },
+  "Malta": {
+   "lat": 35.8989,
+   "lon": 14.5146,
+   "en_name": "Malta",
+   "country_zh": "马耳他"
+  },
+  "Palma de Mallorca": {
+   "lat": 39.57,
+   "lon": 2.65,
+   "en_name": "Palma de Mallorca",
+   "country_zh": "西班牙"
+  },
+  "New York": {
+   "lat": 40.71,
+   "lon": -74.01,
+   "en_name": "New York",
+   "country_zh": "美国"
+  },
+  "Melbourne": {
+   "lat": -37.814,
+   "lon": 144.96332,
+   "en_name": "Melbourne",
+   "country_zh": "澳大利亚"
+  },
+  "Tallinn": {
+   "lat": 59.43696,
+   "lon": 24.75353,
+   "en_name": "Tallinn",
+   "country_zh": "爱沙尼亚"
+  },
+  "Playa del Carmen": {
+   "lat": 20.6274,
+   "lon": -87.07987,
+   "en_name": "Playa del Carmen",
+   "country_zh": "墨西哥"
+  },
+  "Phuket": {
+   "lat": 7.89059,
+   "lon": 98.3981,
+   "en_name": "Phuket",
+   "country_zh": "泰国"
+  },
+  "Warsaw": {
+   "lat": 52.22977,
+   "lon": 21.01178,
+   "en_name": "Warsaw",
+   "country_zh": "波兰"
+  },
+  "Buenos Aires": {
+   "lat": -34.61315,
+   "lon": -58.37723,
+   "en_name": "Buenos Aires",
+   "country_zh": "阿根廷"
+  },
+  "Milan": {
+   "lat": 45.46427,
+   "lon": 9.18951,
+   "en_name": "Milan",
+   "country_zh": "意大利"
+  },
+  "Osaka": {
+   "lat": 34.69379,
+   "lon": 135.50107,
+   "en_name": "Osaka",
+   "country_zh": "日本"
+  },
+  "Tbilisi": {
+   "lat": 41.69143,
+   "lon": 44.83412,
+   "en_name": "Tbilisi",
+   "country_zh": "格鲁吉亚"
+  },
+  "Austin": {
+   "lat": 30.2672,
+   "lon": -97.7431,
+   "en_name": "Austin",
+   "country_zh": "美国"
+  },
+  "Istanbul": {
+   "lat": 41.01384,
+   "lon": 28.94966,
+   "en_name": "Istanbul",
+   "country_zh": "土耳其"
+  },
+  "Cyprus": {
+   "lat": 35.17,
+   "lon": 33.37,
+   "en_name": "Cyprus",
+   "country_zh": "塞浦路斯"
+  },
+  "Da Nang": {
+   "lat": 16.06778,
+   "lon": 108.22083,
+   "en_name": "Da Nang",
+   "country_zh": "越南"
+  },
+  "Penang": {
+   "lat": 5.42,
+   "lon": 100.33,
+   "en_name": "Penang",
+   "country_zh": "马来西亚"
+  },
+  "Bucharest": {
+   "lat": 44.43225,
+   "lon": 26.10626,
+   "en_name": "Bucharest",
+   "country_zh": "罗马尼亚"
+  },
+  "Tulum": {
+   "lat": 20.21173,
+   "lon": -87.46325,
+   "en_name": "Tulum",
+   "country_zh": "墨西哥"
+  },
+  "Brisbane": {
+   "lat": -27.46794,
+   "lon": 153.02809,
+   "en_name": "Brisbane",
+   "country_zh": "澳大利亚"
+  },
+  "Athens": {
+   "lat": 37.98376,
+   "lon": 23.72784,
+   "en_name": "Athens",
+   "country_zh": "希腊"
+  },
+  "Toronto": {
+   "lat": 43.6532,
+   "lon": -79.3832,
+   "en_name": "Toronto",
+   "country_zh": "加拿大"
+  },
+  "Santiago": {
+   "lat": -33.4489,
+   "lon": -70.6693,
+   "en_name": "Santiago",
+   "country_zh": "智利"
+  },
+  "Copenhagen": {
+   "lat": 55.67594,
+   "lon": 12.56553,
+   "en_name": "Copenhagen",
+   "country_zh": "丹麦"
+  },
+  "Los Angeles": {
+   "lat": 34.0522,
+   "lon": -118.2437,
+   "en_name": "Los Angeles",
+   "country_zh": "美国"
+  },
+  "London": {
+   "lat": 51.5074,
+   "lon": -0.1278,
+   "en_name": "London",
+   "country_zh": "英国"
+  },
+  "Stockholm": {
+   "lat": 59.32938,
+   "lon": 18.06871,
+   "en_name": "Stockholm",
+   "country_zh": "瑞典"
+  },
+  "Auckland": {
+   "lat": -36.84853,
+   "lon": 174.76349,
+   "en_name": "Auckland",
+   "country_zh": "新西兰"
+  },
+  "Panama City": {
+   "lat": 8.9936,
+   "lon": -79.51973,
+   "en_name": "Panama City",
+   "country_zh": "巴拿马"
+  },
+  "Frankfurt": {
+   "lat": 50.11,
+   "lon": 8.68,
+   "en_name": "Frankfurt",
+   "country_zh": "德国"
+  },
+  "Hong Kong": {
+   "lat": 22.27832,
+   "lon": 114.17469,
+   "en_name": "Hong Kong",
+   "country_zh": "香港"
+  },
+  "Fukuoka": {
+   "lat": 33.6,
+   "lon": 130.41667,
+   "en_name": "Fukuoka",
+   "country_zh": "日本"
+  },
+  "Florence": {
+   "lat": 43.7696,
+   "lon": 11.2558,
+   "en_name": "Florence",
+   "country_zh": "意大利"
+  },
+  "Guadalajara": {
+   "lat": 20.67738,
+   "lon": -103.34749,
+   "en_name": "Guadalajara",
+   "country_zh": "墨西哥"
+  },
+  "Koh Samui": {
+   "lat": 9.51,
+   "lon": 100.01,
+   "en_name": "Koh Samui",
+   "country_zh": "泰国"
+  },
+  "Bogotá": {
+   "lat": 4.60971,
+   "lon": -74.08175,
+   "en_name": "Bogotá",
+   "country_zh": "哥伦比亚"
+  },
+  "San Francisco": {
+   "lat": 37.77493,
+   "lon": -122.41942,
+   "en_name": "San Francisco",
+   "country_zh": "美国"
+  },
+  "Nice": {
+   "lat": 43.70313,
+   "lon": 7.26608,
+   "en_name": "Nice",
+   "country_zh": "法国"
+  },
+  "Kraków": {
+   "lat": 50.06143,
+   "lon": 19.93658,
+   "en_name": "Kraków",
+   "country_zh": "波兰"
+  },
+  "Florianópolis": {
+   "lat": -27.59667,
+   "lon": -48.54917,
+   "en_name": "Florianópolis",
+   "country_zh": "巴西"
+  },
+  "Cape Town": {
+   "lat": -33.92584,
+   "lon": 18.42322,
+   "en_name": "Cape Town",
+   "country_zh": "南非"
+  },
+  "Vancouver": {
+   "lat": 49.24966,
+   "lon": -123.11934,
+   "en_name": "Vancouver",
+   "country_zh": "加拿大"
+  },
+  "Tel Aviv": {
+   "lat": 32.08088,
+   "lon": 34.78057,
+   "en_name": "Tel Aviv",
+   "country_zh": "以色列"
+  },
+  "San Diego": {
+   "lat": 27.76391,
+   "lon": -98.2389,
+   "en_name": "San Diego",
+   "country_zh": "美国"
+  },
+  "Hanoi": {
+   "lat": 21.0245,
+   "lon": 105.84117,
+   "en_name": "Hanoi",
+   "country_zh": "越南"
+  },
+  "Sofia": {
+   "lat": 42.69751,
+   "lon": 23.32415,
+   "en_name": "Sofia",
+   "country_zh": "保加利亚"
+  },
+  "Mauritius": {
+   "lat": -20.16,
+   "lon": 57.5,
+   "en_name": "Mauritius",
+   "country_zh": "毛里求斯"
+  },
+  "Busan": {
+   "lat": 35.10168,
+   "lon": 129.03004,
+   "en_name": "Busan",
+   "country_zh": "韩国"
+  },
+  "Vilnius": {
+   "lat": 54.68916,
+   "lon": 25.2798,
+   "en_name": "Vilnius",
+   "country_zh": "Lituania"
+  },
+  "Cluj-Napoca": {
+   "lat": 46.76667,
+   "lon": 23.6,
+   "en_name": "Cluj-Napoca",
+   "country_zh": "罗马尼亚"
+  },
+  "Split": {
+   "lat": 43.50891,
+   "lon": 16.43915,
+   "en_name": "Split",
+   "country_zh": "克罗地亚"
+  },
+  "Mérida": {
+   "lat": 20.967,
+   "lon": -89.62318,
+   "en_name": "Mérida",
+   "country_zh": "墨西哥"
+  },
+  "Montevideo": {
+   "lat": -6.61825,
+   "lon": -77.82315,
+   "en_name": "Montevideo",
+   "country_zh": "Uruguay"
+  },
+  "São Paulo": {
+   "lat": -23.5475,
+   "lon": -46.63611,
+   "en_name": "São Paulo",
+   "country_zh": "巴西"
+  },
+  "Crete": {
+   "lat": 41.44448,
+   "lon": -87.63143,
+   "en_name": "Crete",
+   "country_zh": "希腊"
+  },
+  "Seattle": {
+   "lat": 47.60621,
+   "lon": -122.33207,
+   "en_name": "Seattle",
+   "country_zh": "美国"
+  },
+  "Perth": {
+   "lat": -31.95224,
+   "lon": 115.8614,
+   "en_name": "Perth",
+   "country_zh": "澳大利亚"
+  },
+  "Bologna": {
+   "lat": 44.49381,
+   "lon": 11.33875,
+   "en_name": "Bologna",
+   "country_zh": "意大利"
+  },
+  "Kaohsiung": {
+   "lat": 22.61626,
+   "lon": 120.31333,
+   "en_name": "Kaohsiung",
+   "country_zh": "台湾"
+  },
+  "Hamburg": {
+   "lat": 53.55073,
+   "lon": 9.99302,
+   "en_name": "Hamburg",
+   "country_zh": "德国"
+  },
+  "Antalya": {
+   "lat": 36.90812,
+   "lon": 30.69556,
+   "en_name": "Antalya",
+   "country_zh": "土耳其"
+  },
+  "Dublin": {
+   "lat": 53.33306,
+   "lon": -6.24889,
+   "en_name": "Dublin",
+   "country_zh": "爱尔兰"
+  },
+  "Marseille": {
+   "lat": 43.29695,
+   "lon": 5.38107,
+   "en_name": "Marseille",
+   "country_zh": "法国"
+  },
+  "Gold Coast": {
+   "lat": -28.00029,
+   "lon": 153.43088,
+   "en_name": "Gold Coast",
+   "country_zh": "澳大利亚"
+  },
+  "Zurich": {
+   "lat": 47.37,
+   "lon": 8.54,
+   "en_name": "Zurich",
+   "country_zh": "瑞士"
+  },
+  "Thessaloniki": {
+   "lat": 40.64,
+   "lon": 22.94,
+   "en_name": "Thessaloniki",
+   "country_zh": "希腊"
+  },
+  "Riga": {
+   "lat": 56.946,
+   "lon": 24.10589,
+   "en_name": "Riga",
+   "country_zh": "拉脱维亚"
+  },
+  "Cartagena": {
+   "lat": 10.39817,
+   "lon": -75.49328,
+   "en_name": "Cartagena",
+   "country_zh": "哥伦比亚"
+  },
+  "San José": {
+   "lat": -27.76916,
+   "lon": -55.78033,
+   "en_name": "San José",
+   "country_zh": "Costa Rica"
+  },
+  "Batumi": {
+   "lat": 41.64077,
+   "lon": 41.6306,
+   "en_name": "Batumi",
+   "country_zh": "格鲁吉亚"
+  },
+  "Rome": {
+   "lat": 41.89193,
+   "lon": 12.51133,
+   "en_name": "Rome",
+   "country_zh": "意大利"
+  },
+  "Montreal": {
+   "lat": 45.5,
+   "lon": -73.57,
+   "en_name": "Montreal",
+   "country_zh": "加拿大"
+  },
+  "Puerto Vallarta": {
+   "lat": 20.617,
+   "lon": -105.23018,
+   "en_name": "Puerto Vallarta",
+   "country_zh": "墨西哥"
+  },
+  "Langkawi": {
+   "lat": 6.35,
+   "lon": 99.8,
+   "en_name": "Langkawi",
+   "country_zh": "马来西亚"
+  },
+  "Belgrade": {
+   "lat": 44.80401,
+   "lon": 20.46513,
+   "en_name": "Belgrade",
+   "country_zh": "塞尔维亚"
+  },
+  "Doha": {
+   "lat": 25.28545,
+   "lon": 51.53096,
+   "en_name": "Doha",
+   "country_zh": "卡塔尔"
+  },
+  "Wrocław": {
+   "lat": 51.10286,
+   "lon": 17.03006,
+   "en_name": "Wrocław",
+   "country_zh": "波兰"
+  },
+  "Kyoto": {
+   "lat": 35.02107,
+   "lon": 135.75385,
+   "en_name": "Kyoto",
+   "country_zh": "日本"
+  },
+  "Ljubljana": {
+   "lat": 46.05108,
+   "lon": 14.50513,
+   "en_name": "Ljubljana",
+   "country_zh": "斯洛文尼亚"
+  },
+  "Denver": {
+   "lat": 35.53125,
+   "lon": -81.0298,
+   "en_name": "Denver",
+   "country_zh": "美国"
+  },
+  "Rio de Janeiro": {
+   "lat": -22.90642,
+   "lon": -43.18223,
+   "en_name": "Rio de Janeiro",
+   "country_zh": "巴西"
+  },
+  "Lima": {
+   "lat": -12.04318,
+   "lon": -77.02824,
+   "en_name": "Lima",
+   "country_zh": "秘鲁"
+  },
+  "Turin": {
+   "lat": 45.07049,
+   "lon": 7.68682,
+   "en_name": "Turin",
+   "country_zh": "意大利"
+  },
+  "Wellington": {
+   "lat": -41.28664,
+   "lon": 174.77557,
+   "en_name": "Wellington",
+   "country_zh": "新西兰"
+  },
+  "Shenzhen": {
+   "lat": 22.54554,
+   "lon": 114.0683,
+   "en_name": "Shenzhen",
+   "country_zh": "中国"
+  },
+  "Lyon": {
+   "lat": 45.74906,
+   "lon": 4.84789,
+   "en_name": "Lyon",
+   "country_zh": "法国"
+  },
+  "Izmir": {
+   "lat": 38.42,
+   "lon": 27.14,
+   "en_name": "Izmir",
+   "country_zh": "土耳其"
+  },
+  "Gdańsk": {
+   "lat": 54.35227,
+   "lon": 18.64912,
+   "en_name": "Gdańsk",
+   "country_zh": "波兰"
+  },
+  "Cebu City": {
+   "lat": 10.31672,
+   "lon": 123.89071,
+   "en_name": "Cebu City",
+   "country_zh": "菲律宾"
+  },
+  "Helsinki": {
+   "lat": 60.16952,
+   "lon": 24.93545,
+   "en_name": "Helsinki",
+   "country_zh": "芬兰"
+  },
+  "Nha Trang": {
+   "lat": 12.24507,
+   "lon": 109.19432,
+   "en_name": "Nha Trang",
+   "country_zh": "越南"
+  },
+  "Oaxaca": {
+   "lat": 17.06025,
+   "lon": -96.72544,
+   "en_name": "Oaxaca",
+   "country_zh": "墨西哥"
+  },
+  "Luxembourg": {
+   "lat": 49.60982,
+   "lon": 6.13268,
+   "en_name": "Luxembourg",
+   "country_zh": "卢森堡"
+  },
+  "Chicago": {
+   "lat": 41.85003,
+   "lon": -87.65005,
+   "en_name": "Chicago",
+   "country_zh": "美国"
+  },
+  "Zagreb": {
+   "lat": 45.81444,
+   "lon": 15.97798,
+   "en_name": "Zagreb",
+   "country_zh": "克罗地亚"
+  },
+  "Adelaide": {
+   "lat": -34.92866,
+   "lon": 138.59863,
+   "en_name": "Adelaide",
+   "country_zh": "澳大利亚"
+  },
+  "Boston": {
+   "lat": 30.79186,
+   "lon": -83.78989,
+   "en_name": "Boston",
+   "country_zh": "美国"
+  },
+  "Oslo": {
+   "lat": 59.91273,
+   "lon": 10.74609,
+   "en_name": "Oslo",
+   "country_zh": "挪威"
+  },
+  "Timișoara": {
+   "lat": 45.75,
+   "lon": 21.23,
+   "en_name": "Timișoara",
+   "country_zh": "罗马尼亚"
+  },
+  "Cuenca": {
+   "lat": -2.8953,
+   "lon": -78.9963,
+   "en_name": "Cuenca",
+   "country_zh": "厄瓜多尔"
+  },
+  "Jeju": {
+   "lat": 33.5,
+   "lon": 126.53,
+   "en_name": "Jeju",
+   "country_zh": "韩国"
+  },
+  "Portland": {
+   "lat": 36.58171,
+   "lon": -86.51638,
+   "en_name": "Portland",
+   "country_zh": "美国"
+  },
+  "Manama": {
+   "lat": 26.22787,
+   "lon": 50.58565,
+   "en_name": "Manama",
+   "country_zh": "巴林"
+  },
+  "Valparaíso": {
+   "lat": -33.036,
+   "lon": -71.62963,
+   "en_name": "Valparaíso",
+   "country_zh": "智利"
+  },
+  "Dubrovnik": {
+   "lat": 42.64125,
+   "lon": 18.10909,
+   "en_name": "Dubrovnik",
+   "country_zh": "克罗地亚"
+  },
+  "Manila": {
+   "lat": 14.6042,
+   "lon": 120.9822,
+   "en_name": "Manila",
+   "country_zh": "菲律宾"
+  },
+  "Marrakech": {
+   "lat": 31.63,
+   "lon": -8.01,
+   "en_name": "Marrakech",
+   "country_zh": "摩洛哥"
+  },
+  "Calgary": {
+   "lat": 51.05011,
+   "lon": -114.08529,
+   "en_name": "Calgary",
+   "country_zh": "加拿大"
+  },
+  "Plovdiv": {
+   "lat": 42.15387,
+   "lon": 24.75001,
+   "en_name": "Plovdiv",
+   "country_zh": "保加利亚"
+  },
+  "Brussels": {
+   "lat": 50.85045,
+   "lon": 4.34878,
+   "en_name": "Brussels",
+   "country_zh": "比利时"
+  },
+  "Edinburgh": {
+   "lat": 55.95206,
+   "lon": -3.19648,
+   "en_name": "Edinburgh",
+   "country_zh": "英国"
+  },
+  "Shanghai": {
+   "lat": 31.22222,
+   "lon": 121.45806,
+   "en_name": "Shanghai",
+   "country_zh": "中国"
+  },
+  "San Miguel de Allende": {
+   "lat": 20.91528,
+   "lon": -100.74389,
+   "en_name": "San Miguel de Allende",
+   "country_zh": "墨西哥"
+  },
+  "Jakarta": {
+   "lat": -6.21462,
+   "lon": 106.84513,
+   "en_name": "Jakarta",
+   "country_zh": "印尼"
+  },
+  "Córdoba": {
+   "lat": -31.40648,
+   "lon": -64.18853,
+   "en_name": "Córdoba",
+   "country_zh": "阿根廷"
+  },
+  "Sapporo": {
+   "lat": 43.06667,
+   "lon": 141.35,
+   "en_name": "Sapporo",
+   "country_zh": "日本"
+  },
+  "Geneva": {
+   "lat": 46.20222,
+   "lon": 6.14569,
+   "en_name": "Geneva",
+   "country_zh": "瑞士"
+  },
+  "Pattaya": {
+   "lat": 12.93333,
+   "lon": 100.88333,
+   "en_name": "Pattaya",
+   "country_zh": "泰国"
+  },
+  "Naples": {
+   "lat": 40.85216,
+   "lon": 14.26811,
+   "en_name": "Naples",
+   "country_zh": "意大利"
+  },
+  "Bratislava": {
+   "lat": 48.14816,
+   "lon": 17.10674,
+   "en_name": "Bratislava",
+   "country_zh": "斯洛伐克"
+  },
+  "Podgorica": {
+   "lat": 42.44124,
+   "lon": 19.26309,
+   "en_name": "Podgorica",
+   "country_zh": "黑山"
+  },
+  "Novi Sad": {
+   "lat": 45.25167,
+   "lon": 19.83694,
+   "en_name": "Novi Sad",
+   "country_zh": "塞尔维亚"
+  },
+  "Nashville": {
+   "lat": 33.94567,
+   "lon": -93.84713,
+   "en_name": "Nashville",
+   "country_zh": "美国"
+  },
+  "Gothenburg": {
+   "lat": 57.70716,
+   "lon": 11.96679,
+   "en_name": "Gothenburg",
+   "country_zh": "瑞典"
+  },
+  "Yerevan": {
+   "lat": 40.17765,
+   "lon": 44.5126,
+   "en_name": "Yerevan",
+   "country_zh": "亚美尼亚"
+  },
+  "Cali": {
+   "lat": 3.43054,
+   "lon": -76.5199,
+   "en_name": "Cali",
+   "country_zh": "哥伦比亚"
+  },
+  "Manchester": {
+   "lat": 53.48095,
+   "lon": -2.23743,
+   "en_name": "Manchester",
+   "country_zh": "英国"
+  },
+  "Phnom Penh": {
+   "lat": 11.56245,
+   "lon": 104.91601,
+   "en_name": "Phnom Penh",
+   "country_zh": "柬埔寨"
+  },
+  "Quito": {
+   "lat": -0.22985,
+   "lon": -78.52495,
+   "en_name": "Quito",
+   "country_zh": "厄瓜多尔"
+  },
+  "Yogyakarta": {
+   "lat": -7.80139,
+   "lon": 110.36472,
+   "en_name": "Yogyakarta",
+   "country_zh": "印尼"
+  },
+  "Beijing": {
+   "lat": 39.9075,
+   "lon": 116.39723,
+   "en_name": "Beijing",
+   "country_zh": "中国"
+  },
+  "Salvador": {
+   "lat": -12.97563,
+   "lon": -38.49096,
+   "en_name": "Salvador",
+   "country_zh": "巴西"
+  },
+  "Rhodes": {
+   "lat": -33.82663,
+   "lon": 151.0881,
+   "en_name": "Rhodes",
+   "country_zh": "希腊"
+  },
+  "Cagliari": {
+   "lat": 39.23054,
+   "lon": 9.11917,
+   "en_name": "Cagliari",
+   "country_zh": "意大利"
+  },
+  "Queenstown": {
+   "lat": -45.03023,
+   "lon": 168.66271,
+   "en_name": "Queenstown",
+   "country_zh": "新西兰"
+  },
+  "Ankara": {
+   "lat": 39.91987,
+   "lon": 32.85427,
+   "en_name": "Ankara",
+   "country_zh": "土耳其"
+  },
+  "Nairobi": {
+   "lat": -1.28333,
+   "lon": 36.81667,
+   "en_name": "Nairobi",
+   "country_zh": "肯尼亚"
+  },
+  "Honolulu": {
+   "lat": 21.30694,
+   "lon": -157.85833,
+   "en_name": "Honolulu",
+   "country_zh": "美国"
+  },
+  "Muscat": {
+   "lat": 23.58413,
+   "lon": 58.40778,
+   "en_name": "Muscat",
+   "country_zh": "阿曼"
+  },
+  "Chengdu": {
+   "lat": 30.66667,
+   "lon": 104.06667,
+   "en_name": "Chengdu",
+   "country_zh": "中国"
+  },
+  "Santo Domingo": {
+   "lat": -33.63615,
+   "lon": -71.62723,
+   "en_name": "Santo Domingo",
+   "country_zh": "多米尼加"
+  },
+  "Palermo": {
+   "lat": 38.1166,
+   "lon": 13.3636,
+   "en_name": "Palermo",
+   "country_zh": "意大利"
+  },
+  "Tirana": {
+   "lat": 41.32744,
+   "lon": 19.81866,
+   "en_name": "Tirana",
+   "country_zh": "阿尔巴尼亚"
+  },
+  "Johannesburg": {
+   "lat": -26.20227,
+   "lon": 28.04363,
+   "en_name": "Johannesburg",
+   "country_zh": "南非"
+  },
+  "Budva": {
+   "lat": 42.28721,
+   "lon": 18.83922,
+   "en_name": "Budva",
+   "country_zh": "黑山"
+  },
+  "Casablanca": {
+   "lat": 33.58831,
+   "lon": -7.61138,
+   "en_name": "Casablanca",
+   "country_zh": "摩洛哥"
+  },
+  "Cusco": {
+   "lat": -7.25556,
+   "lon": -76.47555,
+   "en_name": "Cusco",
+   "country_zh": "秘鲁"
+  },
+  "Colombo": {
+   "lat": 6.93548,
+   "lon": 79.84868,
+   "en_name": "Colombo",
+   "country_zh": "斯里兰卡"
+  },
+  "Reykjavik": {
+   "lat": 64.15,
+   "lon": -21.94,
+   "en_name": "Reykjavik",
+   "country_zh": "冰岛"
+  },
+  "Kigali": {
+   "lat": -1.94995,
+   "lon": 30.05885,
+   "en_name": "Kigali",
+   "country_zh": "卢旺达"
+  },
+  "Riyadh": {
+   "lat": 24.68773,
+   "lon": 46.72185,
+   "en_name": "Riyadh",
+   "country_zh": "沙特阿拉伯"
+  },
+  "Sarajevo": {
+   "lat": 43.84864,
+   "lon": 18.35644,
+   "en_name": "Sarajevo",
+   "country_zh": "波黑"
+  },
+  "Skopje": {
+   "lat": 41.99646,
+   "lon": 21.43141,
+   "en_name": "Skopje",
+   "country_zh": "北马其顿"
+  },
+  "Zanzibar": {
+   "lat": -6.16394,
+   "lon": 39.19793,
+   "en_name": "Zanzibar",
+   "country_zh": "坦桑尼亚"
+  },
+  "Tunis": {
+   "lat": 36.81897,
+   "lon": 10.16579,
+   "en_name": "Tunis",
+   "country_zh": "突尼斯"
+  },
+  "Kuwait City": {
+   "lat": 29.367,
+   "lon": 47.97429,
+   "en_name": "Kuwait City",
+   "country_zh": "科威特"
+  },
+  "Amman": {
+   "lat": 31.95522,
+   "lon": 35.94503,
+   "en_name": "Amman",
+   "country_zh": "约旦"
+  },
+  "Mombasa": {
+   "lat": -4.05466,
+   "lon": 39.66359,
+   "en_name": "Mombasa",
+   "country_zh": "肯尼亚"
+  },
+  "Jeddah": {
+   "lat": 21.49012,
+   "lon": 39.18624,
+   "en_name": "Jeddah",
+   "country_zh": "沙特阿拉伯"
+  },
+  "Asunción": {
+   "lat": -1.66494,
+   "lon": -79.03916,
+   "en_name": "Asunción",
+   "country_zh": "Paraguay"
+  },
+  "Accra": {
+   "lat": 5.55602,
+   "lon": -0.1969,
+   "en_name": "Accra",
+   "country_zh": "加纳"
+  },
+  "Kyiv": {
+   "lat": 50.45466,
+   "lon": 30.5238,
+   "en_name": "Kyiv",
+   "country_zh": "乌克兰"
+  },
+  "Siem Reap": {
+   "lat": 13.36179,
+   "lon": 103.86056,
+   "en_name": "Siem Reap",
+   "country_zh": "柬埔寨"
+  },
+  "Lagos": {
+   "lat": 6.45407,
+   "lon": 3.39467,
+   "en_name": "Lagos",
+   "country_zh": "尼日利亚"
+  },
+  "Fiji": {
+   "lat": -18.14,
+   "lon": 178.44,
+   "en_name": "Fiji",
+   "country_zh": "斐济"
+  },
+  "Chișinău": {
+   "lat": 47.01,
+   "lon": 28.86,
+   "en_name": "Chișinău",
+   "country_zh": "摩尔多瓦"
+  },
+  "Windhoek": {
+   "lat": -22.55941,
+   "lon": 17.08323,
+   "en_name": "Windhoek",
+   "country_zh": "纳米比亚"
+  },
+  "Dakar": {
+   "lat": 14.6937,
+   "lon": -17.44406,
+   "en_name": "Dakar",
+   "country_zh": "塞内加尔"
+  },
+  "Kathmandu": {
+   "lat": 27.70169,
+   "lon": 85.3206,
+   "en_name": "Kathmandu",
+   "country_zh": "尼泊尔"
+  },
+  "Beirut": {
+   "lat": 33.89332,
+   "lon": 35.50157,
+   "en_name": "Beirut",
+   "country_zh": "黎巴嫩"
+  },
+  "Vientiane": {
+   "lat": 17.96667,
+   "lon": 102.6,
+   "en_name": "Vientiane",
+   "country_zh": "老挝"
+  },
+  "La Paz": {
+   "lat": -16.5,
+   "lon": -68.15,
+   "en_name": "La Paz",
+   "country_zh": "玻利维亚"
+  },
+  "Addis Ababa": {
+   "lat": 9.02497,
+   "lon": 38.74689,
+   "en_name": "Addis Ababa",
+   "country_zh": "埃塞俄比亚"
+  },
+  "Yangon": {
+   "lat": 16.80528,
+   "lon": 96.15611,
+   "en_name": "Yangon",
+   "country_zh": "缅甸"
+  },
+  "Havana": {
+   "lat": 23.13302,
+   "lon": -82.38304,
+   "en_name": "Havana",
+   "country_zh": "古巴"
+  }
+ }
+}

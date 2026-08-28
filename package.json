@@ -1,0 +1,68 @@
+{
+  "name": "earth-explorer",
+  "version": "1.0.0",
+  "description": "3D Earth Explorer - 3D\u5730\u7403\u63a2\u7d22\u5668",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win"
+  },
+  "author": "lvcheng",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.4.11",
+    "electron-builder": "^25.0.0"
+  },
+  "dependencies": {
+    "cesium": "^1.117.0",
+    "three": "^0.185.1"
+  },
+  "build": {
+    "appId": "com.lvcheng.earth-explorer",
+    "productName": "Earth Explorer",
+    "directories": {
+      "output": "dist"
+    },
+    "mac": {
+      "category": "public.app-category.travel",
+      "target": [
+        "dmg"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "index.bak.html",
+      "renderer.js",
+      "renderer.bak.js",
+      "cesium-renderer.js",
+      "three.min.js",
+      "OrbitControls.js",
+      "CSS2DRenderer.js",
+      "textures/**/*",
+      "data/**/*",
+      "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "node_modules/cesium/Build/Cesium",
+        "to": "cesium",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+# 依赖
+node_modules/
+
+# 打包产物
+dist/
+*.dmg
+*.dmg.blockmap
+
+# asar 打包的源码
+*.asar
+
+# Cesium SDK（子模块管理）
+cesium/
+
+# macOS
+.DS_Store
+*.swp
+
+# 日志
+*.log
+
+# 缓存
+.cache/
+
+# IDE
+.vscode/
+.idea/
+
+# 大的数据集（保留 city_geo 等中小文件）
+data/cities500.zip
+data/cities500.txt
+data/cities_geo.json          # 69k 城市 19MB，被 cities_top1500.json (208KB) 取代
+data/china_provinces.json     # 动态下载使用 fetcdn
+data/countries.geojson        # 动态下载使用 fetcdn
+
+# 临时
+/tmp/
+*.tmp
+*.bak

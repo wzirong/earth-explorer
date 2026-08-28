@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Earth Explorer - 地球探索器</title>
+  <link rel="stylesheet" href="/node_modules/cesium/Build/Cesium/Widgets/widgets.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: -apple-system, BlinkMacSystemFont, sans-serif; color: #e0e0e0; }
+    #cesiumContainer { position: absolute; inset: 0; }
+
+    /* 顶部导航栏 - Google Earth 风 */
+    #navbar { position: absolute; top: 0; left: 0; right: 0; height: 56px; padding: 0 16px;
+              background: rgba(32, 33, 36, 0.85); backdrop-filter: blur(10px);
+              display: flex; align-items: center; gap: 12px; z-index: 100;
+              border-bottom: 1px solid rgba(255,255,255,0.06); }
+    #navbar h1 { font-size: 18px; font-weight: 500; color: #fff; white-space: nowrap; margin-right: 12px; }
+    #navbar h1 span { color: #4fc3f7; }
+    #search-wrap { flex: 1; max-width: 480px; position: relative; }
+    #search-input { width: 100%; padding: 9px 14px 9px 38px; background: rgba(255,255,255,0.1);
+                    border: 1px solid rgba(255,255,255,0.0); border-radius: 22px;
+                    color: #fff; font-size: 14px; outline: none; transition: border 0.2s; }
+    #search-input:focus { border-color: #4fc3f7; background: rgba(255,255,255,0.15); }
+    #search-input::placeholder { color: rgba(255,255,255,0.5); }
+    #search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+                   color: rgba(255,255,255,0.5); font-size: 14px; pointer-events: none; }
+    #city-count { font-size: 13px; color: rgba(255,255,255,0.7); white-space: nowrap; }
+
+    /* 左侧图层面板 */
+    #layers-panel { position: absolute; top: 72px; left: 16px; width: 240px; max-height: 60vh;
+                    background: rgba(32, 33, 36, 0.92); backdrop-filter: blur(10px);
+                    border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);
+                    overflow: hidden; z-index: 90; transition: max-height 0.3s, opacity 0.3s; }
+    #layers-panel.collapsed { max-height: 0; opacity: 0; border: none; }
+    #layers-header { padding: 12px 16px; font-size: 13px; font-weight: 600;
+                     color: rgba(255,255,255,0.9); border-bottom: 1px solid rgba(255,255,255,0.08);
+                     display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    #layers-header:hover { background: rgba(255,255,255,0.05); }
+    #layers-toggle { font-size: 11px; color: rgba(255,255,255,0.5); }
+    .layer-row { padding: 10px 16px; display: flex; align-items: center; gap: 10px;
+                 font-size: 13px; cursor: pointer; user-select: none; }
+    .layer-row:hover { background: rgba(255,255,255,0.05); }
+    .layer-row.active { background: rgba(79,195,247,0.12); color: #4fc3f7; }
+    .layer-radio { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4);
+                   flex-shrink: 0; position: relative; }
+    .layer-row.active .layer-radio { border-color: #4fc3f7; }
+    .layer-row.active .layer-radio::after { content: ''; position: absolute; inset: 2px; border-radius: 50%; background: #4fc3f7; }
+
+    /* 底部状态条 */
+    #status-bar { position: absolute; bottom: 0; left: 0; right: 0; padding: 8px 16px;
+                  background: rgba(32, 33, 36, 0.85); backdrop-filter: blur(10px);
+                  font-size: 12px; color: rgba(255,255,255,0.7); display: flex; gap: 24px; z-index: 90; }
+    #status-bar .stat-label { color: rgba(255,255,255,0.4); margin-right: 4px; }
+
+    /* 右侧城市面板（保留兼容） */
+    #city-panel { position: absolute; top: 72px; right: 16px; width: 320px; max-height: 70vh;
+                  background: rgba(32, 33, 36, 0.95); backdrop-filter: blur(10px);
+                  border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);
+                  overflow-y: auto; transform: translateX(calc(100% + 24px)); transition: transform 0.3s ease;
+                  z-index: 80; }
+    #city-panel.open { transform: translateX(0); }
+    #panel-close { position: sticky; top: 12px; float: right; margin: 12px 12px 0 0;
+                   background: rgba(255,255,255,0.1); border: none; color: #fff;
+                   width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 14px; z-index: 5; }
+    .panel-header { padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); clear: both; }
+    .panel-city-name { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .panel-country { font-size: 14px; color: rgba(255,255,255,0.6); }
+    .panel-badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px;
+                   margin-top: 8px; font-weight: 600; background: rgba(255,255,255,0.08);
+                   color: rgba(255,255,255,0.85); border: 1px solid rgba(255,255,255,0.12); }
+    .panel-section { padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .panel-section-title { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4);
+                           text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .stat-item { background: rgba(255,255,255,0.05); border-radius: 8px; padding: 10px; }
+    .stat-label { font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 3px; }
+    .stat-value { font-size: 15px; font-weight: 600; color: #4fc3f7; }
+    .stat-item.full { grid-column: 1/-1; }
+    .panel-desc { font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.75); }
+    .panel-link { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;
+                  background: rgba(79,195,247,0.15); border: 1px solid rgba(79,195,247,0.3);
+                  border-radius: 7px; color: #4fc3f7; font-size: 13px; text-decoration: none;
+                  margin-right: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
+    .panel-link:hover { background: rgba(79,195,247,0.25); border-color: #4fc3f7; }
+
+    /* 底部大洲导航 */
+    #continent-nav { position: absolute; bottom: 56px; left: 50%; transform: translateX(-50%);
+                     display: flex; gap: 4px; background: rgba(32, 33, 36, 0.85); backdrop-filter: blur(10px);
+                     padding: 6px 8px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.08);
+                     z-index: 90; flex-wrap: wrap; justify-content: center; max-width: 92vw; }
+    .cont-btn { padding: 5px 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.0);
+                border-radius: 16px; color: rgba(255,255,255,0.7); font-size: 12px; cursor: pointer;
+                transition: all 0.2s; white-space: nowrap; }
+    .cont-btn:hover { background: rgba(79,195,247,0.15); color: #4fc3f7; }
+    .cont-btn.active { background: rgba(79,195,247,0.25); color: #4fc3f7; }
+
+    #loading { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column;
+               align-items: center; justify-content: center; z-index: 999; transition: opacity 0.5s; }
+    #loading.hidden { opacity: 0; pointer-events: none; }
+    .loader { width: 48px; height: 48px; border: 3px solid rgba(79,195,247,0.2);
+              border-top-color: #4fc3f7; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { margin-top: 16px; color: rgba(255,255,255,0.6); font-size: 14px; }
+  </style>
+</head>
+<body>
+<div id="loading"><div class="loader"></div><div class="loading-text">正在加载地球...</div></div>
+
+<div id="navbar">
+  <h1>🌍 <span>Earth Explorer</span></h1>
+  <div id="search-wrap">
+    <span id="search-icon">🔍</span>
+    <input type="text" id="search-input" placeholder="搜索城市..." autocomplete="off">
+  </div>
+  <div id="city-count">-- 个城市</div>
+</div>
+
+<div id="cesiumContainer"></div>
+<div id="galaxy-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
+  <button id="galaxy-back" style="position:absolute;top:16px;right:16px;padding:8px 16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);border-radius:8px;color:#fff;font-size:13px;cursor:pointer;z-index:60;font-weight:600;backdrop-filter:blur(4px);">返回地球</button>
+  <img src="/data/galaxy_diagram.png" id="galaxy-img" style="width:100%;height:100%;object-fit:contain;">
+
+<div id="localgroup-overlay" class="cosmos-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
+  <button class="cosmos-back" data-cosmos-back="localgroup" style="position:absolute;top:16px;right:16px;padding:8px 16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);border-radius:8px;color:#fff;font-size:13px;cursor:pointer;z-index:60;font-weight:600;backdrop-filter:blur(4px);">← 返回地球</button>
+  <div style="position:absolute;top:18px;left:18px;color:rgba(255,255,255,0.95);z-index:60;">
+    <div style="font-size:20px;font-weight:600;letter-spacing:1px;">🌃 本星系群 (Local Group)</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">直径约 1000 万光年 · 含银河系、M31、M33 及 50+ 矮星系</div>
+  </div>
+  <img src="/data/local_group.png" style="width:100%;height:100%;object-fit:contain;">
+</div>
+
+<div id="virgo-overlay" class="cosmos-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
+  <button class="cosmos-back" data-cosmos-back="virgo" style="position:absolute;top:16px;right:16px;padding:8px 16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);border-radius:8px;color:#fff;font-size:13px;cursor:pointer;z-index:60;font-weight:600;backdrop-filter:blur(4px);">← 返回地球</button>
+  <div style="position:absolute;top:18px;left:18px;color:rgba(255,255,255,0.95);z-index:60;">
+    <div style="font-size:20px;font-weight:600;letter-spacing:1px;">🔭 室女座星系团 (Virgo Cluster)</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">直径约 600 万光年 · 1300+ 星系 · 中心 M87 (含著名喷流)</div>
+  </div>
+  <img src="/data/virgo_cluster.png" style="width:100%;height:100%;object-fit:contain;">
+</div>
+
+<div id="laniakea-overlay" class="cosmos-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
+  <button class="cosmos-back" data-cosmos-back="laniakea" style="position:absolute;top:16px;right:16px;padding:8px 16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);border-radius:8px;color:#fff;font-size:13px;cursor:pointer;z-index:60;font-weight:600;backdrop-filter:blur(4px);">← 返回地球</button>
+  <div style="position:absolute;top:18px;left:18px;color:rgba(255,255,255,0.95);z-index:60;">
+    <div style="font-size:20px;font-weight:600;letter-spacing:1px;">✨ 拉尼亚凯亚超星系团 (Laniakea)</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">直径约 5.2 亿光年 · 10万星系 · 巨引源引力中心 · 2014 年命名</div>
+  </div>
+  <img src="/data/laniakea.png" style="width:100%;height:100%;object-fit:contain;">
+</div>
+
+<div id="sloan-overlay" class="cosmos-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
+  <button class="cosmos-back" data-cosmos-back="sloan" style="position:absolute;top:16px;right:16px;padding:8px 16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);border-radius:8px;color:#fff;font-size:13px;cursor:pointer;z-index:60;font-weight:600;backdrop-filter:blur(4px);">← 返回地球</button>
+  <div style="position:absolute;top:18px;left:18px;color:rgba(255,255,255,0.95);z-index:60;">
+    <div style="font-size:20px;font-weight:600;letter-spacing:1px;">🧱 史隆长城 (Sloan Great Wall)</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">长度约 13.8 亿光年 · 已知宇宙中最大单一结构之一 · 2003 年发现</div>
+  </div>
+  <img src="/data/sloan_great_wall.png" style="width:100%;height:100%;object-fit:contain;">
+</div>
+
+<div id="allsky-overlay" class="cosmos-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
+  <button class="cosmos-back" data-cosmos-back="allsky" style="position:absolute;top:16px;right:16px;padding:8px 16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);border-radius:8px;color:#fff;font-size:13px;cursor:pointer;z-index:60;font-weight:600;backdrop-filter:blur(4px);">← 返回地球</button>
+  <div style="position:absolute;top:18px;left:18px;color:rgba(255,255,255,0.95);z-index:60;max-width:60%;">
+    <div style="font-size:20px;font-weight:600;letter-spacing:1px;">🌌 全天主要星系分布 (All-Sky Galaxies)</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">约 5 万颗 SIMBAD 已知星系 · Mollweide 投影 · 红十标记为著名星系</div>
+  </div>
+  <img src="/data/allsky_galaxies.png" style="width:100%;height:100%;object-fit:contain;">
+</div>
+
+<div id="laniakea-real-overlay" class="cosmos-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
+  <button class="cosmos-back" data-cosmos-back="laniakea-real" style="position:absolute;top:16px;right:16px;padding:8px 16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);border-radius:8px;color:#fff;font-size:13px;cursor:pointer;z-index:60;font-weight:600;backdrop-filter:blur(4px);">← 返回地球</button>
+  <div style="position:absolute;top:18px;left:18px;color:rgba(255,255,255,0.95);z-index:60;max-width:60%;">
+    <div style="font-size:20px;font-weight:600;letter-spacing:1px;">✨ 拉尼亚凯亚超星系团已知亮星系 (5万颗 SIMBAD 真实数据)</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">49990 颗 SIMBAD 已知星系 (z<0.08, 覆盖 3 亿光年) · 巨引源 / 长丝 / 节点</div>
+  </div>
+  <img src="/data/laniakea_real.png" style="width:100%;height:100%;object-fit:contain;">
+</div>
+  <div id="galaxy-sgr" style="display:none;" title="Sgr A* 黑洞"></div>
+  <div id="galaxy-sgr-label" style="position:absolute;left:50%;top:51%;transform:translate(-50%,-50%);color:rgba(255,255,255,0.92);font:600 13px sans-serif;text-shadow:0 1px 4px rgba(0,0,0,0.95), 0 0 12px rgba(0,0,0,0.7);cursor:pointer;text-align:center;">银心黑洞 (Sgr A*)</div>
+  <div id="galaxy-sun" style="display:none;" title="太阳"></div>
+  <div id="galaxy-sun-label" style="position:absolute;left:63%;top:38%;transform:translate(-50%,-50%);color:rgba(255,255,255,0.92);font:600 13px sans-serif;text-shadow:0 1px 4px rgba(0,0,0,0.95), 0 0 12px rgba(0,0,0,0.7);cursor:pointer;text-align:center;">太阳 (我们在这里)</div>
+  <div id="galaxy-title" style="position:absolute;top:18px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.85);font:600 20px sans-serif;text-shadow:0 2px 10px rgba(0,0,0,0.8);letter-spacing:2px;">银河系 · 正面俯视示意</div>
+  <div id="galaxy-scale" style="position:absolute;bottom:24px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.55);font:12px sans-serif;text-shadow:0 1px 6px rgba(0,0,0,0.9);">盘直径约 10 万光年 · 太阳位于猎户臂距银心约 2.6 万光年 · 银心为 Sgr A* 超大质量黑洞</div>
+</div>
+
+<div id="layers-panel">
+  <div id="layers-header" onclick="document.getElementById('layers-panel').classList.toggle('collapsed')">
+    <span>🗺️ 图层与视图</span><span id="layers-toggle">收起 ▲</span>
+  </div>
+  <div style="padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.08);">
+    <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:6px;">🌐 视图模式</div>
+    <div style="display:flex;gap:6px;">
+      <button id="btn-view-earth" class="view-mode-btn active" data-view="earth" style="flex:1;padding:7px 4px;background:rgba(79,195,247,0.2);border:1px solid #4fc3f7;border-radius:6px;color:#4fc3f7;font-size:12px;cursor:pointer;font-weight:600;">🌍 地球</button>
+      <button id="btn-view-solar" class="view-mode-btn" data-view="solar" style="flex:1;padding:7px 4px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.75);font-size:12px;cursor:pointer;">☀️ 太阳系</button>
+      <button id="btn-view-galaxy" class="view-mode-btn" data-view="galaxy" style="flex:1;padding:7px 4px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.75);font-size:12px;cursor:pointer;">🌌 银河系</button>
+    </div>
+    <div style="display:flex;gap:4px;margin-top:5px;">
+      <button id="btn-view-localgroup" class="view-mode-btn" data-view="localgroup" style="flex:1;padding:6px 3px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.75);font-size:11px;cursor:pointer;">🌃 本星系群</button>
+      <button id="btn-view-virgo" class="view-mode-btn" data-view="virgo" style="flex:1;padding:6px 3px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.75);font-size:11px;cursor:pointer;">🔭 室女团</button>
+      <button id="btn-view-laniakea" class="view-mode-btn" data-view="laniakea" style="flex:1;padding:6px 3px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.75);font-size:11px;cursor:pointer;">✨ 拉尼亚凯亚</button>
+      <button id="btn-view-sloan" class="view-mode-btn" data-view="sloan" style="flex:1;padding:6px 3px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.75);font-size:11px;cursor:pointer;">🧱 史隆长城</button>
+    </div>
+    <div style="display:flex;gap:4px;margin-top:5px;">
+      <button id="btn-view-allsky" class="view-mode-btn" data-view="allsky" style="flex:1;padding:6px 3px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.75);font-size:11px;cursor:pointer;">🌌 全天星系 (5万颗)</button>
+      <button id="btn-view-laniakea-real" class="view-mode-btn" data-view="laniakea-real" style="flex:1;padding:6px 3px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.75);font-size:11px;cursor:pointer;">✨ 拉尼亚凯亚 (5万颗)</button>
+    </div>
+  </div>
+  <div class="layer-row active" data-layer="viirs"><div class="layer-radio"></div><span>卫星影像 (VIIRS)</span></div>
+  <div class="layer-row" data-layer="blackMarble"><div class="layer-radio"></div><span>夜灯 (Black Marble)</span></div>
+  <div class="layer-row" data-layer="tempDay"><div class="layer-radio"></div><span>白天地表温度</span></div>
+  <div class="layer-row" data-layer="precipitation"><div class="layer-radio"></div><span>实时降水 (IMERG)</span></div>
+  <div class="layer-row" data-layer="aod"><div class="layer-radio"></div><span>空气质量 (AOD)</span></div>
+  <div class="layer-row" data-layer="blueMarble"><div class="layer-radio"></div><span>Blue Marble</span></div>
+  <div class="layer-row" data-layer="none"><div class="layer-radio"></div><span>无图层（纯色）</span></div>
+  <div style="padding:8px 16px;border-top:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:6px;">
+    <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.8);cursor:pointer;"><input type="checkbox" id="toggle-daynight" checked style="accent-color:#4fc3f7;"> 昼夜分界线（实时太阳）</label>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.8);cursor:pointer;"><input type="checkbox" id="toggle-lighting" style="accent-color:#4fc3f7;"> 实时太阳光照（贴图随日照变化）</label>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.8);cursor:pointer;"><input type="checkbox" id="toggle-borders" checked style="accent-color:#4fc3f7;"> 国家/省界</label>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.8);cursor:pointer;"><input type="checkbox" id="toggle-timezones" style="accent-color:#4fc3f7;"> 时区线</label>
+  </div>
+</div>
+
+<div id="continent-nav">
+  <button class="cont-btn active" data-continent="全部">🌍 全部</button>
+  <button class="cont-btn" data-continent="亚洲">🌏 亚洲</button>
+  <button class="cont-btn" data-continent="欧洲">🏰 欧洲</button>
+  <button class="cont-btn" data-continent="北美洲">🌎 北美</button>
+  <button class="cont-btn" data-continent="南美洲">🌎 南美</button>
+  <button class="cont-btn" data-continent="非洲">🌍 非洲</button>
+  <button class="cont-btn" data-continent="大洋洲">🏝️ 大洋洲</button>
+  <button class="cont-btn" data-continent="中国">🇨🇳 中国</button>
+</div>
+
+<div id="status-bar">
+  <div><span class="stat-label">海拔</span><span id="cam-height">—</span></div>
+  <div><span class="stat-label">经度</span><span id="cam-lon">—</span></div>
+  <div><span class="stat-label">纬度</span><span id="cam-lat">—</span></div>
+  <div style="margin-left: auto"><span class="stat-label">影像来源</span><span id="img-source">NASA GIBS / VIIRS SNPP</span></div>
+</div>
+
+<div id="city-panel">
+  <button id="panel-close">✕</button>
+  <div id="panel-content"></div>
+</div>
+
+<!-- Cesium 资源 -->
+<script>window.CESIUM_BASE_URL = '/node_modules/cesium/Build/Cesium/';</script>
+<script src="/node_modules/cesium/Build/Cesium/Cesium.js"></script>
+<script src="cesium-renderer.js"></script>
+</body>
+</html>
