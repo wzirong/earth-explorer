@@ -1011,11 +1011,14 @@ function clearGalaxy() {
   viewer.scene.skyAtmosphere.show = true;
   const overlay = document.getElementById('galaxy-overlay');
   if (overlay) overlay.style.display = 'none';
+  // 还原 sgr/sun 标签默认 css, 避免切到其他视图时还残留 z-index/position
+  const sgrLabel = document.getElementById('galaxy-sgr-label');
+  if (sgrLabel) sgrLabel.style.cssText = 'position:absolute;left:50%;top:51%;transform:translate(-50%,-50%);color:rgba(255,255,255,0.92);font:600 13px sans-serif;text-shadow:0 1px 4px rgba(0,0,0,0.95), 0 0 12px rgba(0,0,0,0.7);cursor:pointer;text-align:center;';
+  const sunLabel = document.getElementById('galaxy-sun-label');
+  if (sunLabel) sunLabel.style.cssText = 'position:absolute;left:63%;top:38%;transform:translate(-50%,-50%);color:rgba(255,255,255,0.92);font:600 13px sans-serif;text-shadow:0 1px 4px rgba(0,0,0,0.95), 0 0 12px rgba(0,0,0,0.7);cursor:pointer;text-align:center;';
   // 同步视图模式按钮 (切回地球)
   if (currentViewMode === 'galaxy') setViewMode('earth');
 }
-
-let galaxyShadowDiv = null;
 function buildGalaxy() {
   clearGalaxy();
   earthWasVisible = viewer.scene.globe.show;
@@ -1023,6 +1026,23 @@ function buildGalaxy() {
   // 用 HTML overlay 显示银河系示意图 (比 Cesium 3D 远距离渲染可靠)
   const overlay = document.getElementById('galaxy-overlay');
   overlay.style.display = 'block';
+
+  // ── 银心/太阳 圆点创建 (挂到 overlay 内, overlay 隐藏自动隐藏) ──
+  let sgrDot = document.getElementById('galaxy-dot-sgr');
+  if (!sgrDot) {
+    sgrDot = document.createElement('div');
+    sgrDot.id = 'galaxy-dot-sgr';
+    overlay.appendChild(sgrDot);
+  }
+  let sunDot = document.getElementById('galaxy-dot-sun');
+  if (!sunDot) {
+    sunDot = document.createElement('div');
+    sunDot.id = 'galaxy-dot-sun';
+    overlay.appendChild(sunDot);
+  }
+  function drawGalaxyDot(dot, x, y, color, glow) {
+    dot.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;background:${color};box-shadow:0 0 4px ${color},0 0 12px ${glow};z-index:54;cursor:pointer;`;
+  }
 
   // ── 动态定位标记 (基于图片实际显示区域, 而非窗口百分比) ──
   // 图片内坐标: 核球质心 (49.6%, 50.6%), 太阳 (63%, 38%) — 已用像素分析实测
@@ -1037,30 +1057,24 @@ function buildGalaxy() {
     const sun = document.getElementById('galaxy-sun');
     const sunLabel = document.getElementById('galaxy-sun-label');
     const gx = rect.left, gy = rect.top, gw = rect.width, gh = rect.height;
-    // ── 黑洞阴影定位 (覆盖在 Sgr A* 位置) ──
+    // 银心与太阳位置: 基于 ESO 图实测 (核球质心 50.3%, 50.5%; 太阳 63%, 38%)
     const sgrX = gx + gw * 0.503, sgrY = gy + gh * 0.505;
-    const shadowW = gw * 0.14;
-    const shadowH = shadowW;  // aspect-ratio 1:1
-    if (galaxyShadowDiv) {
-      galaxyShadowDiv.style.left = (sgrX - shadowW/2) + 'px';
-      galaxyShadowDiv.style.top = (sgrY - shadowH/2) + 'px';
-      galaxyShadowDiv.style.width = shadowW + 'px';
-      galaxyShadowDiv.style.height = shadowH + 'px';
-      galaxyShadowDiv.style.display = 'block';
-      console.log('[galaxy] shadow positioned at', sgrX, sgrY, 'size', shadowW);
-    }
-
-    // 银心文字标签(放在黑洞阴影下方, 黑色阴影背景确保清晰)
-    if (sgr) sgr.style.cssText = `position:absolute;left:${sgrX}px;top:${sgrY}px;width:0;height:0;display:none;z-index:55;`;
-    if (sgrLabel) sgrLabel.style.cssText = `position:absolute;left:${sgrX}px;top:${sgrY + shadowH/2 + 8}px;transform:translate(-50%,0);color:rgba(255,255,255,0.95);font:600 14px sans-serif;text-shadow:0 1px 6px rgba(0,0,0,0.98), 0 0 14px rgba(0,0,0,0.85);cursor:pointer;z-index:55;text-align:center;background:rgba(0,0,0,0.55);padding:3px 8px;border-radius:5px;`;
-
-    // 太阳标签(猎户臂 2/3 半径处, 加深色背景框确保在亮区可见)
     const sunX = gx + gw * 0.63, sunY = gy + gh * 0.38;
+
+    // 银心文字标签 (放在 Sgr A* 正下方, 不用黑底框以免与核球暗区混淆)
+    if (sgr) sgr.style.cssText = `position:absolute;left:${sgrX}px;top:${sgrY}px;width:0;height:0;display:none;`;
+    if (sgrLabel) sgrLabel.style.cssText = `position:absolute;left:${sgrX}px;top:${sgrY + 18}px;transform:translate(-50%,0);color:rgba(255,235,180,0.98);font:600 13px sans-serif;text-shadow:0 1px 5px rgba(0,0,0,0.98), 0 0 12px rgba(0,0,0,0.9);cursor:pointer;text-align:center;`;
+
+    // 太阳标签 (猎户臂 2/3 半径处, 同上仅文字描边不铺黑底)
     if (sun) {
       sun.innerHTML = '';
-      sun.style.cssText = `position:absolute;left:${sunX}px;top:${sunY}px;width:0;height:0;display:none;z-index:55;`;
+      sun.style.cssText = `position:absolute;left:${sunX}px;top:${sunY}px;width:0;height:0;display:none;`;
     }
-    if (sunLabel) sunLabel.style.cssText = `position:absolute;left:${sunX}px;top:${sunY}px;transform:translate(-50%,-50%);color:rgba(255,255,255,0.95);font:600 14px sans-serif;text-shadow:0 1px 6px rgba(0,0,0,0.98), 0 0 14px rgba(0,0,0,0.85);cursor:pointer;z-index:55;text-align:center;background:rgba(0,0,0,0.55);padding:3px 8px;border-radius:5px;`;
+    if (sunLabel) sunLabel.style.cssText = `position:absolute;left:${sunX}px;top:${sunY + 18}px;transform:translate(-50%,0);color:rgba(255,235,180,0.98);font:600 13px sans-serif;text-shadow:0 1px 5px rgba(0,0,0,0.98), 0 0 12px rgba(0,0,0,0.9);cursor:pointer;text-align:center;`;
+
+    // ── 银心/太阳 圆点标记 (小点+光晕, 视觉锚点; 不覆盖 ESO 真实暗区) ──
+    if (sgrDot) drawGalaxyDot(sgrDot, sgrX, sgrY, 'rgba(255, 90, 60, 0.95)', 'rgba(255, 120, 60, 0.5)');
+    if (sunDot) drawGalaxyDot(sunDot, sunX, sunY, 'rgba(100, 180, 255, 0.95)', 'rgba(100, 180, 255, 0.5)');
   }
   // 图片加载后定位 + 窗口变化时重定位 (只绑定一次)
   const gimg = document.getElementById('galaxy-img');
@@ -1132,30 +1146,7 @@ function buildGalaxy() {
   }
 
   // ── 黑洞阴影 div (覆盖 ESO 图核球, 让中心呈现为黑) ──
-  console.log('[galaxy] buildGalaxy, overlay=', overlay, 'existing shadow=', !!galaxyShadowDiv);
-  if (!galaxyShadowDiv) {
-    galaxyShadowDiv = document.createElement('div');
-    galaxyShadowDiv.id = 'galaxy-shadow';
-    console.log('[galaxy] shadow div created')
-    galaxyShadowDiv.style.cssText = `
-      position:fixed;
-      pointer-events:none;
-      z-index:9999;
-      border-radius:50%;
-      width:160px;height:160px;
-      background:radial-gradient(circle,
-        #000 0%, #000 30%,
-        rgba(80,15,10,0.85) 40%,
-        rgba(150,40,15,0.50) 55%,
-        rgba(70,25,10,0.20) 70%,
-        transparent 90%);
-      box-shadow:
-        0 0 50px rgba(255,100,30,0.4),
-        0 0 100px rgba(255,80,20,0.2),
-        inset 0 0 20px rgba(0,0,0,1);
-    `;
-    document.body.appendChild(galaxyShadowDiv);
-  }
+  // (已移除手绘黑洞暗影 — ESO 原图核球中心已有真实暗区, 画蛇添足)
 
   // 银河系本体信息 (点击标题才弹)
   overlay.onclick = (e) => {
@@ -1258,7 +1249,7 @@ function setViewMode(mode) {
     hideCosmosOverlays();
     showCesium();
     buildGalaxy();
-  } else if (mode === 'localgroup' || mode === 'virgo' || mode === 'laniakea' || mode === 'sloan' || mode === 'allsky' || mode === 'laniakea-real' || mode === 'hubble' || mode === 'cmb') {
+  } else if (mode === 'localgroup' || mode === 'virgo' || mode === 'laniakea' || mode === 'sloan' || mode === 'allsky' || mode === 'hubble' || mode === 'cmb') {
     closeSolarSystemView();
     clearGalaxy();
     // 宇宙视图是纯 2D overlay: 隐藏 Cesium 画布, 避免 globe.show=false 时
