@@ -1242,6 +1242,7 @@ function setViewMode(mode) {
     closeSolarSystemView();
     clearGalaxy();
     hideCosmosOverlays();
+    showCesium();
     viewer.scene.globe.show = true;
     viewer.camera.flyTo({
       destination: Cesium.Cartesian3.fromDegrees(105, 35, 5000000),
@@ -1250,17 +1251,32 @@ function setViewMode(mode) {
   } else if (mode === 'solar') {
     clearGalaxy();
     hideCosmosOverlays();
+    showCesium();
     openSolarSystemView();
   } else if (mode === 'galaxy') {
     closeSolarSystemView();
     hideCosmosOverlays();
+    showCesium();
     buildGalaxy();
   } else if (mode === 'localgroup' || mode === 'virgo' || mode === 'laniakea' || mode === 'sloan' || mode === 'allsky' || mode === 'laniakea-real' || mode === 'hubble' || mode === 'cmb') {
     closeSolarSystemView();
     clearGalaxy();
+    // 宇宙视图是纯 2D overlay: 隐藏 Cesium 画布, 避免 globe.show=false 时
+    // Cesium 触发 'RangeError: Invalid array length' 渲染崩溃 + 错误弹窗遮挡图片
+    hideCesium();
     viewer.scene.globe.show = false;
     showCosmosOverlay(mode);
   }
+}
+
+// —— 隐藏/恢复 Cesium 画布 (宇宙 2D overlay 视图复用) ——
+function hideCesium() {
+  const c = document.getElementById('cesiumContainer');
+  if (c) c.style.display = 'none';
+}
+function showCesium() {
+  const c = document.getElementById('cesiumContainer');
+  if (c) c.style.display = '';
 }
 
 // 绑定宇宙 overlay 返回按钮
