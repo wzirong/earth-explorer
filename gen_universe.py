@@ -193,7 +193,35 @@ def draw_dwarf_elliptical(draw, cx, cy, size):
         draw.ellipse([cx - i, cy - i, cx + i, cy + i], fill=col)
 
 
-# ── Level 3: 本星系群(Local Group) ─────────────────
+# ── Level 3a: 仙女座星系(M31) ───────────────────────
+# 距银河系约 254 万光年, 直径约 22 万光年, 本星系群最大成员
+def gen_andromeda():
+    img = Image.new('RGB', (W, H), (0, 0, 0))
+    draw = ImageDraw.Draw(img, 'RGBA')
+    random.seed(31)
+    scatter_stars(img, 3800, (50, 220), (1, 2))
+
+    # M31 侧向盘, 直径约占画布 48%, 保留中心核球与暗尘带
+    draw_edgeon_galaxy(draw, CX, CY, 520, rotation=math.radians(-12))
+
+    # 卫星星系 M32 / M110, 以小型椭圆/弥散光斑表示
+    for i in range(8):
+        draw_dwarf_elliptical(draw, CX + random.randint(-620, 620), CY + random.randint(-430, 430), random.randint(8, 18))
+
+    # 前景恒星 (M31 视场中的亮星)
+    for _ in range(80):
+        x = random.randint(80, W - 80)
+        y = random.randint(80, H - 80)
+        r = random.choice([1, 1, 2, 2, 3])
+        a = random.randint(80, 180)
+        draw.ellipse([x-r, y-r, x+r, y+r], fill=(255, 245, 220, a))
+
+    img = vignette(img, strength=0.9)
+    img.save(os.path.join(OUT_DIR, 'andromeda.png'))
+    print('[andromeda] saved')
+
+
+# ── Level 3b: 本星系群(Local Group) ─────────────────
 # 范围约 1000 万光年。银河系 + M31 + M33 + 50+ 矮星系
 def gen_local_group():
     img = Image.new('RGB', (W, H), (0, 0, 0))
@@ -571,4 +599,6 @@ if __name__ == '__main__':
         gen_laniakea()
     if target in ('all', 'sloan'):
         gen_sloan()
+    if target in ('all', 'andromeda'):
+        gen_andromeda()
     print('done')
