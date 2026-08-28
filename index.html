@@ -261,6 +261,15 @@
   <img src="/data/hubble_deep_field.png" style="width:100%;height:100%;object-fit:contain;">
 </div>
 
+<div id="observable-overlay" class="cosmos-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
+  <button class="cosmos-back" data-cosmos-back="observable" style="position:absolute;top:72px;right:16px;padding:8px 16px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.4);border-radius:8px;color:#fff;font-size:13px;cursor:pointer;z-index:65;font-weight:600;backdrop-filter:blur(8px);box-shadow:0 2px 8px rgba(0,0,0,0.4);">← 返回地球</button>
+  <div style="position:absolute;top:18px;left:18px;color:rgba(255,255,255,0.95);z-index:65;max-width:60%;text-shadow:0 1px 4px rgba(0,0,0,0.8);">
+    <div style="font-size:20px;font-weight:600;letter-spacing:1px;">🌐 可观测宇宙 (Observable Universe)</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.75);margin-top:4px;">以银河系为中心的球形光锥 · 2MRS 4.7万 + SDSS 5万 真实星系 · Delaunay 宇宙网骨架 · 半径 46.5 Gly</div>
+  </div>
+  <img src="/data/observable_universe.png" style="width:100%;height:100%;object-fit:contain;">
+</div>
+
 <div id="cmb-overlay" class="cosmos-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
   <button class="cosmos-back" data-cosmos-back="cmb" style="position:absolute;top:16px;right:16px;padding:8px 16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);border-radius:8px;color:#fff;font-size:13px;cursor:pointer;z-index:60;font-weight:600;backdrop-filter:blur(4px);">← 返回地球</button>
   <div style="position:absolute;top:18px;left:18px;color:rgba(255,255,255,0.95);z-index:60;max-width:60%;">
@@ -305,6 +314,9 @@
     <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:6px;margin-bottom:4px;letter-spacing:0.5px;">🔬 观测专题 (非空间尺度)</div>
     <div style="display:flex;gap:4px;">
       <button id="btn-view-allsky" class="view-mode-btn" data-view="allsky" style="flex:1;padding:6px 3px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:rgba(255,255,255,0.7);font-size:11px;cursor:pointer;">🌌 全天已知星系</button>
+      <button id="btn-view-observable" class="view-mode-btn" data-view="observable" style="flex:1;padding:6px 3px;background:rgba(255,200,100,0.18);border:1px solid rgba(255,200,100,0.5);border-radius:6px;color:rgba(255,220,140,0.95);font-size:11px;cursor:pointer;font-weight:600;">🌐 可观测宇宙</button>
+    </div>
+    <div style="display:flex;gap:4px;margin-top:4px;">
       <button id="btn-view-hubble" class="view-mode-btn" data-view="hubble" style="flex:1;padding:6px 3px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:rgba(255,255,255,0.7);font-size:11px;cursor:pointer;">🔭 哈勃深空场</button>
       <button id="btn-view-cmb" class="view-mode-btn" data-view="cmb" style="flex:1;padding:6px 3px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:rgba(255,255,255,0.7);font-size:11px;cursor:pointer;">🌡️ 微波背景</button>
     </div>
