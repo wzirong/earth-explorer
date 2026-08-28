@@ -1227,7 +1227,7 @@ function setViewMode(mode) {
     closeSolarSystemView();
     hideCosmosOverlays();
     buildGalaxy();
-  } else if (mode === 'localgroup' || mode === 'virgo' || mode === 'laniakea' || mode === 'sloan' || mode === 'allsky' || mode === 'laniakea-real') {
+  } else if (mode === 'localgroup' || mode === 'virgo' || mode === 'laniakea' || mode === 'sloan' || mode === 'allsky' || mode === 'laniakea-real' || mode === 'hubble' || mode === 'cmb') {
     closeSolarSystemView();
     clearGalaxy();
     viewer.scene.globe.show = false;
@@ -1243,6 +1243,115 @@ document.querySelectorAll('.cosmos-back').forEach(btn => {
     setViewMode('earth');
   });
 });
+
+// ── 全天星系图交互式浏览器 ──
+let allskyData = null;
+let allskyLoaded = false;
+
+async function loadAllskyData() {
+  if (allskyLoaded) return allskyData;
+  try {
+    const r = await fetch('/data/allsky_galaxies_data.json');
+    allskyData = await r.json();
+    allskyLoaded = true;
+    console.log(`[allsky] loaded ${allskyData.length} galaxies for browsing`);
+  } catch(e) {
+    console.warn('[allsky] data load failed', e);
+  }
+  return allskyData;
+}
+
+// 加载交互数据 (在交互模式启动时调用)
+loadAllskyData();
+
+function findNearestGalaxy(mouseX, mouseY, imgRect, data) {
+  // Mollweide 反投影: 像素 → 赤经/赤纬
+  // 画布原始 4096×2048, img 使用 object-fit:contain 可能产生变换
+  // 简化: 假设图片填满 (imgRect.width / imgRect.height ≈ 2:1)
+  const imgW = 4096, imgH = 2048;
+  const scale = Math.min(imgRect.width / imgW, imgRect.height / imgH);
+  const drawW = imgW * scale, drawH = imgH * scale;
+  const offX = (imgRect.width - drawW) / 2;
+  const offY = (imgRect.height - drawH) / 2;
+  // 鼠标相对图片原始像素
+  const px = (mouseX - imgRect.left - offX) / scale;
+  const py = (mouseY - imgRect.top - offY) / scale;
+  if (px < 0 || px > imgW || py < 0 || py > imgH) return null;
+  // 查最近星系 (数据结构: [{main_id, ra, dec, x, y, z, ...}])
+  let nearest = null;
+  let minDist = Infinity;
+  for (const g of data) {
+    const dx = g.x - px;
+    const dy = g.y - py;
+    const d = dx * dx + dy * dy;
+    if (d < minDist) {
+      minDist = d;
+      nearest = g;
+    }
+  }
+  // 只接受 25 像素以内的星系
+  if (minDist > 625) return null;
+  return nearest;
+}
+
+let allskyHighlighted = null;
+
+function setupAllskyInteraction() {
+  const img = document.getElementById('allsky-img');
+  const tooltip = document.getElementById('allsky-tooltip');
+  const panel = document.getElementById('allsky-panel');
+  if (!img) return;
+
+  let mousePos = { x: 0, y: 0 };
+  img.addEventListener('mousemove', async (e) => {
+    mousePos.x = e.clientX;
+    mousePos.y = e.clientY;
+    if (!allskyData) return;
+    const rect = img.getBoundingClientRect();
+    const nearest = findNearestGalaxy(e.clientX, e.clientY, rect, allskyData);
+    if (nearest) {
+      tooltip.style.display = 'block';
+      tooltip.style.left = (e.clientX + 12) + 'px';
+      tooltip.style.top = (e.clientY + 12) + 'px';
+      tooltip.innerHTML = `<div style="font-weight:600;color:#4fc3f7;">${nearest.main_id}</div><div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:2px;">z = ${nearest.z.toFixed(4)}</div>`;
+    } else {
+      tooltip.style.display = 'none';
+    }
+  });
+
+  img.addEventListener('mouseleave', () => {
+    tooltip.style.display = 'none';
+  });
+
+  img.addEventListener('click', async (e) => {
+    if (!allskyData) return;
+    const rect = img.getBoundingClientRect();
+    const nearest = findNearestGalaxy(e.clientX, e.clientY, rect, allskyData);
+    if (!nearest) return;
+    // 计算距离 (z → 距离)
+    // z < 0.1 用哈勃定律 v = cz, d = v / H0 (H0 = 70 km/s/Mpc)
+    // d = z * c / H0 (Mpc) = z * 300000/70 = z * 4286 Mpc = z * 13.98 亿光年
+    const distGly = (nearest.z * 13.98).toFixed(2);  // Gly
+    const distMpc = (nearest.z * 4286).toFixed(1);  // Mpc
+    // 类型 (粗略): z > 0.5 可能是类星体 / 亮红外星系
+    let type = 'Galaxy';
+    if (nearest.z > 1) type = 'High-z Galaxy / Quasar';
+    else if (nearest.z > 0.2) type = 'Distant Galaxy';
+    else if (nearest.z < 0.01) type = 'Nearby Galaxy';
+    // 填充面板
+    document.getElementById('allsky-panel-name').textContent = nearest.main_id.replace(/"/g, '');
+    document.getElementById('allsky-panel-id').textContent = `RA ${nearest.ra.toFixed(2)}° / Dec ${nearest.dec.toFixed(2)}°`;
+    document.getElementById('allsky-panel-type').textContent = type;
+    document.getElementById('allsky-panel-dist').textContent = `${distGly} 亿光年`;
+    document.getElementById('allsky-panel-z').textContent = nearest.z.toFixed(4);
+    document.getElementById('allsky-panel-v').textContent = 'N/A';
+    document.getElementById('allsky-panel-desc').innerHTML = `<div>这是一个来自 SIMBAD 数据库的真实星系, 距我们 ${distGly} 亿光年 (${distMpc} Mpc)。</div><div style="margin-top:8px;">在交互模式下点击任意星系都能查信息。</div>`;
+    const link = document.getElementById('allsky-panel-link');
+    link.href = `https://simbad.cds.unistra.fr/simbad/sim-id?Ident=${encodeURIComponent(nearest.main_id.replace(/"/g, ''))}&NbIdent=1&Radius=10&Radius.unit=arcsec&submit=submit+id`;
+    panel.style.display = 'block';
+  });
+}
+setupAllskyInteraction();
 
 document.querySelectorAll('.view-mode-btn').forEach(btn => {
   btn.addEventListener('click', () => setViewMode(btn.dataset.view));

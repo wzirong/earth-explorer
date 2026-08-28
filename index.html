@@ -161,9 +161,34 @@
   <button class="cosmos-back" data-cosmos-back="allsky" style="position:absolute;top:16px;right:16px;padding:8px 16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);border-radius:8px;color:#fff;font-size:13px;cursor:pointer;z-index:60;font-weight:600;backdrop-filter:blur(4px);">← 返回地球</button>
   <div style="position:absolute;top:18px;left:18px;color:rgba(255,255,255,0.95);z-index:60;max-width:60%;">
     <div style="font-size:20px;font-weight:600;letter-spacing:1px;">🌌 全天主要星系分布 (All-Sky Galaxies)</div>
-    <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">约 5 万颗 SIMBAD 已知星系 · Mollweide 投影 · 红十标记为著名星系</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">约 5 万颗 SIMBAD 已知星系 · Mollweide 投影 · 红十标记为著名星系 · 点击星系查信息</div>
   </div>
-  <img src="/data/allsky_galaxies.png" style="width:100%;height:100%;object-fit:contain;">
+  <img id="allsky-img" src="/data/allsky_galaxies.png" style="width:100%;height:100%;object-fit:contain;cursor:crosshair;">
+  <div id="allsky-tooltip" style="display:none;position:absolute;background:rgba(20,22,28,0.95);color:#fff;padding:8px 12px;border-radius:8px;font-size:12px;pointer-events:none;z-index:80;border:1px solid rgba(255,255,255,0.2);"></div>
+  <div id="allsky-panel" style="display:none;position:absolute;top:80px;right:24px;width:320px;max-height:70vh;background:rgba(20,22,28,0.95);color:#fff;border-radius:12px;padding:20px;border:1px solid rgba(255,255,255,0.15);overflow-y:auto;z-index:85;">
+    <div style="font-size:18px;font-weight:700;margin-bottom:4px;" id="allsky-panel-name">-</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:16px;" id="allsky-panel-id">-</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+      <div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:8px;">
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:3px;">类型</div>
+        <div style="font-size:13px;font-weight:600;color:#4fc3f7;" id="allsky-panel-type">-</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:8px;">
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:3px;">距离</div>
+        <div style="font-size:13px;font-weight:600;color:#4fc3f7;" id="allsky-panel-dist">-</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:8px;">
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:3px;">红移 z</div>
+        <div style="font-size:13px;font-weight:600;color:#4fc3f7;" id="allsky-panel-z">-</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.05);padding:10px;border-radius:8px;">
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:3px;">视星等 V</div>
+        <div style="font-size:13px;font-weight:600;color:#4fc3f7;" id="allsky-panel-v">-</div>
+      </div>
+    </div>
+    <div style="font-size:12px;line-height:1.6;color:rgba(255,255,255,0.8);margin-bottom:12px;" id="allsky-panel-desc">点击图中任意星系查看详情</div>
+    <a id="allsky-panel-link" target="_blank" style="display:inline-block;padding:8px 14px;background:rgba(79,195,247,0.2);border:1px solid rgba(79,195,247,0.3);border-radius:7px;color:#4fc3f7;font-size:12px;text-decoration:none;">在 SIMBAD 中查看 →</a>
+  </div>
 </div>
 
 <div id="laniakea-real-overlay" class="cosmos-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
@@ -173,6 +198,24 @@
     <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">49990 颗 SIMBAD 已知星系 (z<0.08, 覆盖 3 亿光年) · 巨引源 / 长丝 / 节点</div>
   </div>
   <img src="/data/laniakea_real.png" style="width:100%;height:100%;object-fit:contain;">
+</div>
+
+<div id="hubble-overlay" class="cosmos-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
+  <button class="cosmos-back" data-cosmos-back="hubble" style="position:absolute;top:16px;right:16px;padding:8px 16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);border-radius:8px;color:#fff;font-size:13px;cursor:pointer;z-index:60;font-weight:600;backdrop-filter:blur(4px);">← 返回地球</button>
+  <div style="position:absolute;top:18px;left:18px;color:rgba(255,255,255,0.95);z-index:60;max-width:60%;">
+    <div style="font-size:20px;font-weight:600;letter-spacing:1px;">🔭 哈勃深空场 (Hubble Deep Field)</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">1995 年 HDF · 在 “小月球”大小的天区拍了 10 天 · 含数千个远古星系</div>
+  </div>
+  <img src="/data/hubble_deep_field.png" style="width:100%;height:100%;object-fit:contain;">
+</div>
+
+<div id="cmb-overlay" class="cosmos-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
+  <button class="cosmos-back" data-cosmos-back="cmb" style="position:absolute;top:16px;right:16px;padding:8px 16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);border-radius:8px;color:#fff;font-size:13px;cursor:pointer;z-index:60;font-weight:600;backdrop-filter:blur(4px);">← 返回地球</button>
+  <div style="position:absolute;top:18px;left:18px;color:rgba(255,255,255,0.95);z-index:60;max-width:60%;">
+    <div style="font-size:20px;font-weight:600;letter-spacing:1px;">🌡️ 宇宙微波背景辐射 (CMB)</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">Planck 卫星 2013 观测 · 宇宙 2.725K 余晖 · 紫色 = 冷区, 黄色 = 暖区</div>
+  </div>
+  <img src="/data/cmb_radiation.png" style="width:100%;height:100%;object-fit:contain;">
 </div>
   <div id="galaxy-sgr" style="display:none;" title="Sgr A* 黑洞"></div>
   <div id="galaxy-sgr-label" style="position:absolute;left:50%;top:51%;transform:translate(-50%,-50%);color:rgba(255,255,255,0.92);font:600 13px sans-serif;text-shadow:0 1px 4px rgba(0,0,0,0.95), 0 0 12px rgba(0,0,0,0.7);cursor:pointer;text-align:center;">银心黑洞 (Sgr A*)</div>
@@ -200,8 +243,12 @@
       <button id="btn-view-sloan" class="view-mode-btn" data-view="sloan" style="flex:1;padding:6px 3px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.75);font-size:11px;cursor:pointer;">🧱 史隆长城</button>
     </div>
     <div style="display:flex;gap:4px;margin-top:5px;">
-      <button id="btn-view-allsky" class="view-mode-btn" data-view="allsky" style="flex:1;padding:6px 3px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.75);font-size:11px;cursor:pointer;">🌌 全天星系 (5万颗)</button>
+      <button id="btn-view-allsky" class="view-mode-btn" data-view="allsky" style="flex:1;padding:6px 3px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.75);font-size:11px;cursor:pointer;">🌌 全天星系</button>
       <button id="btn-view-laniakea-real" class="view-mode-btn" data-view="laniakea-real" style="flex:1;padding:6px 3px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.75);font-size:11px;cursor:pointer;">✨ 拉尼亚凯亚 (5万颗)</button>
+    </div>
+    <div style="display:flex;gap:4px;margin-top:5px;">
+      <button id="btn-view-hubble" class="view-mode-btn" data-view="hubble" style="flex:1;padding:6px 3px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.75);font-size:11px;cursor:pointer;">🔭 哈勃深空场</button>
+      <button id="btn-view-cmb" class="view-mode-btn" data-view="cmb" style="flex:1;padding:6px 3px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.75);font-size:11px;cursor:pointer;">🌡️ 微波背景</button>
     </div>
   </div>
   <div class="layer-row active" data-layer="viirs"><div class="layer-radio"></div><span>卫星影像 (VIIRS)</span></div>
