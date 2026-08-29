@@ -131,22 +131,9 @@ for _ in range(40):
         draw.line([x-s*3, y, x+s*3, y], fill=(b, b, b, 80), width=1)
         draw.line([x, y-s*3, x, y+s*3], fill=(b, b, b, 80), width=1)
 
-# ── 中心 EHT 风格: 黑阴影 + 不对称光环 (最接近真实黑洞照片) ──
-# 参考 EHT 2022 Sgr A* 照片: 中心黑色阴影 + 左亮右暗环 (多普勒增亮)
-# 几何: 近乎圆 (eht 倾角较小), 这里用 ellipse 压缩 0.95 模拟轻微倾角
-ring_r_in = MAX_R * 0.085    # 黑色阴影半径
-ring_r_out = MAX_R * 0.14    # 光环外径
-ey = 0.95                     # 椭圆压缩率
-bbox_out = [CX-ring_r_out, CY-ring_r_out*ey, CX+ring_r_out, CY+ring_r_out*ey]
-bbox_in  = [CX-ring_r_in,  CY-ring_r_in*ey,  CX+ring_r_in,  CY+ring_r_in*ey]
-
-# PIL pieslice 角度: 0=3 o'clock, 顺时针 (90=6, 180=9, 270=12, 360/0=3)
-# 左半圆 (90->270): 6→9→12 o'clock (经过底-左-顶)
-# 右半圆 (270->450): 12→3→6 o'clock (经过顶-右-底)
-draw.pieslice(bbox_out,  90, 270, fill=(255, 200, 110, 255))  # 左半环 (亮金黄)
-draw.pieslice(bbox_out, 270, 450, fill=(180, 105,  50, 240))  # 右半环 (暗橙)
-# 内圈整圆黑覆盖 → 形成 annulus 环带
-draw.ellipse(bbox_in, fill=(0, 0, 0, 255))
+# ── 中心 Sgr A* 标记已移除 (2026-08-29) ──
+# 之前画的 EHT 风格黑阴影+不对称光环视觉上像几何标记,不像真实黑洞照片,摘掉
+# 保留自然渲染的核球即可
 
 # ── 整体微柔化 + 对比度增强 ──
 img = img.filter(ImageFilter.GaussianBlur(0.8))

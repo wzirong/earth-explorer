@@ -1003,7 +1003,7 @@ let galaxyEntities = [];
 let galaxyActive = false;
 let earthWasVisible = true;
 
-function clearGalaxy() {
+function clearGalaxy(skipEarthReset) {
   galaxyEntities.forEach(e => viewer.entities.remove(e));
   galaxyEntities = [];
   galaxyActive = false;
@@ -1016,11 +1016,11 @@ function clearGalaxy() {
   if (sgrLabel) sgrLabel.style.cssText = 'position:absolute;left:50%;top:51%;transform:translate(-50%,-50%);color:rgba(255,255,255,0.92);font:600 13px sans-serif;text-shadow:0 1px 4px rgba(0,0,0,0.95), 0 0 12px rgba(0,0,0,0.7);cursor:pointer;text-align:center;';
   const sunLabel = document.getElementById('galaxy-sun-label');
   if (sunLabel) sunLabel.style.cssText = 'position:absolute;left:63%;top:38%;transform:translate(-50%,-50%);color:rgba(255,255,255,0.92);font:600 13px sans-serif;text-shadow:0 1px 4px rgba(0,0,0,0.95), 0 0 12px rgba(0,0,0,0.7);cursor:pointer;text-align:center;';
-  // 同步视图模式按钮 (切回地球)
-  if (currentViewMode === 'galaxy') setViewMode('earth');
+  // 同步视图模式按钮 (切回地球) — buildGalaxy 内部调用时跳过, 避免把模式重置回 earth
+  if (currentViewMode === 'galaxy' && !skipEarthReset) setViewMode('earth');
 }
 function buildGalaxy() {
-  clearGalaxy();
+  clearGalaxy(true);
   earthWasVisible = viewer.scene.globe.show;
 
   // 用 HTML overlay 显示银河系示意图 (比 Cesium 3D 远距离渲染可靠)
@@ -1057,9 +1057,9 @@ function buildGalaxy() {
     const sun = document.getElementById('galaxy-sun');
     const sunLabel = document.getElementById('galaxy-sun-label');
     const gx = rect.left, gy = rect.top, gw = rect.width, gh = rect.height;
-    // 银心与太阳位置: 基于 ESO 图实测 (核球质心 50.3%, 50.5%; 太阳 63%, 38%)
-    const sgrX = gx + gw * 0.503, sgrY = gy + gh * 0.505;
-    const sunX = gx + gw * 0.63, sunY = gy + gh * 0.38;
+    // 银心与太阳位置: 基于 VVV (VISTA eso1242a) 实测 (核球质心 49.9%, 40.5%; 太阳引线右下角)
+    const sgrX = gx + gw * 0.499, sgrY = gy + gh * 0.405;
+    const sunX = gx + gw * 0.92, sunY = gy + gh * 0.92;
 
     // 银心文字标签 (放在 Sgr A* 正下方, 不用黑底框以免与核球暗区混淆)
     if (sgr) sgr.style.cssText = `position:absolute;left:${sgrX}px;top:${sgrY}px;width:0;height:0;display:none;`;

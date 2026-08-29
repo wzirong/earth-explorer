@@ -6,6 +6,7 @@ RA 范围: 182-193°, Dec 范围: 2-19° (跨度 ~11° x 17°, 中心 M87)
 """
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 import math, os, json
+import numpy as np
 
 W = H = 2048
 CX, CY = W // 2, H // 2
@@ -17,9 +18,11 @@ OUT_FILE = os.path.join(OUT_DIR, 'virgo_cluster.png')
 M87_RA = 187.706
 M87_DEC = 12.391
 
-# 室女团范围 (RA 180-195, Dec 2-20, 跨度 ~11° x 17°)
+# 室女团范围 (按 VCC 实际数据范围 + 一些 padding)
+# VCC: RA 182.08-193.35 (跨度 11.27°), Dec 2.05-18.66 (跨度 16.62°)
+# 加 padding: RA 180.5-194.5 (14°), Dec 0.5-20 (19.5°)
 RA_MIN, RA_MAX = 180.5, 194.5
-DEC_MIN, DEC_MAX = 2.0, 19.5
+DEC_MIN, DEC_MAX = 0.5, 20.0
 RA_SPAN = RA_MAX - RA_MIN
 DEC_SPAN = DEC_MAX - DEC_MIN
 
@@ -52,14 +55,13 @@ def load_vcc_data():
 
 
 def sphere_project(ra, dec):
-    """球面投影: 中心 = M87 (187.7, 12.4), 距离 = 角距离"""
-    # 简单 gnomonic (切平面) 投影, M87 在中心
-    # dx = (RA - M87_RA) * cos(dec), dy = dec - M87_dec
-    # 1° ≈ 130 px (覆盖画面)
-    DEG_TO_PX_X = PROJECTION_RADIUS_PX / (RA_SPAN / 2 * 0.95)  # X 比例
-    DEG_TO_PX_Y = PROJECTION_RADIUS_PX / (DEC_SPAN / 2 * 0.95)  # Y 比例
-    dx = (ra - M87_RA) * math.cos(math.radians(dec)) * DEG_TO_PX_X
-    dy = -(dec - M87_DEC) * DEG_TO_PX_Y  # 北上
+    """球面投影: 中心 = M87 (187.7, 12.4)
+    用 tangent (切平面) 投影保持数据范围长宽比, 不会拉伸成斜长方形
+    """
+    # 1° 角距离 ≈ 同等像素 (用较小者确保不超出边界)
+    deg_to_px = PROJECTION_RADIUS_PX / max(RA_SPAN, DEC_SPAN) / 2 * 0.95
+    dx = (ra - M87_RA) * math.cos(math.radians(dec)) * deg_to_px
+    dy = -(dec - M87_DEC) * deg_to_px  # 北上
     return CX + dx, CY + dy
 
 
@@ -248,12 +250,45 @@ def draw_famous_labels(draw, vcc):
 
 
 def draw_background(draw):
-    """背景 + 银河带 (室女团本身有 ZoA 但比较小)"""
+    """背景 + RA/Dec 网格 + 银河带"""
+    # RA 网格线 (vertical)
+    for ra_g in [181, 183, 185, 187, 189, 191, 193]:
+        pts = []
+        for dec_g in np.arange(DEC_MIN, DEC_MAX+0.5, 0.5):
+            pt = sphere_project(ra_g, dec_g)
+            if pt and in_disk(*pt):
+                pts.append(pt)
+        if len(pts) > 1:
+            for i in range(len(pts) - 1):
+                draw.line([pts[i], pts[i+1]], fill=(70, 100, 140, 40), width=1)
+    # Dec 网格线 (horizontal)
+    for dec_g in [2, 5, 8, 11, 14, 17]:
+        pts = []
+        for ra_g in np.arange(RA_MIN, RA_MAX+0.5, 0.5):
+            pt = sphere_project(ra_g, dec_g)
+            if pt and in_disk(*pt):
+                pts.append(pt)
+        if len(pts) > 1:
+            for i in range(len(pts) - 1):
+                draw.line([pts[i], pts[i+1]], fill=(70, 100, 140, 40), width=1)
+    # RA 标签 (顶部, 时分单位)
+    for ra_g in [183, 187, 191]:
+        pt = sphere_project(ra_g, DEC_MAX - 1)
+        if pt:
+            h = int(ra_g / 15)
+            m = int((ra_g / 15 - h) * 60)
+            draw.text((pt[0]-16, pt[1]+6), f'{h}h{m:02d}m', fill=(100, 130, 170, 180), font=F_TINY)
+    # Dec 标签 (左侧)
+    for dec_g in [5, 10, 15]:
+        pt = sphere_project(RA_MIN + 0.5, dec_g)
+        if pt:
+            draw.text((pt[0]-30, pt[1]-8), f'{dec_g}°', fill=(100, 130, 170, 180), font=F_TINY)
     # 球面边界
     draw.ellipse([CX - PROJECTION_RADIUS_PX, CY - PROJECTION_RADIUS_PX,
                   CX + PROJECTION_RADIUS_PX, CY + PROJECTION_RADIUS_PX],
                  outline=(80, 110, 150, 180), width=3)
-    # 银河带 (室女团覆盖低银纬区)
+    # 银河带 ZoA (b=+8° / b=-8° 形成有效遮挡带)
+    # b=0 中线穿过室女团下半部分 (RA 191° 时 Dec=-3.6°, RA 193° 时 Dec=+0.3°)
     gal_north_ra_deg = 192.86
     incl = math.radians(62.87)
     gal_north_ra = math.radians(192.86)
@@ -261,7 +296,7 @@ def draw_background(draw):
     pts_neg = []
     for l_deg in range(0, 721, 2):
         l = math.radians(l_deg / 2)
-        for b_deg in [15, -15]:
+        for b_deg in [8, -8]:
             sin_dec = math.sin(math.radians(b_deg)) * math.cos(incl) + \
                       math.cos(math.radians(b_deg)) * math.sin(incl) * math.sin(l - gal_north_ra)
             dec = math.degrees(math.asin(sin_dec))
@@ -275,17 +310,32 @@ def draw_background(draw):
             break
     if len(pts_pos) > 1 and len(pts_neg) > 1:
         poly = pts_pos + list(reversed(pts_neg))
+        for _ in range(4):
+            draw.polygon(poly, fill=(0, 0, 0, 150))
+        # 暖红叠加 (银河前景消光)
         for _ in range(2):
-            draw.polygon(poly, fill=(0, 0, 0, 80))
-    # 银河面中线
+            draw.polygon(poly, fill=(180, 80, 40, 50))
+    # 银河面中线 b=0 (清晰显示穿过室女团下半部)
     mid_line = []
-    for i in range(min(len(pts_pos), len(pts_neg))):
-        mx = (pts_pos[i][0] + pts_neg[i][0]) / 2
-        my = (pts_pos[i][1] + pts_neg[i][1]) / 2
-        mid_line.append((mx, my))
+    for l_deg in range(0, 721, 1):
+        l = math.radians(l_deg / 2)
+        b_deg = 0
+        sin_dec = math.sin(math.radians(b_deg)) * math.cos(incl) + \
+                  math.cos(math.radians(b_deg)) * math.sin(incl) * math.sin(l - gal_north_ra)
+        dec = math.degrees(math.asin(sin_dec))
+        ra_offset = math.degrees(math.atan2(math.cos(incl) * math.sin(l - gal_north_ra),
+                                            math.cos(l - gal_north_ra)))
+        ra = (gal_north_ra_deg - 90 + ra_offset) % 360
+        pt = sphere_project(ra, dec)
+        if pt and in_disk(*pt):
+            mid_line.append(pt)
     if len(mid_line) > 1:
         for i in range(len(mid_line) - 1):
-            draw.line([mid_line[i], mid_line[i + 1]], fill=(180, 90, 50, 130), width=2)
+            draw.line([mid_line[i], mid_line[i + 1]], fill=(220, 100, 60, 200), width=3)
+        # 标签 (右上)
+        if mid_line:
+            tx, ty = mid_line[-1]
+            draw.text((tx+10, ty-14), '银道面 b=0°', fill=(220, 120, 80, 230), font=F_TINY)
 
 
 def draw_scale_bars(draw):
@@ -298,7 +348,8 @@ def draw_scale_bars(draw):
         (8.0, '8° ≈ 2.3 Mly'),
     ]
     for ang_deg, label in bars:
-        r_pix = (ang_deg / (RA_SPAN/2*0.95)) * PROJECTION_RADIUS_PX
+        deg_to_px = PROJECTION_RADIUS_PX / max(RA_SPAN, DEC_SPAN) / 2 * 0.95
+        r_pix = ang_deg * deg_to_px
         # 圆环
         for ang in range(0, 360, 4):
             a1 = math.radians(ang); a2 = math.radians(ang + 2.5)
