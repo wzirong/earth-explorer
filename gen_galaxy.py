@@ -75,23 +75,32 @@ dust_band(0.35 + math.pi)
 dust_band(1.25)
 dust_band(1.25 + math.pi)
 
-# ── 中心核球 (亮黄白, 真实银河系核心颜色) ──
-for i in range(4):
-    r = MAX_R * (0.20 - i * 0.045)
-    draw.ellipse([CX-r, CY-r*0.42, CX+r, CY+r*0.42],
-                 fill=(255, 238, 190, 30 + i * 28))
-draw.ellipse([CX-MAX_R*0.10, CY-MAX_R*0.045, CX+MAX_R*0.10, CY+MAX_R*0.045],
-             fill=(255, 250, 220, 70))
+# ── 银河系棒 (略亮黄, 中央质量聚集) ──
+bar_half = MAX_R * 0.35
+bar_w = MAX_R * 0.05
+# 棒本身: 中间亮黄, 两端过渡到冷蓝
+for dx in range(-int(bar_half), int(bar_half)):
+    t = abs(dx) / bar_half
+    # 中心偏黄, 两端偏暖棕
+    if t < 0.4:
+        col = (220, 200, 160, int(40 * (1 - t * 0.5)))
+    else:
+        col = (180, 150, 110, int(35 * (1 - t)))
+    # 棒中间高一些 (厚度)
+    w = int(bar_w * (1 - t * 0.3))
+    for dy in range(-w, w + 1):
+        inner_t = abs(dy) / max(w, 1)
+        a = int(col[3] * (1 - inner_t * 0.6))
+        draw.ellipse([CX+dx-1, CY+dy-1, CX+dx+1, CY+dy+1],
+                     fill=(col[0], col[1], col[2], a))
 
-# ── 银河系棒 (略亮) ──
-bar_half = MAX_R * 0.30
-bar_w = MAX_R * 0.06
-draw.rectangle([CX-bar_half, CY-bar_w, CX+bar_half, CY+bar_w],
-               fill=(255, 240, 200, 45))
-
+# ── 叠加明亮星点 (沿盘分布, 不包含中心区域) ──
 # ── 叠加明亮星点 (沿盘分布) ──
+# 中心 18% 半径内不画星点 (黑心区域)
+center_keepout = MAX_R * 0.18
 for _ in range(30000):
     r = MAX_R * math.sqrt(random.random())
+    if r < center_keepout: continue
     a = random.uniform(0, 2 * math.pi)
     x = CX + r * math.cos(a)
     y = CY + r * math.sin(a) * 0.42
@@ -110,7 +119,7 @@ for _ in range(30000):
 
 # ── 大星点带十字光芒 (少数亮星, 增加真实感) ──
 for _ in range(40):
-    r = MAX_R * random.uniform(0.15, 0.95)
+    r = MAX_R * random.uniform(0.18, 0.95)  # 从黑心边缘开始
     a = random.uniform(0, 2 * math.pi)
     x = CX + r * math.cos(a)
     y = CY + r * math.sin(a) * 0.42
@@ -121,6 +130,24 @@ for _ in range(40):
     for s in range(1, 4):
         draw.line([x-s*3, y, x+s*3, y], fill=(b, b, b, 80), width=1)
         draw.line([x, y-s*3, x, y+s*3], fill=(b, b, b, 80), width=1)
+
+# ── 中心黑色区域 (Sgr A* + 内核球实际被遮挡, 看到的就是黑暗) ──
+# 画在所有星点之后, 不被覆盖. 多层径向衰减, 边缘暗红棕色 (吸积盘)
+black_radius = MAX_R * 0.18
+for i in range(int(black_radius), 0, -1):
+    t = i / black_radius
+    if t < 0.5:
+        # 内层: 纯黑 (Sgr A* 黑洞本体)
+        col = (5, 3, 2, 255)
+    elif t < 0.8:
+        # 中层: 暗黑过渡
+        u = (t - 0.5) / 0.3
+        col = (int(5 + 35 * u), int(3 + 18 * u), int(2 + 10 * u), 255)
+    else:
+        # 边缘: 暗红棕色光晕 (吸积盘 + 周围电离气体)
+        u = (t - 0.8) / 0.2
+        col = (int(40 + 100 * u), int(21 + 40 * u), int(12 + 10 * u), int(180 * (1 - u)))
+    draw.ellipse([CX-i, CY-i*0.42, CX+i, CY+i*0.42], fill=col)
 
 # ── 整体微柔化 + 对比度增强 ──
 img = img.filter(ImageFilter.GaussianBlur(0.8))
