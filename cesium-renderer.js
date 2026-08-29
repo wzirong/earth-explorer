@@ -1249,7 +1249,7 @@ function setViewMode(mode) {
     hideCosmosOverlays();
     showCesium();
     buildGalaxy();
-  } else if (mode === 'localgroup' || mode === 'virgo' || mode === 'laniakea' || mode === 'sloan' || mode === 'allsky' || mode === 'observable' || mode === 'hubble' || mode === 'cmb' || mode === 'andromeda' || mode === 'pisces-cetus' || mode === 'giant-arc' || mode === 'huge-lqg' || mode === 'giant-grb-ring' || mode === 'hercules-corona') {
+  } else if (mode === 'localgroup' || mode === 'virgo' || mode === 'laniakea' || mode === 'sloan' || mode === 'allsky' || mode === 'observable' || mode === 'hubble' || mode === 'cmb'  || mode === 'pisces-cetus' || mode === 'giant-arc' || mode === 'huge-lqg' || mode === 'giant-grb-ring' || mode === 'hercules-corona') {
     closeSolarSystemView();
     clearGalaxy();
     // 宇宙视图是纯 2D overlay: 隐藏 Cesium 画布, 避免 globe.show=false 时
