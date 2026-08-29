@@ -131,23 +131,22 @@ for _ in range(40):
         draw.line([x-s*3, y, x+s*3, y], fill=(b, b, b, 80), width=1)
         draw.line([x, y-s*3, x, y+s*3], fill=(b, b, b, 80), width=1)
 
-# ── 中心黑色区域 (Sgr A* + 内核球实际被遮挡, 看到的就是黑暗) ──
-# 画在所有星点之后, 不被覆盖. 多层径向衰减, 边缘暗红棕色 (吸积盘)
-black_radius = MAX_R * 0.18
-for i in range(int(black_radius), 0, -1):
-    t = i / black_radius
-    if t < 0.5:
-        # 内层: 纯黑 (Sgr A* 黑洞本体)
-        col = (5, 3, 2, 255)
-    elif t < 0.8:
-        # 中层: 暗黑过渡
-        u = (t - 0.5) / 0.3
-        col = (int(5 + 35 * u), int(3 + 18 * u), int(2 + 10 * u), 255)
-    else:
-        # 边缘: 暗红棕色光晕 (吸积盘 + 周围电离气体)
-        u = (t - 0.8) / 0.2
-        col = (int(40 + 100 * u), int(21 + 40 * u), int(12 + 10 * u), int(180 * (1 - u)))
-    draw.ellipse([CX-i, CY-i*0.42, CX+i, CY+i*0.42], fill=col)
+# ── 中心 EHT 风格: 黑阴影 + 不对称光环 (最接近真实黑洞照片) ──
+# 参考 EHT 2022 Sgr A* 照片: 中心黑色阴影 + 左亮右暗环 (多普勒增亮)
+# 几何: 近乎圆 (eht 倾角较小), 这里用 ellipse 压缩 0.95 模拟轻微倾角
+ring_r_in = MAX_R * 0.085    # 黑色阴影半径
+ring_r_out = MAX_R * 0.14    # 光环外径
+ey = 0.95                     # 椭圆压缩率
+bbox_out = [CX-ring_r_out, CY-ring_r_out*ey, CX+ring_r_out, CY+ring_r_out*ey]
+bbox_in  = [CX-ring_r_in,  CY-ring_r_in*ey,  CX+ring_r_in,  CY+ring_r_in*ey]
+
+# PIL pieslice 角度: 0=3 o'clock, 顺时针 (90=6, 180=9, 270=12, 360/0=3)
+# 左半圆 (90->270): 6→9→12 o'clock (经过底-左-顶)
+# 右半圆 (270->450): 12→3→6 o'clock (经过顶-右-底)
+draw.pieslice(bbox_out,  90, 270, fill=(255, 200, 110, 255))  # 左半环 (亮金黄)
+draw.pieslice(bbox_out, 270, 450, fill=(180, 105,  50, 240))  # 右半环 (暗橙)
+# 内圈整圆黑覆盖 → 形成 annulus 环带
+draw.ellipse(bbox_in, fill=(0, 0, 0, 255))
 
 # ── 整体微柔化 + 对比度增强 ──
 img = img.filter(ImageFilter.GaussianBlur(0.8))
