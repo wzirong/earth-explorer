@@ -335,7 +335,7 @@ function animate() {
 
   // 星系自转 (刚体近似): 角速度 = 2π * (模拟年数) / 银河年
   if (simSpeed > 0) {
-    galaxyGroup.rotation.y -= (delta * simSpeed / GALACTIC_YEAR) * Math.PI * 2;
+    galaxyGroup.rotation.y += (delta * simSpeed / GALACTIC_YEAR) * Math.PI * 2;
   }
 
   // 相机
