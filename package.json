@@ -45,6 +45,7 @@
       "preload.js",
       "index.html",
       "index.bak.html",
+      "solar-system-view.html",
       "renderer.js",
       "renderer.bak.js",
       "cesium-renderer.js",
