@@ -1199,6 +1199,30 @@ function closeSolarSystemView() {
   viewer.scene.globe.show = true;
 }
 
+// 太阳系底部导航开关: 切到太阳系显示, 其他隐藏
+function showSolarNav(show) {
+  const solarNav = document.getElementById('solar-nav');
+  const contNav = document.getElementById('continent-nav');
+  if (solarNav) solarNav.style.display = show ? 'flex' : 'none';
+  if (contNav) contNav.style.display = show ? 'none' : 'flex';
+}
+// 太阳系导航按钮 → 通知 iframe 聚焦对应天体
+function setupSolarNav() {
+  const solarNav = document.getElementById('solar-nav');
+  if (!solarNav) return;
+  solarNav.querySelectorAll('.cont-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      // 高亮当前
+      solarNav.querySelectorAll('.cont-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (solarIframe && solarIframe.contentWindow) {
+        solarIframe.contentWindow.postMessage({ type: 'focus-planet', name: btn.dataset.solar }, '*');
+      }
+    });
+  });
+}
+setupSolarNav();
+
 // ── 银河系 3D 视图 (Three.js iframe, 左键平移/右键旋转/滚轮缩放) ──
 let galaxy3DIframe = null;
 function openGalaxy3DView() {
@@ -1257,6 +1281,7 @@ function setViewMode(mode) {
     }
   });
   if (mode === 'earth') {
+    showSolarNav(false);
     closeSolarSystemView();
     closeGalaxy3DView();
     closeLocalGroup3DView();
@@ -1272,14 +1297,17 @@ function setViewMode(mode) {
     clearGalaxy();
     hideCosmosOverlays();
     showCesium();
+    showSolarNav(true);
     openSolarSystemView();
   } else if (mode === 'galaxy') {
+    showSolarNav(false);
     closeSolarSystemView();
     closeLocalGroup3DView();
     hideCosmosOverlays();
     showCesium();
     openGalaxy3DView();
   } else if (mode === 'localgroup') {
+    showSolarNav(false);
     closeSolarSystemView();
     closeGalaxy3DView();
     clearGalaxy();
@@ -1288,6 +1316,7 @@ function setViewMode(mode) {
     viewer.scene.globe.show = false;
     openLocalGroup3DView();
   } else if (mode === 'virgo' || mode === 'laniakea' || mode === 'sloan' || mode === 'allsky' || mode === 'observable' || mode === 'hubble' || mode === 'cmb'  || mode === 'pisces-cetus' || mode === 'giant-arc' || mode === 'huge-lqg' || mode === 'giant-grb-ring' || mode === 'hercules-corona') {
+    showSolarNav(false);
     closeSolarSystemView();
     closeGalaxy3DView();
     closeLocalGroup3DView();

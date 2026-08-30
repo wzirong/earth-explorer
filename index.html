@@ -95,6 +95,12 @@
     .cont-btn:hover { background: rgba(79,195,247,0.15); color: #4fc3f7; }
     .cont-btn.active { background: rgba(79,195,247,0.25); color: #4fc3f7; }
 
+    /* 底部太阳系导航 (进入太阳系视图时切换显示) */
+    #solar-nav { position: absolute; bottom: 56px; left: 50%; transform: translateX(-50%);
+                 display: none; gap: 4px; background: rgba(32,33,36,0.85); backdrop-filter: blur(10px);
+                 padding: 6px 8px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.08);
+                 z-index: 90; flex-wrap: wrap; justify-content: center; max-width: 92vw; }
+
     #loading { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column;
                align-items: center; justify-content: center; z-index: 999; transition: opacity 0.5s; }
     #loading.hidden { opacity: 0; pointer-events: none; }
@@ -346,6 +352,18 @@
   <button class="cont-btn" data-continent="非洲">🌍 非洲</button>
   <button class="cont-btn" data-continent="大洋洲">🏝️ 大洋洲</button>
   <button class="cont-btn" data-continent="中国">🇨🇳 中国</button>
+</div>
+
+<div id="solar-nav">
+  <button class="cont-btn" data-solar="sun">🌞 Sun</button>
+  <button class="cont-btn" data-solar="mercury">☿ Mercury</button>
+  <button class="cont-btn" data-solar="venus">♀ Venus</button>
+  <button class="cont-btn" data-solar="earth">🌍 Earth</button>
+  <button class="cont-btn" data-solar="mars">♂ Mars</button>
+  <button class="cont-btn" data-solar="jupiter">♃ Jupiter</button>
+  <button class="cont-btn" data-solar="saturn">♄ Saturn</button>
+  <button class="cont-btn" data-solar="uranus">♅ Uranus</button>
+  <button class="cont-btn" data-solar="neptune">♆ Neptune</button>
 </div>
 
 <div id="status-bar">

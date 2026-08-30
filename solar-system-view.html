@@ -37,7 +37,6 @@
 <button id="close-btn">← 返回地球</button>
 
 <script src="three.min.js"></script>
-<script src="CSS2DRenderer.js"></script>
 <script>
 // ── Three.js 太阳系 (Solar Walk 风格) ──
 const container = document.getElementById('container');
@@ -59,7 +58,7 @@ const starField = new THREE.Points(
 
 // 相机
 const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 10000);
-camera.position.set(0, 150, 360);
+camera.position.set(0, 113.3, 341.7);  // 与初始 rotY=0, rotX=0.32, dist=360 一致
 camera.lookAt(0, 0, 0);
 
 // 渲染器
@@ -68,35 +67,7 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 container.appendChild(renderer.domElement);
 
-// CSS2D 标签渲染器 (行星/太阳名字标签)
-const labelRenderer = new THREE.CSS2DRenderer();
-labelRenderer.setSize(window.innerWidth, window.innerHeight);
-labelRenderer.domElement.style.position = 'fixed';
-labelRenderer.domElement.style.inset = '0';
-labelRenderer.domElement.style.pointerEvents = 'none';
-container.appendChild(labelRenderer.domElement);
 
-// 创建可点击的 CSS2D 标签
-const LABEL_STYLE = { fontSize:'13px', color:'#fff', background:'rgba(15,20,30,0.75)', padding:'2px 9px',
-  borderRadius:'10px', border:'1px solid rgba(120,180,255,0.45)', cursor:'pointer', whiteSpace:'nowrap',
-  fontFamily:'sans-serif', letterSpacing:'0.5px', userSelect:'none', pointerEvents:'auto' };
-function makeLabel(text, targetMesh) {
-  const el = document.createElement('div');
-  el.textContent = text;
-  Object.assign(el.style, LABEL_STYLE);
-  el.addEventListener('mouseenter', () => { el.style.background='rgba(52,152,255,0.35)'; el.style.borderColor='#4fc3f7'; });
-  el.addEventListener('mouseleave', () => { el.style.background='rgba(15,20,30,0.75)'; el.style.borderColor='rgba(120,180,255,0.45)'; });
-  el.addEventListener('click', ev => {
-    ev.stopPropagation();
-    // 根据标签找到目标 body, 聚焦并显示信息
-    const body = bodies.find(b => b.mesh === targetMesh);
-    if (body) { focusOn(body); showPlanetInfo(body.data); }
-    else if (targetMesh === sun) { focusOn({ mesh: sun, data: { name: '太阳', en: 'Sun', size: SUN_R } }); showPlanetInfo({ name: '太阳', en: 'Sun' }); }
-  });
-  const label = new THREE.CSS2DObject(el);
-  label.position.set(0, targetMesh === sun ? SUN_R + 1.2 : 0.5, 0);  // 放在星球上方
-  return label;
-}
 
 // 光照
 const ambient = new THREE.AmbientLight(0x333355, 0.8);
@@ -110,15 +81,31 @@ const texLoader = new THREE.TextureLoader();
 function loadTex(path) { return texLoader.load(path); }
 
 // 轨道控制器 (简易)
-let isDragging = false, prevX = 0, prevY = 0;
-let rotY = 0, rotX = 0.4; // 初始俯仰
-container.addEventListener('mousedown', e => { isDragging = true; prevX = e.clientX; prevY = e.clientY; });
-window.addEventListener('mouseup', () => isDragging = false);
+// 交互: 左键平移 / 右键旋转 / 滚轮缩放 (与其他视图一致)
+let action = null, prevX = 0, prevY = 0;
+let rotY = 0, rotX = 0.32; // 初始俯仰
+let panTarget = new THREE.Vector3(0, 0, 0);
+container.addEventListener('contextmenu', e => e.preventDefault());
+container.addEventListener('mousedown', e => {
+  action = (e.button === 2) ? 'rotate' : 'pan';
+  prevX = e.clientX; prevY = e.clientY;
+});
+window.addEventListener('mouseup', () => action = null);
 window.addEventListener('mousemove', e => {
-  if (!isDragging) return;
-  rotY += (e.clientX - prevX) * 0.005;
-  rotX += (e.clientY - prevY) * 0.005;
-  rotX = Math.max(-1.3, Math.min(1.3, rotX));
+  if (!action) return;
+  const dx = e.clientX - prevX, dy = e.clientY - prevY;
+  if (action === 'rotate') {
+    rotY += dx * 0.005;
+    rotX = Math.max(-1.3, Math.min(1.3, rotX + dy * 0.005));
+  } else {
+    // 平移注视点
+    const dist = camera.position.distanceTo(cameraTarget);
+    const s = dist * 0.0022;
+    const right = new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion);
+    const up = new THREE.Vector3(0,1,0).applyQuaternion(camera.quaternion);
+    panTarget.addScaledVector(right, -dx * s);
+    panTarget.addScaledVector(up, dy * s);
+  }
   prevX = e.clientX; prevY = e.clientY;
 });
 container.addEventListener('wheel', e => {
@@ -128,11 +115,12 @@ container.addEventListener('wheel', e => {
     focusDist *= (e.deltaY > 0 ? 1.12 : 0.88);
     focusDist = Math.max(focusedPlanet.data.size * 2.5, Math.min(focusedPlanet.data.size * 20, focusDist));
   } else {
-    const d = camera.position.length();
+    const d = camera.position.distanceTo(panTarget);
     const nd = d * (e.deltaY > 0 ? 1.1 : 0.9);
-    const clamped = Math.max(8, Math.min(1500, nd));
-    const dir = camera.position.clone().normalize();
-    camera.position.copy(dir.multiplyScalar(clamped));
+    const clamped = Math.max(6, Math.min(1600, nd));
+    // 通过调整 rotY/rotX 距离来缩放
+    const dir = camera.position.clone().sub(panTarget).normalize();
+    camera.position.copy(panTarget.clone().add(dir.multiplyScalar(clamped)));
   }
 }, { passive: false });
 
@@ -142,7 +130,6 @@ const sunGeo = new THREE.SphereGeometry(SUN_R, 48, 48);
 const sunMat = new THREE.MeshBasicMaterial({ map: loadTex('textures/planets/sun.jpg') });
 const sun = new THREE.Mesh(sunGeo, sunMat);
 scene.add(sun);
-sun.add(makeLabel('太阳', sun));
 const glow = new THREE.Sprite(new THREE.SpriteMaterial({
   map: (() => { const c = document.createElement('canvas'); c.width = c.height = 128;
     const g = c.getContext('2d'); const gr = g.createRadialGradient(64,64,10,64,64,64);
@@ -186,8 +173,6 @@ PLANETS.forEach((p, idx) => {
   const mesh = new THREE.Mesh(geo, mat);
   scene.add(mesh);
 
-  // 名牌标签 (像地图大洲标注, 可点击)
-  mesh.add(makeLabel(p.name, mesh));
 
   // 土星环 (真实纹理)
   if (p.hasRing) {
@@ -364,7 +349,7 @@ function focusOn(body) {
 function backToOverview() {
   focusedPlanet = null;
   document.getElementById('focus-hint').style.display = 'none';
-  flyCameraTo(new THREE.Vector3(0, 150, 360), new THREE.Vector3(0, 0, 0), 1.2);
+  flyCameraTo(new THREE.Vector3(0, 113.3, 341.7), new THREE.Vector3(0, 0, 0), 1.2);
 }
 
 function animate() {
@@ -420,20 +405,18 @@ function animate() {
     camera.position.lerp(desired, 0.08);
     cameraTarget.lerp(focusedPlanet.mesh.position.clone(), 0.08);
   } else {
-    // 全景模式: 轨道缓慢自转
-    const targetRotY = rotY + (isDragging ? 0 : totalTime * 0.02);
-    const dist = camera.position.length();
+    // 全景模式: 固定轨道视角 (无自动公转)
+    const dist = camera.position.distanceTo(panTarget);
     camera.position.set(
-      dist * Math.sin(targetRotY) * Math.cos(rotX),
-      dist * Math.sin(rotX),
-      dist * Math.cos(targetRotY) * Math.cos(rotX)
+      panTarget.x + dist * Math.sin(rotY) * Math.cos(rotX),
+      panTarget.y + dist * Math.sin(rotX),
+      panTarget.z + dist * Math.cos(rotY) * Math.cos(rotX)
     );
-    cameraTarget.set(0, 0, 0);
+    cameraTarget.copy(panTarget);
   }
   camera.lookAt(cameraTarget);
 
   renderer.render(scene, camera);
-  labelRenderer.render(scene, camera);
 }
 animate();
 
@@ -477,6 +460,21 @@ document.getElementById('close-btn').onclick = () => {
   // 通知主窗口关闭太阳系视图
   if (window.parent) window.parent.postMessage({ type: 'close-solar-system' }, '*');
 };
+
+// 接收主窗口底部导航的聚焦指令
+window.addEventListener('message', (ev) => {
+  if (!ev.data) return;
+  if (ev.data.type === 'focus-planet') {
+    const name = (ev.data.name || '').toLowerCase();
+    if (name === 'sun' || name === '太阳') {
+      focusOn({ mesh: sun, data: { name: '太阳', en: 'Sun', size: SUN_R } });
+      showPlanetInfo({ name: '太阳', en: 'Sun' });
+      return;
+    }
+    const body = bodies.find(b => (b.data.name === name) || b.data.en.toLowerCase() === name);
+    if (body) { focusOn(body); showPlanetInfo(body.data); }
+  }
+});
 </script>
 </body>
 </html>
