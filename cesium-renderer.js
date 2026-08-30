@@ -1536,13 +1536,13 @@ function addTimezoneLines() {
 }
 
 // ── 叠加层开关 UI 绑定 ───────────────────────────────
-// 昼夜分界线
-let daynightVisible = true;
+// 昼夜分界线 (默认关闭, 不显示这条白线)
+let daynightVisible = false;
 document.getElementById('toggle-daynight')?.addEventListener('change', e => {
   daynightVisible = e.target.checked;
   updateTerminator(daynightVisible);
 });
-updateTerminator(daynightVisible);
+// 不默认调用 updateTerminator, 避免一打开就显示白线
 
 // 国界
 let bordersVisible = true;
