@@ -1262,7 +1262,7 @@ function setViewMode(mode) {
     hideCosmosOverlays();
     showCesium();
     openGalaxy3DView();
-  } else if (mode === 'localgroup' || mode === 'andromeda' || mode === 'virgo' || mode === 'laniakea' || mode === 'sloan' || mode === 'allsky' || mode === 'observable' || mode === 'hubble' || mode === 'cmb'  || mode === 'pisces-cetus' || mode === 'giant-arc' || mode === 'huge-lqg' || mode === 'giant-grb-ring' || mode === 'hercules-corona') {
+  } else if (mode === 'localgroup' || mode === 'virgo' || mode === 'laniakea' || mode === 'sloan' || mode === 'allsky' || mode === 'observable' || mode === 'hubble' || mode === 'cmb'  || mode === 'pisces-cetus' || mode === 'giant-arc' || mode === 'huge-lqg' || mode === 'giant-grb-ring' || mode === 'hercules-corona') {
     closeSolarSystemView();
     closeGalaxy3DView();
     clearGalaxy();
