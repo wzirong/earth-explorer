@@ -58,7 +58,7 @@ const starField = new THREE.Points(
 
 // 相机
 const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 10000);
-camera.position.set(0, 60, 130);
+camera.position.set(0, 130, 320);
 camera.lookAt(0, 0, 0);
 
 // 渲染器
@@ -99,14 +99,15 @@ container.addEventListener('wheel', e => {
   } else {
     const d = camera.position.length();
     const nd = d * (e.deltaY > 0 ? 1.1 : 0.9);
-    const clamped = Math.max(25, Math.min(400, nd));
+    const clamped = Math.max(20, Math.min(1000, nd));
     const dir = camera.position.clone().normalize();
     camera.position.copy(dir.multiplyScalar(clamped));
   }
 }, { passive: false });
 
-// 太阳 (发光球 + 光晕)
-const sunGeo = new THREE.SphereGeometry(8, 48, 48);
+// 太阳 (发光球 + 光晕) — 真实比例: 太阳半径=10 单位(基准)
+const SUN_R = 10;
+const sunGeo = new THREE.SphereGeometry(SUN_R, 48, 48);
 const sunMat = new THREE.MeshBasicMaterial({ map: loadTex('textures/planets/sun.jpg') });
 const sun = new THREE.Mesh(sunGeo, sunMat);
 scene.add(sun);
@@ -117,24 +118,31 @@ const glow = new THREE.Sprite(new THREE.SpriteMaterial({
     g.fillStyle = gr; g.fillRect(0,0,128,128); return new THREE.CanvasTexture(c); })(),
   transparent: true, depthWrite: false
 }));
-glow.scale.set(70, 70, 1);
+glow.scale.set(SUN_R * 3.5, SUN_R * 3.5, 1);
 scene.add(glow);
 
-// 行星数据: 轨道半径 / 大小 / 纹理 / 周期(天) / 倾角 / 自转速度
+// ── 真实比例太阳系 (B1) ──
+// 轨道: 1 AU = 3.987 单位 (海王星 30.1 AU = 120 单位)
+// 体积: 真实直径比例, 太阳半径=10 单位; 类地行星/矮行星兜底 0.35 单位(否则不可见)
+const AU = 3.987;
+const MIN_SIZE = 0.35;
+function realSize(diamKm) { return Math.max(MIN_SIZE, SUN_R * (diamKm / 1392700)); }
+
+// 行星数据: 轨道半径(AU→单位) / 大小(真实直径km) / 纹理 / 周期(天) / 倾角 / 自转速度
 const PLANETS = [
-  { name: '水星', en: 'Mercury', r: 18, size: 2.2,  tex: 'mercury', period: 88,   incl: 7.0,  rotPeriod: 58.6 },
-  { name: '金星', en: 'Venus',   r: 25, size: 3.2,  tex: 'venus',   period: 225,  incl: 3.4,  rotPeriod: -243 },
-  { name: '地球', en: 'Earth',   r: 34, size: 3.4,  tex: 'earth',   period: 365,  incl: 0,    rotPeriod: 1, isEarth: true },
-  { name: '火星', en: 'Mars',    r: 43, size: 2.7,  tex: 'mars',    period: 687,  incl: 1.9,  rotPeriod: 1.03 },
-  { name: '木星', en: 'Jupiter', r: 60, size: 6.5,  tex: 'jupiter', period: 4333, incl: 1.3,  rotPeriod: 0.41 },
-  { name: '土星', en: 'Saturn',  r: 78, size: 5.6,  tex: 'saturn',  period: 10759,incl: 2.5,  rotPeriod: 0.45, hasRing: true },
-  { name: '天王星', en: 'Uranus', r: 96, size: 3.8, tex: 'uranus',  period: 30687,incl: 0.8,  rotPeriod: -0.72 },
-  { name: '海王星', en: 'Neptune',r: 114, size: 3.7, tex: 'neptune', period: 60190,incl: 1.8,  rotPeriod: 0.67 },
-  { name: '冥王星', en: 'Pluto',  r: 130, size: 1.4, tex: 'mercury', period: 90560,incl: 17.2, rotPeriod: -6.4, dwarf: true },
+  { name: '水星', en: 'Mercury', r: 0.39*AU,  size: realSize(4879),   tex: 'mercury', period: 88,   incl: 7.0,  rotPeriod: 58.6 },
+  { name: '金星', en: 'Venus',   r: 0.72*AU,  size: realSize(12104),  tex: 'venus',   period: 225,  incl: 3.4,  rotPeriod: -243 },
+  { name: '地球', en: 'Earth',   r: 1.00*AU,  size: realSize(12742),  tex: 'earth',   period: 365,  incl: 0,    rotPeriod: 1, isEarth: true },
+  { name: '火星', en: 'Mars',    r: 1.52*AU,  size: realSize(6779),   tex: 'mars',    period: 687,  incl: 1.9,  rotPeriod: 1.03 },
+  { name: '木星', en: 'Jupiter', r: 5.20*AU,  size: realSize(139820), tex: 'jupiter', period: 4333, incl: 1.3,  rotPeriod: 0.41 },
+  { name: '土星', en: 'Saturn',  r: 9.54*AU,  size: realSize(116460), tex: 'saturn',  period: 10759,incl: 2.5,  rotPeriod: 0.45, hasRing: true },
+  { name: '天王星', en: 'Uranus', r: 19.2*AU, size: realSize(50724),  tex: 'uranus',  period: 30687,incl: 0.8,  rotPeriod: -0.72 },
+  { name: '海王星', en: 'Neptune',r: 30.1*AU, size: realSize(49244),  tex: 'neptune', period: 60190,incl: 1.8,  rotPeriod: 0.67 },
+  { name: '冥王星', en: 'Pluto',  r: 39.5*AU, size: realSize(2377),   tex: 'mercury', period: 90560,incl: 17.2, rotPeriod: -6.4, dwarf: true },
 ];
 
-// 月球 (绕地球)
-const moon = { r: 6, size: 1.0, tex: 'moon', period: 27.3 };
+// 月球 (绕地球): size 用小可见点, 轨道 = 地球显示半径的 ~3 倍(否则真实 0.00257AU 会嵌进地球)
+const moon = { r: 1.0, size: 0.14, tex: 'moon', period: 27.3 };
 
 const bodies = [];  // { mesh, data, angle }
 const orbitLines = [];
@@ -305,7 +313,8 @@ function flyCameraTo(endPos, endLook, duration) {
 function focusOn(body) {
   focusedPlanet = body;
   const p = body.data;
-  focusDist = Math.max(p.size * 5, 10);
+  // 聚焦距离跟随行星大小: 小行星靠近看, 大行星拉远看
+  focusDist = Math.max(p.size * 6, 3.5);
   // 计算一个好看的观察位置: 行星位置 + 斜上方偏移
   const offset = new THREE.Vector3(focusDist * 0.6, focusDist * 0.7, focusDist).normalize().multiplyScalar(focusDist);
   const targetPos = body.mesh.position.clone().add(offset);
@@ -319,7 +328,7 @@ function focusOn(body) {
 function backToOverview() {
   focusedPlanet = null;
   document.getElementById('focus-hint').style.display = 'none';
-  flyCameraTo(new THREE.Vector3(0, 60, 130), new THREE.Vector3(0, 0, 0), 1.2);
+  flyCameraTo(new THREE.Vector3(0, 130, 320), new THREE.Vector3(0, 0, 0), 1.2);
 }
 
 function animate() {
