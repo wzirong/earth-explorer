@@ -1214,6 +1214,21 @@ function closeGalaxy3DView() {
   viewer.scene.globe.show = true;
 }
 
+// ── 本星系群 3D 视图 (Three.js iframe, 真实 150 颗星系) ──
+let localGroup3DIframe = null;
+function openLocalGroup3DView() {
+  if (localGroup3DIframe) { localGroup3DIframe.style.display = 'block'; return; }
+  localGroup3DIframe = document.createElement('iframe');
+  localGroup3DIframe.src = '/local-group-3d-view.html';
+  localGroup3DIframe.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:none;z-index:60;background:#000;';
+  document.body.appendChild(localGroup3DIframe);
+}
+function closeLocalGroup3DView() {
+  if (localGroup3DIframe) localGroup3DIframe.remove();
+  localGroup3DIframe = null;
+  viewer.scene.globe.show = true;
+}
+
 // 宇宙大尺度 overlay 切换
 function showCosmosOverlay(which) {
   // 隐藏所有宇宙 overlay
@@ -1244,6 +1259,7 @@ function setViewMode(mode) {
   if (mode === 'earth') {
     closeSolarSystemView();
     closeGalaxy3DView();
+    closeLocalGroup3DView();
     clearGalaxy();
     hideCosmosOverlays();
     showCesium();
@@ -1259,12 +1275,22 @@ function setViewMode(mode) {
     openSolarSystemView();
   } else if (mode === 'galaxy') {
     closeSolarSystemView();
+    closeLocalGroup3DView();
     hideCosmosOverlays();
     showCesium();
     openGalaxy3DView();
-  } else if (mode === 'localgroup' || mode === 'virgo' || mode === 'laniakea' || mode === 'sloan' || mode === 'allsky' || mode === 'observable' || mode === 'hubble' || mode === 'cmb'  || mode === 'pisces-cetus' || mode === 'giant-arc' || mode === 'huge-lqg' || mode === 'giant-grb-ring' || mode === 'hercules-corona') {
+  } else if (mode === 'localgroup') {
     closeSolarSystemView();
     closeGalaxy3DView();
+    clearGalaxy();
+    hideCosmosOverlays();
+    hideCesium();
+    viewer.scene.globe.show = false;
+    openLocalGroup3DView();
+  } else if (mode === 'virgo' || mode === 'laniakea' || mode === 'sloan' || mode === 'allsky' || mode === 'observable' || mode === 'hubble' || mode === 'cmb'  || mode === 'pisces-cetus' || mode === 'giant-arc' || mode === 'huge-lqg' || mode === 'giant-grb-ring' || mode === 'hercules-corona') {
+    closeSolarSystemView();
+    closeGalaxy3DView();
+    closeLocalGroup3DView();
     clearGalaxy();
     // 宇宙视图是纯 2D overlay: 隐藏 Cesium 画布, 避免 globe.show=false 时
     // Cesium 触发 'RangeError: Invalid array length' 渲染崩溃 + 错误弹窗遮挡图片
@@ -1414,6 +1440,10 @@ window.addEventListener('message', (ev) => {
   }
   if (ev.data && ev.data.type === 'close-galaxy-3d') {
     closeGalaxy3DView();
+    setViewMode('earth');
+  }
+  if (ev.data && ev.data.type === 'close-localgroup-3d') {
+    closeLocalGroup3DView();
     setViewMode('earth');
   }
 });
