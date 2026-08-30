@@ -34,7 +34,7 @@
 <body>
 <div id="container"></div>
 <div id="info">🌌 银河系 · 3D</div>
-<div id="hint">🖱 左键拖动: 旋转 · 右键拖动: 平移 · 滚轮: 缩放</div>
+<div id="hint">🖱 左键拖动: 平移 · 右键拖动: 旋转 · 滚轮: 缩放</div>
 <div id="focus-hint"></div>
 <div id="speed-ctrl">
   <span>⏱ 时间流速</span>
@@ -208,7 +208,7 @@ let viewDist = 160;
 
 container.addEventListener('contextmenu', e => e.preventDefault());
 container.addEventListener('mousedown', e => {
-  action = (e.button === 2) ? 'pan' : 'rotate';
+  action = (e.button === 2) ? 'rotate' : 'pan';
   prevX = e.clientX; prevY = e.clientY;
   container.classList.add('dragging');
 });
@@ -282,7 +282,7 @@ function animate() {
 
   // 星系自转: 顺时针(北银极俯视) → 视觉上 rotation.y 正向
   if (simSpeed > 0) {
-    galaxyGroup.rotation.y += (delta * simSpeed / GALACTIC_YEAR) * Math.PI * 2;
+    galaxyGroup.rotation.y -= (delta * simSpeed / GALACTIC_YEAR) * Math.PI * 2;
   }
 
   // 相机轨道定位
