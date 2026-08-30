@@ -64,39 +64,42 @@ container.appendChild(renderer.domElement);
 const GROUP = new THREE.Group();
 scene.add(GROUP);
 
-// ── 银河系 (原点, ESO 盘面贴图) ──
+// ── 银河系 (原点, ESO 盘面贴图, sprite 始终朝向相机) ──
 const mwTex = new THREE.TextureLoader().load('data/galaxy_disk.png');
 mwTex.anisotropy = 8;
-const mw = new THREE.Mesh(
-  new THREE.PlaneGeometry(2.0, 2.0),
-  new THREE.MeshBasicMaterial({ map: mwTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
-);
-mw.rotation.x = -Math.PI/2;
+const mw = new THREE.Sprite(new THREE.SpriteMaterial({
+  map: mwTex, transparent: true, depthWrite: false, blending: THREE.NormalBlending
+}));
+mw.scale.set(2.4, 2.4, 1);
 GROUP.add(mw);
 
-// ── 仙女座 M31 (andromeda 贴图) ──
+// ── 仙女座 M31 (sprite, Y 轴压扁模拟斜视倾角) ──
 const andTex = new THREE.TextureLoader().load('data/andromeda_disk.png');
 andTex.anisotropy = 8;
 const andData = GALAXIES.find(g => g.norm === 'M31' || (g.name||'').toLowerCase()==='andromeda');
 const andPos = andData ? new THREE.Vector3(andData.x, andData.y, andData.z) : new THREE.Vector3(0.3, 0.4, 0.5);
-const and = new THREE.Mesh(
-  new THREE.PlaneGeometry(1.6, 1.6),
-  new THREE.MeshBasicMaterial({ map: andTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
-);
+const and = new THREE.Sprite(new THREE.SpriteMaterial({
+  map: andTex, transparent: true, depthWrite: false, blending: THREE.NormalBlending
+}));
 and.position.copy(andPos);
-and.rotation.x = -Math.PI/2;
-// 让仙女座盘面朝向赤道面(近似), 这里保持水平便于观察
+and.scale.set(1.8, 1.15, 1);   // 压扁模拟斜视
 GROUP.add(and);
 
-// ── 所有星系点 + 可点击 ──
-const POINTS = [];
+// ── 矮星系形态/亮度分级 (真实天文中矮星系多为暗斑, 这里按真实类型分层) ──
+// 旋涡/不规则亮星系: LMC, SMC, M33, NGC6822, IC10, NGC3109, NGC55, NGC300, IC1613 等
 const clickables = [];
+const SPIRAL_IRR = new Set(['LMC','SMC','TRIANGULUM','NGC598','NGC6822','IC10','NGC3109','NGC55','NGC300','IC1613','WLM','SEXTANSA','SEXTANSB','NGC0055','IC1613','M33']);
+// 椭圆亮星系: M32, NGC205(M110), NGC185, NGC147 (仙女座卫星椭圆)
+const ELLIPTICAL = new Set(['M32','NGC221','NGC205','NGC185','NGC147']);
 
-function colorFor(type, name) {
-  const n = (name||'').toLowerCase();
-  if (type === 'milkyway') return 0xffffff;
-  if (type === 'major') return 0xffd9a0;   // 亮黄白(大星系)
-  return 0xaaccff;                          // 蓝白(矮星系)
+function classify(g) {
+  const norm = (g.norm||'').toUpperCase();
+  const n = (g.name||'').toLowerCase();
+  const d = g.d || 0;
+  if (SPIRAL_IRR.has(norm) || norm==='LMC' || norm==='SMC' || n.includes('triangulum') || n.includes('ngc6822') || n.includes('ic10') || n.includes('ngc3109') || n.includes('ngc55') || n.includes('ngc300') || n.includes('ic1613')) return 'spiral';
+  if (ELLIPTICAL.has(norm) || norm==='M32' || norm==='NGC221') return 'elliptical';
+  // 大麦哲伦/小麦哲伦是不规则亮星系
+  return 'dwarf';  // 默认: 超暗矮星系
 }
 
 GALAXIES.forEach(g => {
@@ -105,8 +108,14 @@ GALAXIES.forEach(g => {
   const isMajor = g.type === 'major' || norm === 'M31' || norm === 'ANDROMEDA';
   if (norm === 'M31' || norm === 'ANDROMEDA') return;  // 仙女座已用贴图
 
-  const size = isMajor ? 0.22 : 0.10 + Math.random()*0.08;
-  const color = isMajor ? 0xffd9a0 : 0xaaccff;
+  const d = Math.sqrt(g.x*g.x+g.y*g.y+g.z*g.z) || 0.5;
+  const cls = classify(g);
+  // 大小: 亮旋涡 > 椭圆 > 暗矮; 亮度随距离衰减
+  let size, color;
+  if (cls === 'spiral')      { size = 0.34; color = 0xd8e6ff; }   // 旋涡/不规则: 较亮, 蓝白
+  else if (cls === 'elliptical') { size = 0.28; color = 0xffe8c0; } // 椭圆: 黄白
+  else { size = 0.14 + (1 - Math.min(d,2.5)/2.5) * 0.10; color = 0x8aa8cc; } // 暗矮: 随距离暗淡
+
   const m = new THREE.Mesh(
     new THREE.SphereGeometry(size, 12, 12),
     new THREE.MeshBasicMaterial({ color })
@@ -114,20 +123,22 @@ GALAXIES.forEach(g => {
   m.position.set(g.x, g.y, g.z);
   GROUP.add(m);
 
-  // 光晕
+  // 光晕: 亮星系光晕大而暖, 暗矮光晕小而弱
+  const haloSize = cls === 'spiral' ? size*8 : (cls === 'elliptical' ? size*7 : size*4);
+  const haloAlpha = cls === 'spiral' ? 0.9 : (cls === 'elliptical' ? 0.75 : 0.5);
   const halo = new THREE.Sprite(new THREE.SpriteMaterial({
     map: (()=>{ const c=document.createElement('canvas'); c.width=c.height=64;
       const g2=c.getContext('2d'); const gr=g2.createRadialGradient(32,32,2,32,32,32);
-      gr.addColorStop(0,'rgba(255,255,255,0.85)'); gr.addColorStop(1,'rgba(255,255,255,0)');
+      gr.addColorStop(0,`rgba(255,255,255,${haloAlpha})`); gr.addColorStop(1,'rgba(255,255,255,0)');
       g2.fillStyle=gr; g2.fillRect(0,0,64,64); return new THREE.CanvasTexture(c); })(),
     transparent: true, depthWrite: false
   }));
-  halo.scale.set(size*6, size*6, 1);
+  halo.scale.set(haloSize, haloSize, 1);
   m.add(halo);
 
   clickables.push({ mesh: m, info: {
-    name: g.name, sub: isMajor ? '主要星系' : '矮星系',
-    rows: [`距银河系 ${(Math.sqrt(g.x*g.x+g.y*g.y+g.z*g.z)).toFixed(2)} Mpc`,
+    name: g.name, sub: cls === 'spiral' ? '旋涡/不规则星系' : (cls === 'elliptical' ? '椭圆星系' : '矮星系'),
+    rows: [`距银河系 ${d.toFixed(2)} Mpc`,
            `赤经 RA ${g.ra?.toFixed(2) ?? '—'}° · 赤纬 Dec ${g.dec?.toFixed(2) ?? '—'}°`]
   }});
 });
