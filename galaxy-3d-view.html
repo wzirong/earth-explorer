@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>银河系 3D</title>
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+  #container { position: fixed; inset: 0; }
+  #info { position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+          color: rgba(255,255,255,0.85); font: 600 16px sans-serif; letter-spacing: 2px;
+          text-shadow: 0 2px 10px rgba(0,0,0,0.8); pointer-events: none; z-index: 10; white-space: nowrap; }
+  #hint { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+          color: rgba(255,255,255,0.45); font: 12px sans-serif; pointer-events: none; z-index: 10; white-space: nowrap; }
+  #close-btn { position: fixed; top: 14px; right: 16px; padding: 8px 16px;
+               background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3);
+               border-radius: 8px; color: #fff; font-size: 13px; cursor: pointer; z-index: 20; font-weight: 600; }
+  #close-btn:hover { background: rgba(255,255,255,0.2); }
+  #spin-ctrl { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%) translateY(28px);
+               display: flex; align-items: center; gap: 6px; background: rgba(20,22,28,0.85);
+               border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 5px 10px; z-index: 30; }
+  #spin-ctrl label { color: rgba(255,255,255,0.65); font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+  .label-3d { color: #fff; font: 600 13px sans-serif; text-shadow: 0 1px 4px rgba(0,0,0,0.95), 0 0 10px rgba(0,0,0,0.8); pointer-events: none; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div id="container"></div>
+<div id="info">🌌 银河系 · 3D (NASA Spitzer 红外巡天)</div>
+<div id="hint">🖱 左键拖动: 平移 · 右键拖动: 旋转视角 · 滚轮: 缩放</div>
+<button id="close-btn">← 返回</button>
+<div id="spin-ctrl">
+  <label><input type="checkbox" id="spin-toggle" checked> 自转 (太阳绕银心 2.25 亿年/圈, 加速)</label>
+</div>
+
+<script src="three.min.js"></script>
+<script src="OrbitControls.js"></script>
+<script src="CSS2DRenderer.js"></script>
+<script>
+const container = document.getElementById('container');
+
+// ── 场景 / 相机 / 渲染器 ──
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000008);
+
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 10000);
+camera.position.set(0, 90, 150);
+camera.lookAt(0, 0, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+container.appendChild(renderer.domElement);
+
+// ── 背景星空 ──
+(function addStarField() {
+  const geo = new THREE.BufferGeometry();
+  const N = 2500, pos = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) {
+    const r = 400 + Math.random() * 600;
+    const th = Math.random() * Math.PI * 2;
+    const ph = Math.acos(2 * Math.random() - 1);
+    pos[i*3] = r * Math.sin(ph) * Math.cos(th);
+    pos[i*3+1] = r * Math.sin(ph) * Math.sin(th);
+    pos[i*3+2] = r * Math.cos(ph);
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const mat = new THREE.PointsMaterial({ color: 0x8899bb, size: 1.2, transparent: true, opacity: 0.8, sizeAttenuation: false });
+  scene.add(new THREE.Points(geo, mat));
+})();
+
+// ── 银河系盘 (NASA Spitzer 贴图) ──
+const GALAXY_W = 120;  // 世界单位
+const galaxyGroup = new THREE.Group();   // 原点 = 银心
+
+const texture = new THREE.TextureLoader().load('/data/galaxy_diagram.jpg');
+texture.anisotropy = 8;
+const plane = new THREE.Mesh(
+  new THREE.PlaneGeometry(GALAXY_W, GALAXY_W),
+  new THREE.MeshBasicMaterial({ map: texture, transparent: false, side: THREE.DoubleSide })
+);
+// 贴图 UV: 左上 (0,0)。银心在图 (52%,40%) → 平移到 group 原点
+plane.position.set(-(0.52 - 0.5) * GALAXY_W, 0, -(0.5 - 0.40) * GALAXY_W);
+plane.rotation.x = -Math.PI / 2;  // 平放 (XZ 平面)
+galaxyGroup.add(plane);
+
+// 盘边缘淡淡光晕 (模拟银晕)
+const halo = new THREE.Mesh(
+  new THREE.RingGeometry(GALAXY_W * 0.40, GALAXY_W * 0.62, 96),
+  new THREE.MeshBasicMaterial({ color: 0x3a5a8a, transparent: true, opacity: 0.12, side: THREE.DoubleSide })
+);
+halo.rotation.x = -Math.PI / 2;
+halo.position.copy(plane.position);
+galaxyGroup.add(halo);
+
+// ── 银心 / 太阳 标记 ──
+function makeDot(color, size) {
+  const m = new THREE.Mesh(
+    new THREE.SphereGeometry(size, 16, 16),
+    new THREE.MeshBasicMaterial({ color })
+  );
+  return m;
+}
+const sgrDot = makeDot(0xff5a3c, 1.6);
+galaxyGroup.add(sgrDot);  // 银心 = group 原点
+const sunDot = makeDot(0x64b4ff, 1.3);
+sunDot.position.set(0, 0, (0.52 - 0.69) * GALAXY_W);  // 太阳在图 (52%,69%)
+galaxyGroup.add(sunDot);
+
+// CSS2D 标签
+const labelRenderer = new THREE.CSS2DRenderer();
+labelRenderer.setSize(window.innerWidth, window.innerHeight);
+labelRenderer.domElement.style.position = 'fixed';
+labelRenderer.domElement.style.inset = '0';
+labelRenderer.domElement.style.pointerEvents = 'none';
+container.appendChild(labelRenderer.domElement);
+
+function makeLabel(text) {
+  const el = document.createElement('div');
+  el.className = 'label-3d';
+  el.textContent = text;
+  return new THREE.CSS2DObject(el);
+}
+const sgrLabel = makeLabel('银心 (Sgr A*)');
+sgrLabel.position.set(0, 6, 0);
+galaxyGroup.add(sgrLabel);
+const sunLabel = makeLabel('太阳 (我们在这里)');
+sunLabel.position.set(0, 6, (0.52 - 0.69) * GALAXY_W);
+galaxyGroup.add(sunLabel);
+
+scene.add(galaxyGroup);
+
+// ── OrbitControls: 左键平移 / 右键旋转 / 滚轮缩放 ──
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.mouseButtons.LEFT = THREE.MOUSE.PAN;
+controls.mouseButtons.RIGHT = THREE.MOUSE.ROTATE;
+controls.mouseButtons.MIDDLE = THREE.MOUSE.DOLLY;
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 30;
+controls.maxDistance = 800;
+
+// ── 自转 ──
+let spinEnabled = true;
+document.getElementById('spin-toggle').addEventListener('change', e => spinEnabled = e.target.checked);
+const SPIN_PERIOD_S = 600;  // 10 分钟一圈 (加速显示)
+
+// ── 动画循环 ──
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const delta = clock.getDelta();
+  if (spinEnabled) galaxyGroup.rotation.y += (delta / SPIN_PERIOD_S) * Math.PI * 2;
+  controls.update();
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+}
+animate();
+
+// ── 窗口缩放 ──
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  labelRenderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ── 返回按钮 (通知父窗口) ──
+document.getElementById('close-btn').addEventListener('click', () => {
+  window.parent.postMessage({ type: 'close-galaxy-3d' }, '*');
+});
+</script>
+</body>
+</html>

@@ -1199,6 +1199,21 @@ function closeSolarSystemView() {
   viewer.scene.globe.show = true;
 }
 
+// ── 银河系 3D 视图 (Three.js iframe, 左键平移/右键旋转/滚轮缩放) ──
+let galaxy3DIframe = null;
+function openGalaxy3DView() {
+  if (galaxy3DIframe) { galaxy3DIframe.style.display = 'block'; return; }
+  galaxy3DIframe = document.createElement('iframe');
+  galaxy3DIframe.src = '/galaxy-3d-view.html';
+  galaxy3DIframe.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:none;z-index:60;background:#000;';
+  document.body.appendChild(galaxy3DIframe);
+}
+function closeGalaxy3DView() {
+  if (galaxy3DIframe) galaxy3DIframe.remove();
+  galaxy3DIframe = null;
+  viewer.scene.globe.show = true;
+}
+
 // 宇宙大尺度 overlay 切换
 function showCosmosOverlay(which) {
   // 隐藏所有宇宙 overlay
@@ -1228,6 +1243,7 @@ function setViewMode(mode) {
   });
   if (mode === 'earth') {
     closeSolarSystemView();
+    closeGalaxy3DView();
     clearGalaxy();
     hideCosmosOverlays();
     showCesium();
@@ -1245,9 +1261,10 @@ function setViewMode(mode) {
     closeSolarSystemView();
     hideCosmosOverlays();
     showCesium();
-    buildGalaxy();
+    openGalaxy3DView();
   } else if (mode === 'localgroup' || mode === 'andromeda' || mode === 'virgo' || mode === 'laniakea' || mode === 'sloan' || mode === 'allsky' || mode === 'observable' || mode === 'hubble' || mode === 'cmb'  || mode === 'pisces-cetus' || mode === 'giant-arc' || mode === 'huge-lqg' || mode === 'giant-grb-ring' || mode === 'hercules-corona') {
     closeSolarSystemView();
+    closeGalaxy3DView();
     clearGalaxy();
     // 宇宙视图是纯 2D overlay: 隐藏 Cesium 画布, 避免 globe.show=false 时
     // Cesium 触发 'RangeError: Invalid array length' 渲染崩溃 + 错误弹窗遮挡图片
@@ -1393,6 +1410,10 @@ document.querySelectorAll('.view-mode-btn').forEach(btn => {
 window.addEventListener('message', (ev) => {
   if (ev.data && ev.data.type === 'close-solar-system') {
     closeSolarSystemView();
+    setViewMode('earth');
+  }
+  if (ev.data && ev.data.type === 'close-galaxy-3d') {
+    closeGalaxy3DView();
     setViewMode('earth');
   }
 });
