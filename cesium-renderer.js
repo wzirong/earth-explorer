@@ -33,8 +33,8 @@ viewer.cesiumWidget.creditContainer.style.display = 'none';
 // 暗色大气 / 太空背景
 viewer.scene.backgroundColor = Cesium.Color.BLACK;
 viewer.scene.skyAtmosphere = new Cesium.SkyAtmosphere();
-viewer.scene.globe.enableLighting = true;   // 实时光照 (昼夜明暗)
-viewer.scene.light = new Cesium.DirectionalLight({ direction: new Cesium.Cartesian3(1, 1, -1) });
+viewer.scene.globe.enableLighting = true;   // 实时光照 (昼夜明暗, 用真实太阳位置)
+// 注意: 不手动设置 scene.light, 让 Cesium 默认用 scene.sun (基于 clock 真实时间的太阳)
 viewer.scene.globe.atmosphereLightIntensity = 12;
 viewer.scene.globe.showGroundAtmosphere = true;
 // galaxy 模式开关
@@ -982,16 +982,7 @@ setInterval(() => { if (solarSystemVisible) updateSolarSystem(true); }, 60000);
 
 // ── 太阳光照（Cesium globe.enableLighting）────────────────
 document.getElementById('toggle-lighting')?.addEventListener('change', e => {
-  viewer.scene.globe.enableLighting = e.target.checked;
-  if (e.target.checked) {
-    viewer.scene.light = new Cesium.DirectionalLight({
-      direction: new Cesium.Cartesian3(1, 1, -1)
-    });
-  } else {
-    viewer.scene.light = new Cesium.DirectionalLight({
-      direction: new Cesium.Cartesian3(0, 0, -1)
-    });
-  }
+  viewer.scene.globe.enableLighting = e.target.checked;  // 用真实太阳光照
 });
 
 
@@ -1057,10 +1048,12 @@ function buildGalaxy() {
     if (!img) return;
     const rect = img.getBoundingClientRect();
     if (rect.width === 0) return;
-    // spin 容器尺寸/位置 = 图片实际显示区域; 旋转轴 = 银心 (52%, 40%)
+    // spin 容器 = 图片显示区域的 70% (保证旋转时四角不超出屏幕被裁剪; 0.7×√2≈0.99<1 安全)
     const spin = document.getElementById('galaxy-spin');
     if (spin) {
-      spin.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;display:flex;align-items:center;justify-content:center;transform-origin:52% 40%;will-change:transform;animation:galaxySpin 600s linear infinite;`;
+      const scale = 0.7;
+      const sw = rect.width * scale, sh = rect.height * scale;
+      spin.style.cssText = `position:fixed;left:${rect.left + (rect.width - sw) / 2}px;top:${rect.top + (rect.height - sh) / 2}px;width:${sw}px;height:${sh}px;display:flex;align-items:center;justify-content:center;transform-origin:52% 40%;will-change:transform;animation:galaxySpin 600s linear infinite;`;
     }
     // 银心/太阳 位置: NASA Spitzer 图实测 (银心 52%, 40%; 太阳 52%, 69%)
     const pct = (x, y) => `position:absolute;left:${x}%;top:${y}%;`;
