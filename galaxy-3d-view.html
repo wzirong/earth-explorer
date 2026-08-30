@@ -5,7 +5,8 @@
 <title>银河系 3D</title>
 <style>
   html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
-  #container { position: fixed; inset: 0; }
+  #container { position: fixed; inset: 0; cursor: grab; }
+  #container.dragging { cursor: grabbing; }
   #info { position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
           color: rgba(255,255,255,0.85); font: 600 16px sans-serif; letter-spacing: 2px;
           text-shadow: 0 2px 10px rgba(0,0,0,0.8); pointer-events: none; z-index: 10; white-space: nowrap; }
@@ -32,8 +33,8 @@
 </head>
 <body>
 <div id="container"></div>
-<div id="info">🌌 银河系 · 3D 结构 (银核 + 4 旋臂 + 猎户支臂)</div>
-<div id="hint">🖱 拖拽旋转 · 滚轮缩放 · 点击天体查看信息</div>
+<div id="info">🌌 银河系 · 3D</div>
+<div id="hint">🖱 左键拖动: 旋转 · 右键拖动: 平移 · 滚轮: 缩放</div>
 <div id="focus-hint"></div>
 <div id="speed-ctrl">
   <span>⏱ 时间流速</span>
@@ -47,12 +48,12 @@
 
 <script src="three.min.js"></script>
 <script>
-// ── Three.js 银河系 3D (像太阳系那样: 拖拽旋转/缩放/点击/时间流速) ──
+// ── 银河系 3D (真实 ESO 俯视图盘面 + 立体核球/银晕 + 星空) ──
 const container = document.getElementById('container');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000008);
 
-// 星空背景
+// 星空背景 (球形分布)
 const starField = new THREE.Points(
   new THREE.BufferGeometry(),
   new THREE.PointsMaterial({ color: 0x8899bb, size: 1.1, sizeAttenuation: false, transparent: true, opacity: 0.8 })
@@ -60,210 +61,181 @@ const starField = new THREE.Points(
 {
   const count = 3000;
   const pos = new Float32Array(count * 3);
-  for (let i = 0; i < count * 3; i++) pos[i] = (Math.random() - 0.5) * 4000;
+  for (let i = 0; i < count; i++) {
+    const r = 400 + Math.random() * 500;
+    const th = Math.random() * Math.PI * 2;
+    const ph = Math.acos(2 * Math.random() - 1);
+    pos[i*3] = r * Math.sin(ph) * Math.cos(th);
+    pos[i*3+1] = r * Math.sin(ph) * Math.sin(th);
+    pos[i*3+2] = r * Math.cos(ph);
+  }
   starField.geometry.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   scene.add(starField);
 }
 
 const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 20000);
-camera.position.set(0, 90, 130);
+const camPos = new THREE.Vector3(0, 85, 140);
+camera.position.copy(camPos);
 camera.lookAt(0, 0, 0);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 container.appendChild(renderer.domElement);
 
-// 光照
-scene.add(new THREE.AmbientLight(0x555577, 1.2));
-
-// ── 单位: 1 unit = 1000 光年; 银河系半径 ~50 unit (5 万光年) ──
+// ── 单位: 1 unit = 1000 光年 ──
+const GALAXY_R = 50;  // 盘半径 5 万光年
 const galaxyGroup = new THREE.Group();   // 原点 = 银心
 scene.add(galaxyGroup);
+// 调整初始朝向: 让盘面看到美丽角度
+galaxyGroup.rotation.x = 0.42;
+galaxyGroup.rotation.y = 0.8;
 
 function rand(a, b) { return a + Math.random() * (b - a); }
 
-// 银核 (发光球 + 光晕)
-const bulgeGeo = new THREE.SphereGeometry(4.5, 48, 48);
-const bulgeMat = new THREE.MeshBasicMaterial({ color: 0xffdca0 });
-const bulge = new THREE.Mesh(bulgeGeo, bulgeMat);
-galaxyGroup.add(bulge);
-const glow = new THREE.Sprite(new THREE.SpriteMaterial({
-  map: (() => { const c = document.createElement('canvas'); c.width = c.height = 128;
-    const g = c.getContext('2d'); const gr = g.createRadialGradient(64,64,6,64,64,64);
-    gr.addColorStop(0,'rgba(255,210,130,0.95)'); gr.addColorStop(0.4,'rgba(255,160,70,0.35)'); gr.addColorStop(1,'rgba(255,130,40,0)');
-    g.fillStyle = gr; g.fillRect(0,0,128,128); return new THREE.CanvasTexture(c); })(),
-  transparent: true, depthWrite: false
-}));
-glow.scale.set(40, 40, 1);
-galaxyGroup.add(glow);
-
-// 中央棒 (bar) — 穿过银核
-const bar = new THREE.Mesh(
-  new THREE.BoxGeometry(16, 1.5, 6),
-  new THREE.MeshBasicMaterial({ color: 0xffd89a, transparent: true, opacity: 0.9 })
+// ── 1. 盘面贴图 (真实 ESO 俯视图, 黑底已转透明) ──
+const diskTex = new THREE.TextureLoader().load('data/galaxy_disk.png');
+diskTex.anisotropy = 16;
+diskTex.colorSpace = THREE.SRGBColorSpace;
+const diskPlane = new THREE.Mesh(
+  new THREE.PlaneGeometry(GALAXY_R * 2, GALAXY_R * 2),
+  new THREE.MeshBasicMaterial({
+    map: diskTex, transparent: true, depthWrite: false,
+    blending: THREE.AdditiveBlending, side: THREE.DoubleSide
+  })
 );
-galaxyGroup.add(bar);
+diskPlane.rotation.x = -Math.PI / 2;
+galaxyGroup.add(diskPlane);   // 俯视正看
 
-// ── 旋臂 (4 条主臂, 对数螺旋 + 粒子) ──
-const ARM_COLORS = [0x9db8ff, 0xa8c0ff, 0x93b0ff, 0xb0c4ff];  // 蓝白年轻恒星
-const HII_COLOR = 0xff7fae;  // 粉色 H II 区
-const ARMS = [
-  { name: '英仙臂 Perseus',       phase: 0 },
-  { name: '矩尺臂 Norma',         phase: Math.PI / 2 },
-  { name: '盾牌-半人马臂 Scutum', phase: Math.PI },
-  { name: '人马臂 Sagittarius',   phase: 3 * Math.PI / 2 },
-];
+// 盘面底部镜像 (侧看时也有厚度感)
+const diskPlane2 = diskPlane.clone();
+diskPlane2.rotation.x = Math.PI / 2;
+diskPlane2.position.y = -0.4;
+diskPlane2.material = diskPlane.material.clone();
+diskPlane2.material.opacity = 0.6;
+galaxyGroup.add(diskPlane2);
 
-const r0 = 6, b = 0.30, thMax = 2.2 * Math.PI;
-const armPts = [];
-const armColors = [];
-ARMS.forEach((arm, ai) => {
-  const N = 4200;
-  for (let i = 0; i < N; i++) {
-    const t = (i / N) * thMax;
-    const r = r0 * Math.exp(t * b) * rand(0.86, 1.10);
-    if (r > 48) continue;
-    const th = t + arm.phase + rand(-0.05, 0.05);
-    const x = r * Math.cos(th);
-    const z = r * Math.sin(th);
-    const y = rand(-0.9, 0.9);  // 薄盘厚度
-    armPts.push(x, y, z);
-    // 少量 H II 区 (粉色) 点缀
-    const c = Math.random() < 0.08 ? HII_COLOR : ARM_COLORS[ai];
-    const col = new THREE.Color(c);
-    armColors.push(col.r, col.g, col.b);
-  }
-});
-
-// 猎户支臂 (Orion Spur, 太阳所在的小支臂, 在英仙与人马臂之间)
+// ── 2. 立体核球 bulge (密集黄白老恒星, 扁球隆起) ──
 {
-  const N = 1200;
-  const spurPhase = 0.75 * Math.PI;
+  const N = 3000, pos = new Float32Array(N * 3), col = new Float32Array(N * 3);
   for (let i = 0; i < N; i++) {
-    const t = (i / N) * 1.2 * Math.PI;
-    const r = 20 + t * 2.2 * rand(0.8, 1.15);
-    if (r > 34) continue;
-    const th = t + spurPhase + rand(-0.06, 0.06);
-    armPts.push(r * Math.cos(th), rand(-0.8, 0.8), r * Math.sin(th));
-    const col = new THREE.Color(0xbcd0ff);
-    armColors.push(col.r, col.g, col.b);
-  }
-}
-
-const armGeo = new THREE.BufferGeometry();
-armGeo.setAttribute('position', new THREE.Float32BufferAttribute(armPts, 3));
-armGeo.setAttribute('color', new THREE.Float32BufferAttribute(armColors, 3));
-const armPoints = new THREE.Points(armGeo, new THREE.PointsMaterial({
-  size: 0.55, vertexColors: true, sizeAttenuation: true, transparent: true, opacity: 0.95, depthWrite: false
-}));
-galaxyGroup.add(armPoints);
-
-// ── 恒星盘 (背景粒子, 径向密度衰减) ──
-{
-  const N = 40000, pos = new Float32Array(N * 3), col = new Float32Array(N * 3);
-  for (let i = 0; i < N; i++) {
-    // 指数衰减的半径分布
-    const r = -Math.log(1 - Math.random() * 0.999) * 9;  // 平均 ~9 unit
-    if (r > 50) { pos[i*3]=pos[i*3+1]=pos[i*3+2]=0; col[i*3]=col[i*3+1]=col[i*3+2]=0; continue; }
-    const th = Math.random() * Math.PI * 2;
-    const y = rand(-1.6, 1.6) * (1 - r / 60);
-    pos[i*3] = r * Math.cos(th); pos[i*3+1] = y; pos[i*3+2] = r * Math.sin(th);
-    const bright = rand(0.5, 1.0);
-    const c = new THREE.Color(0xffffff).multiplyScalar(bright);
-    col[i*3] = c.r; col[i*3+1] = c.g; col[i*3+2] = c.b;
+    // 高斯径向分布, 扁球 (x,z 半径大, y 半径小)
+    const r = Math.abs(rand(-1,1)) * 1.0;
+    const scale = 6.5;
+    const x = rand(-1,1), y = rand(-1,1), z = rand(-1,1);
+    const len = Math.sqrt(x*x+y*y+z*z) || 1;
+    const rr = r * scale;
+    pos[i*3] = (x/len) * rr * 1.0;
+    pos[i*3+1] = (y/len) * rr * 0.5;   // 扁球
+    pos[i*3+2] = (z/len) * rr * 1.0;
+    const warm = Math.random();
+    const c = new THREE.Color(warm < 0.6 ? 0xffe9b0 : (warm < 0.85 ? 0xffd08a : 0xffc060));
+    c.multiplyScalar(rand(0.55, 1.0));
+    col[i*3]=c.r; col[i*3+1]=c.g; col[i*3+2]=c.b;
   }
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
-  const disk = new THREE.Points(geo, new THREE.PointsMaterial({
-    size: 0.35, vertexColors: true, sizeAttenuation: true, transparent: true, opacity: 0.9, depthWrite: false
+  const bulge = new THREE.Points(geo, new THREE.PointsMaterial({
+    size: 0.5, vertexColors: true, sizeAttenuation: true, transparent: true, opacity: 0.95, depthWrite: false,
+    blending: THREE.AdditiveBlending
   }));
-  galaxyGroup.add(disk);
+  galaxyGroup.add(bulge);
 }
 
-// ── 可点击天体: 银心 + 太阳 ──
-const clickables = [];
+// ── 3. 中央黑洞 (黑点, 不发光) ──
+{
+  const bhGeo = new THREE.SphereGeometry(0.6, 32, 32);
+  const bhMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+  const bh = new THREE.Mesh(bhGeo, bhMat);
+  galaxyGroup.add(bh);
+}
 
+// ── 4. 银晕 + 恒星盘 (薄盘厚度, 侧看有立体感) ──
+{
+  const N = 25000, pos = new Float32Array(N * 3), col = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) {
+    const r = -Math.log(1 - Math.random() * 0.999) * 9;
+    if (r > 52) { pos[i*3]=pos[i*3+1]=pos[i*3+2]=0; col[i*3]=col[i*3+1]=col[i*3+2]=0; continue; }
+    const th = Math.random() * Math.PI * 2;
+    const y = rand(-1.2, 1.2) * (1 - r/60);
+    pos[i*3] = r * Math.cos(th); pos[i*3+1] = y; pos[i*3+2] = r * Math.sin(th);
+    const blue = Math.random() < 0.7;
+    const c = new THREE.Color(blue ? 0xbdd0ff : 0xfff6e0).multiplyScalar(rand(0.35, 0.95));
+    col[i*3]=c.r; col[i*3+1]=c.g; col[i*3+2]=c.b;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  const halo = new THREE.Points(geo, new THREE.PointsMaterial({
+    size: 0.32, vertexColors: true, sizeAttenuation: true, transparent: true, opacity: 0.85, depthWrite: false,
+    blending: THREE.AdditiveBlending
+  }));
+  galaxyGroup.add(halo);
+}
+
+// ── 可点击天体 ──
+const clickables = [];
 function makeMarker(pos, color, size, info) {
-  const m = new THREE.Mesh(
-    new THREE.SphereGeometry(size, 16, 16),
-    new THREE.MeshBasicMaterial({ color })
-  );
-  m.position.copy(pos);
-  galaxyGroup.add(m);
+  const m = new THREE.Mesh(new THREE.SphereGeometry(size, 16, 16), new THREE.MeshBasicMaterial({ color }));
+  m.position.copy(pos); galaxyGroup.add(m);
   const halo = new THREE.Sprite(new THREE.SpriteMaterial({
-    map: (() => { const c = document.createElement('canvas'); c.width=c.height=64;
+    map: (() => { const c=document.createElement('canvas'); c.width=c.height=64;
       const g=c.getContext('2d'); const gr=g.createRadialGradient(32,32,2,32,32,32);
       gr.addColorStop(0,'rgba(255,255,255,0.9)'); gr.addColorStop(1,'rgba(255,255,255,0)');
       g.fillStyle=gr; g.fillRect(0,0,64,64); return new THREE.CanvasTexture(c); })(),
     transparent: true, depthWrite: false
   }));
-  halo.scale.set(size * 8, size * 8, 1);
-  m.add(halo);
-  clickables.push({ mesh: m, info });
-  return m;
+  halo.scale.set(size*8, size*8, 1); m.add(halo);
+  clickables.push({ mesh: m, info }); return m;
 }
-
-// 银心 Sgr A* (原点)
-makeMarker(new THREE.Vector3(0, 0, 0), 0xff5a3c, 1.6, {
+makeMarker(new THREE.Vector3(0,0,0), 0x000000, 1.2, {
   name: '银心黑洞 Sgr A*', sub: 'Galactic Center',
   rows: ['超大质量黑洞', '约 400 万太阳质量', '距太阳 26,000 光年', '银河系所有恒星绕它公转']
 });
-// 太阳 (猎户支臂, 距银心 26 unit)
 const SUN_R = 26, SUN_TH = 0.75 * Math.PI;
-const sunPos = new THREE.Vector3(SUN_R * Math.cos(SUN_TH), 0, SUN_R * Math.sin(SUN_TH));
-makeMarker(sunPos, 0x64b4ff, 1.3, {
+const sunPos = new THREE.Vector3(SUN_R*Math.cos(SUN_TH), 0, SUN_R*Math.sin(SUN_TH));
+makeMarker(sunPos, 0x64b4ff, 1.1, {
   name: '太阳 (我们在这里)', sub: 'Sun · Orion Spur',
   rows: ['G 型主序星', '位于猎户支臂', '距银心 26,000 光年', '绕银心 2.25 亿年一圈 (银河年)']
 });
 
-// 旋臂文字标签 (CSS 风格, 用 sprite 简化)
-const armLabels = ARMS.concat([{ name: '猎户支臂 Orion Spur', phase: 0.75 * Math.PI, spur: true }]);
-// 用 CSS2D 需要引入; 这里用 Sprite canvas 文字 (简单)
-function makeTextSprite(text, pos) {
-  const c = document.createElement('canvas'); c.width = 512; c.height = 64;
-  const g = c.getContext('2d');
-  g.font = '600 30px sans-serif'; g.fillStyle = 'rgba(200,220,255,0.85)';
-  g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillText(text, 256, 32);
-  const tex = new THREE.CanvasTexture(c);
-  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
-  sp.scale.set(24, 3, 1);
-  sp.position.copy(pos);
-  galaxyGroup.add(sp);
-}
-// 标签放在旋臂中段
-ARMS.forEach(arm => {
-  const rMid = r0 * Math.exp(1.2 * Math.PI * b);
-  const th = 1.2 * Math.PI + arm.phase;
-  makeTextSprite(arm.name, new THREE.Vector3(rMid * Math.cos(th), 6, rMid * Math.sin(th)));
-});
+// ── 交互: 左键旋转 / 右键平移 / 滚轮缩放 ──
+let action = null, prevX = 0, prevY = 0;
+const panTarget = new THREE.Vector3(0, 0, 0);   // 注视点(可平移)
+let rotY = 0.8, rotX = 0.42;                    // 绕盘面的轨道角
+let viewDist = 160;
 
-// ── 交互: 拖拽旋转 / 滚轮缩放 / 点击拾取 ──
-let isDragging = false, prevX = 0, prevY = 0, rotY = 0.6, rotX = 0.45;
-container.addEventListener('mousedown', e => { isDragging = true; prevX = e.clientX; prevY = e.clientY; });
-window.addEventListener('mouseup', () => isDragging = false);
+container.addEventListener('contextmenu', e => e.preventDefault());
+container.addEventListener('mousedown', e => {
+  action = (e.button === 2) ? 'pan' : 'rotate';
+  prevX = e.clientX; prevY = e.clientY;
+  container.classList.add('dragging');
+});
+window.addEventListener('mouseup', () => { action = null; container.classList.remove('dragging'); });
 window.addEventListener('mousemove', e => {
-  if (!isDragging) return;
-  rotY += (e.clientX - prevX) * 0.005;
-  rotX += (e.clientY - prevY) * 0.005;
-  rotX = Math.max(-1.4, Math.min(1.4, rotX));
+  if (!action) return;
+  const dx = e.clientX - prevX, dy = e.clientY - prevY;
+  if (action === 'rotate') {
+    rotY += dx * 0.005;
+    rotX = Math.max(-1.45, Math.min(1.45, rotX + dy * 0.005));
+  } else {  // 平移注视点
+    const s = viewDist * 0.0015;
+    // 相机右手方向与上方向的世界平移
+    const right = new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion);
+    const up = new THREE.Vector3(0,1,0).applyQuaternion(camera.quaternion);
+    panTarget.addScaledVector(right, -dx * s);
+    panTarget.addScaledVector(up, dy * s);
+  }
   prevX = e.clientX; prevY = e.clientY;
 });
-let viewDist = 130;
 container.addEventListener('wheel', e => {
   e.preventDefault();
-  if (focused) {
-    focusDist *= (e.deltaY > 0 ? 1.12 : 0.88);
-    focusDist = Math.max(4, Math.min(60, focusDist));
-  } else {
-    viewDist *= (e.deltaY > 0 ? 1.1 : 0.9);
-    viewDist = Math.max(30, Math.min(600, viewDist));
-  }
+  viewDist *= (e.deltaY > 0 ? 1.1 : 0.9);
+  viewDist = Math.max(35, Math.min(800, viewDist));
 }, { passive: false });
 
-// 拾取
+// 拾取点击
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 const tooltip = document.getElementById('tooltip');
@@ -277,12 +249,9 @@ container.addEventListener('click', e => {
   if (hits.length > 0) {
     const obj = hits[0].object;
     const entry = clickables.find(c => c.mesh === obj || c.mesh.children.includes(obj));
-    if (entry) { focusOn(entry); showInfo(entry.info); }
-  } else {
-    backToOverview();
+    if (entry) showInfo(entry.info);
   }
 });
-
 function showInfo(info) {
   tooltip.style.display = 'block';
   tooltip.style.left = '50%'; tooltip.style.top = '58%'; tooltip.style.transform = 'translateX(-50%)';
@@ -292,34 +261,14 @@ function showInfo(info) {
   setTimeout(() => tooltip.style.display = 'none', 6000);
 }
 
-// 相机飞行 (像太阳系)
-let focused = null, focusDist = 20, camAnim = null;
-let cameraTarget = new THREE.Vector3(0, 0, 0);
-function smoothStep(t) { return t * t * (3 - 2 * t); }
-function flyCameraTo(endPos, endLook, dur) {
-  camAnim = { t: 0, dur: dur || 1.2, startPos: camera.position.clone(), startLook: cameraTarget.clone(),
-              endPos: endPos.clone(), endLook: endLook.clone() };
-}
-function focusOn(entry) {
-  focused = entry;
-  focusDist = 18;
-  const off = new THREE.Vector3(0.6, 0.7, 1).normalize().multiplyScalar(focusDist);
-  flyCameraTo(entry.mesh.position.clone().add(off), entry.mesh.position.clone(), 1.4);
-  document.getElementById('focus-hint').textContent = `🔭 正在观察: ${entry.info.name} (点击空白返回全景)`;
-  document.getElementById('focus-hint').style.display = 'block';
-}
-function backToOverview() {
-  focused = null;
-  document.getElementById('focus-hint').style.display = 'none';
-  flyCameraTo(new THREE.Vector3(0, 90, 130), new THREE.Vector3(0, 0, 0), 1.2);
-}
-
-// ── 时间流速 ──
-const GALACTIC_YEAR = 2.25e8;  // 太阳绕银心一圈 = 2.25 亿年
-let simSpeed = 0;  // 年/秒
+// ── 时间流速 + 自转 (顺时针, 从北银极俯视) ──
+const GALACTIC_YEAR = 2.25e8;
+let simSpeed = 0;
 document.querySelectorAll('.spd').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.spd').forEach(b => { b.classList.remove('active'); b.style.borderColor='rgba(255,255,255,0.2)'; b.style.background='transparent'; b.style.color='#aaa'; });
+    document.querySelectorAll('.spd').forEach(b => {
+      b.classList.remove('active'); b.style.borderColor='rgba(255,255,255,0.2)'; b.style.background='transparent'; b.style.color='#aaa';
+    });
     btn.classList.add('active'); btn.style.borderColor='#4fc3f7'; btn.style.background='rgba(79,195,247,0.2)'; btn.style.color='#4fc3f7';
     simSpeed = parseFloat(btn.dataset.s) || 0;
   });
@@ -327,39 +276,22 @@ document.querySelectorAll('.spd').forEach(btn => {
 
 // ── 动画循环 ──
 const clock = new THREE.Clock();
-let totalTime = 0;
 function animate() {
   requestAnimationFrame(animate);
   const delta = clock.getDelta();
-  totalTime += delta;
 
-  // 星系自转 (刚体近似): 角速度 = 2π * (模拟年数) / 银河年
+  // 星系自转: 顺时针(北银极俯视) → 视觉上 rotation.y 正向
   if (simSpeed > 0) {
     galaxyGroup.rotation.y += (delta * simSpeed / GALACTIC_YEAR) * Math.PI * 2;
   }
 
-  // 相机
-  if (camAnim) {
-    camAnim.t += delta;
-    const t = Math.min(1, camAnim.t / camAnim.dur), e = smoothStep(t);
-    camera.position.lerpVectors(camAnim.startPos, camAnim.endPos, e);
-    cameraTarget.lerpVectors(camAnim.startLook, camAnim.endLook, e);
-    if (t >= 1) camAnim = null;
-  } else if (focused) {
-    const off = new THREE.Vector3(0.6, 0.7, 1).normalize().multiplyScalar(focusDist);
-    const desired = focused.mesh.position.clone().add(off);
-    camera.position.lerp(desired, 0.08);
-    cameraTarget.lerp(focused.mesh.position.clone(), 0.08);
-  } else {
-    const targetRotY = rotY;
-    camera.position.set(
-      viewDist * Math.sin(targetRotY) * Math.cos(rotX),
-      viewDist * Math.sin(rotX),
-      viewDist * Math.cos(targetRotY) * Math.cos(rotX)
-    );
-    cameraTarget.set(0, 0, 0);
-  }
-  camera.lookAt(cameraTarget);
+  // 相机轨道定位
+  camera.position.set(
+    panTarget.x + viewDist * Math.sin(rotY) * Math.cos(rotX),
+    panTarget.y + viewDist * Math.sin(rotX),
+    panTarget.z + viewDist * Math.cos(rotY) * Math.cos(rotX)
+  );
+  camera.lookAt(panTarget);
 
   renderer.render(scene, camera);
 }
