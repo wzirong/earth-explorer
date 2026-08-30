@@ -1253,6 +1253,21 @@ function closeLocalGroup3DView() {
   viewer.scene.globe.show = true;
 }
 
+// 室女团 3D 视图 (iframe)
+let virgo3DIframe = null;
+function openVirgo3DView() {
+  if (virgo3DIframe) { virgo3DIframe.style.display = 'block'; return; }
+  virgo3DIframe = document.createElement('iframe');
+  virgo3DIframe.src = '/virgo-cluster-3d-view.html';
+  virgo3DIframe.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:none;z-index:60;background:#000;';
+  document.body.appendChild(virgo3DIframe);
+}
+function closeVirgo3DView() {
+  if (virgo3DIframe) virgo3DIframe.remove();
+  virgo3DIframe = null;
+  viewer.scene.globe.show = true;
+}
+
 // 宇宙大尺度 overlay 切换
 function showCosmosOverlay(which) {
   // 隐藏所有宇宙 overlay
@@ -1285,6 +1300,7 @@ function setViewMode(mode) {
     closeSolarSystemView();
     closeGalaxy3DView();
     closeLocalGroup3DView();
+    closeVirgo3DView();
     clearGalaxy();
     hideCosmosOverlays();
     showCesium();
@@ -1315,7 +1331,17 @@ function setViewMode(mode) {
     hideCesium();
     viewer.scene.globe.show = false;
     openLocalGroup3DView();
-  } else if (mode === 'virgo' || mode === 'laniakea' || mode === 'sloan' || mode === 'allsky' || mode === 'observable' || mode === 'hubble' || mode === 'cmb'  || mode === 'pisces-cetus' || mode === 'giant-arc' || mode === 'huge-lqg' || mode === 'giant-grb-ring' || mode === 'hercules-corona') {
+  } else if (mode === 'virgo') {
+    showSolarNav(false);
+    closeSolarSystemView();
+    closeGalaxy3DView();
+    closeLocalGroup3DView();
+    clearGalaxy();
+    hideCosmosOverlays();
+    hideCesium();
+    viewer.scene.globe.show = false;
+    openVirgo3DView();
+  } else if (mode === 'laniakea' || mode === 'sloan' || mode === 'allsky' || mode === 'observable' || mode === 'hubble' || mode === 'cmb'  || mode === 'pisces-cetus' || mode === 'giant-arc' || mode === 'huge-lqg' || mode === 'giant-grb-ring' || mode === 'hercules-corona') {
     showSolarNav(false);
     closeSolarSystemView();
     closeGalaxy3DView();
@@ -1473,6 +1499,10 @@ window.addEventListener('message', (ev) => {
   }
   if (ev.data && ev.data.type === 'close-localgroup-3d') {
     closeLocalGroup3DView();
+    setViewMode('earth');
+  }
+  if (ev.data && ev.data.type === 'close-virgo-3d') {
+    closeVirgo3DView();
     setViewMode('earth');
   }
 });
