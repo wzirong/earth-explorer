@@ -151,9 +151,9 @@ GALAXIES.forEach(g => {
   const cls = classify(g);
   // 大小: 亮旋涡 > 椭圆 > 暗矮; 亮度随距离衰减
   let size, color;
-  if (cls === 'spiral')      { size = 0.34; color = 0xd8e6ff; }   // 旋涡/不规则: 较亮, 蓝白
-  else if (cls === 'elliptical') { size = 0.28; color = 0xffe8c0; } // 椭圆: 黄白
-  else { size = 0.14 + (1 - Math.min(d,2.5)/2.5) * 0.10; color = 0x8aa8cc; } // 暗矮: 随距离暗淡
+  if (cls === 'spiral')      { size = 0.18; color = 0xc8d8f0; }   // 旋涡/不规则: 较亮, 蓝白
+  else if (cls === 'elliptical') { size = 0.15; color = 0xffd8a0; } // 椭圆: 黄白
+  else { size = 0.06 + (1 - Math.min(d,2.5)/2.5) * 0.06; color = 0x8aa8cc; } // 暗矮: 随距离暗淡
 
   const m = new THREE.Mesh(
     new THREE.SphereGeometry(size, 12, 12),
@@ -162,9 +162,9 @@ GALAXIES.forEach(g => {
   m.position.set(g.x, g.y, g.z);
   GROUP.add(m);
 
-  // 光晕: 亮星系光晕大而暖, 暗矮光晕小而弱
-  const haloSize = cls === 'spiral' ? size*8 : (cls === 'elliptical' ? size*7 : size*4);
-  const haloAlpha = cls === 'spiral' ? 0.9 : (cls === 'elliptical' ? 0.75 : 0.5);
+  // 光晕: 仅保留微弱轮廓晕(避免多星系光晕连成一片白雾)
+  const haloSize = cls === 'spiral' ? size*2.5 : (cls === 'elliptical' ? size*2 : size*1.5);
+  const haloAlpha = cls === 'spiral' ? 0.45 : (cls === 'elliptical' ? 0.35 : 0.25);
   const halo = new THREE.Sprite(new THREE.SpriteMaterial({
     map: (()=>{ const c=document.createElement('canvas'); c.width=c.height=64;
       const g2=c.getContext('2d'); const gr=g2.createRadialGradient(32,32,2,32,32,32);
@@ -182,15 +182,7 @@ GALAXIES.forEach(g => {
   }});
 });
 
-// 银河系自身也可点击
-const mwHalo = new THREE.Sprite(new THREE.SpriteMaterial({
-  map: (()=>{ const c=document.createElement('canvas'); c.width=c.height=64;
-    const g2=c.getContext('2d'); const gr=g2.createRadialGradient(32,32,2,32,32,32);
-    gr.addColorStop(0,'rgba(255,255,255,0.7)'); gr.addColorStop(1,'rgba(255,255,255,0)');
-    g2.fillStyle=gr; g2.fillRect(0,0,64,64); return new THREE.CanvasTexture(c); })(),
-  transparent: true, depthWrite: false
-}));
-mwHalo.scale.set(2.5, 2.5, 1); mwGroup.add(mwHalo);
+// 银河系自身也可点击(贴图本身已亮, 不加外光晕)
 clickables.push({ mesh: mw, info: { name: '银河系 Milky Way', sub: '我们的家园星系', rows: ['直径约 10 万光年','含太阳系与 2000 亿+ 恒星'] } });
 
 // ── 交互: 左键平移 / 右键旋转 / 滚轮缩放 ──
