@@ -37,6 +37,7 @@
 <button id="close-btn">← 返回地球</button>
 
 <script src="three.min.js"></script>
+<script src="CSS2DRenderer.js"></script>
 <script>
 // ── Three.js 太阳系 (Solar Walk 风格) ──
 const container = document.getElementById('container');
@@ -66,6 +67,36 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 container.appendChild(renderer.domElement);
+
+// CSS2D 标签渲染器 (行星/太阳名字标签)
+const labelRenderer = new THREE.CSS2DRenderer();
+labelRenderer.setSize(window.innerWidth, window.innerHeight);
+labelRenderer.domElement.style.position = 'fixed';
+labelRenderer.domElement.style.inset = '0';
+labelRenderer.domElement.style.pointerEvents = 'none';
+container.appendChild(labelRenderer.domElement);
+
+// 创建可点击的 CSS2D 标签
+const LABEL_STYLE = { fontSize:'13px', color:'#fff', background:'rgba(15,20,30,0.75)', padding:'2px 9px',
+  borderRadius:'10px', border:'1px solid rgba(120,180,255,0.45)', cursor:'pointer', whiteSpace:'nowrap',
+  fontFamily:'sans-serif', letterSpacing:'0.5px', userSelect:'none', pointerEvents:'auto' };
+function makeLabel(text, targetMesh) {
+  const el = document.createElement('div');
+  el.textContent = text;
+  Object.assign(el.style, LABEL_STYLE);
+  el.addEventListener('mouseenter', () => { el.style.background='rgba(52,152,255,0.35)'; el.style.borderColor='#4fc3f7'; });
+  el.addEventListener('mouseleave', () => { el.style.background='rgba(15,20,30,0.75)'; el.style.borderColor='rgba(120,180,255,0.45)'; });
+  el.addEventListener('click', ev => {
+    ev.stopPropagation();
+    // 根据标签找到目标 body, 聚焦并显示信息
+    const body = bodies.find(b => b.mesh === targetMesh);
+    if (body) { focusOn(body); showPlanetInfo(body.data); }
+    else if (targetMesh === sun) { focusOn({ mesh: sun, data: { name: '太阳', en: 'Sun', size: SUN_R } }); showPlanetInfo({ name: '太阳', en: 'Sun' }); }
+  });
+  const label = new THREE.CSS2DObject(el);
+  label.position.set(0, targetMesh === sun ? SUN_R + 1.2 : 0.5, 0);  // 放在星球上方
+  return label;
+}
 
 // 光照
 const ambient = new THREE.AmbientLight(0x333355, 0.8);
@@ -111,6 +142,7 @@ const sunGeo = new THREE.SphereGeometry(SUN_R, 48, 48);
 const sunMat = new THREE.MeshBasicMaterial({ map: loadTex('textures/planets/sun.jpg') });
 const sun = new THREE.Mesh(sunGeo, sunMat);
 scene.add(sun);
+sun.add(makeLabel('太阳', sun));
 const glow = new THREE.Sprite(new THREE.SpriteMaterial({
   map: (() => { const c = document.createElement('canvas'); c.width = c.height = 128;
     const g = c.getContext('2d'); const gr = g.createRadialGradient(64,64,10,64,64,64);
@@ -153,6 +185,9 @@ PLANETS.forEach((p, idx) => {
   const mat = new THREE.MeshPhongMaterial({ map: loadTex(`textures/planets/${p.tex}.jpg`) });
   const mesh = new THREE.Mesh(geo, mat);
   scene.add(mesh);
+
+  // 名牌标签 (像地图大洲标注, 可点击)
+  mesh.add(makeLabel(p.name, mesh));
 
   // 土星环 (真实纹理)
   if (p.hasRing) {
@@ -232,6 +267,7 @@ container.addEventListener('click', e => {
 });
 
 const INFO = {
+  Sun: ['恒星 (G 型黄矮星)', '696,350 km', '太阳系中心恒星', '5,500°C (表面)', '占太阳系总质量 99.86%。发光发热, 地球生命的能量来源'],
   Mercury: ['类地行星', '2,439 km', '0.055 地球质量', '-173°C ~ 427°C', '太阳系最小行星，昼夜温差极大'],
   Venus: ['类地行星', '6,051 km', '0.815 地球质量', '462°C (平均)', '最热的行星。二氧化碳大气，表面压强地球 92 倍'],
   Earth: ['类地行星', '6,371 km', '5.972×10²⁴ kg', '15°C (平均)', '我们居住的星球。目前已知唯一存在生命的行星'],
@@ -397,6 +433,7 @@ function animate() {
   camera.lookAt(cameraTarget);
 
   renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
 }
 animate();
 
