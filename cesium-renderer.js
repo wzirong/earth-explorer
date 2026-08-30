@@ -1268,6 +1268,21 @@ function closeVirgo3DView() {
   viewer.scene.globe.show = true;
 }
 
+// 室女座超星系团 3D 视图 (iframe)
+let virgoSuper3DIframe = null;
+function openVirgoSuper3DView() {
+  if (virgoSuper3DIframe) { virgoSuper3DIframe.style.display = 'block'; return; }
+  virgoSuper3DIframe = document.createElement('iframe');
+  virgoSuper3DIframe.src = '/virgo-supercluster-3d-view.html';
+  virgoSuper3DIframe.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:none;z-index:60;background:#000;';
+  document.body.appendChild(virgoSuper3DIframe);
+}
+function closeVirgoSuper3DView() {
+  if (virgoSuper3DIframe) virgoSuper3DIframe.remove();
+  virgoSuper3DIframe = null;
+  viewer.scene.globe.show = true;
+}
+
 // 宇宙大尺度 overlay 切换
 function showCosmosOverlay(which) {
   // 隐藏所有宇宙 overlay
@@ -1301,6 +1316,7 @@ function setViewMode(mode) {
     closeGalaxy3DView();
     closeLocalGroup3DView();
     closeVirgo3DView();
+    closeVirgoSuper3DView();
     clearGalaxy();
     hideCosmosOverlays();
     showCesium();
@@ -1336,11 +1352,23 @@ function setViewMode(mode) {
     closeSolarSystemView();
     closeGalaxy3DView();
     closeLocalGroup3DView();
+    closeVirgoSuper3DView();
     clearGalaxy();
     hideCosmosOverlays();
     hideCesium();
     viewer.scene.globe.show = false;
     openVirgo3DView();
+  } else if (mode === 'virgo-supercluster') {
+    showSolarNav(false);
+    closeSolarSystemView();
+    closeGalaxy3DView();
+    closeLocalGroup3DView();
+    closeVirgo3DView();
+    clearGalaxy();
+    hideCosmosOverlays();
+    hideCesium();
+    viewer.scene.globe.show = false;
+    openVirgoSuper3DView();
   } else if (mode === 'laniakea' || mode === 'sloan' || mode === 'allsky' || mode === 'observable' || mode === 'hubble' || mode === 'cmb'  || mode === 'pisces-cetus' || mode === 'giant-arc' || mode === 'huge-lqg' || mode === 'giant-grb-ring' || mode === 'hercules-corona') {
     showSolarNav(false);
     closeSolarSystemView();
@@ -1503,6 +1531,10 @@ window.addEventListener('message', (ev) => {
   }
   if (ev.data && ev.data.type === 'close-virgo-3d') {
     closeVirgo3DView();
+    setViewMode('earth');
+  }
+  if (ev.data && ev.data.type === 'close-virgo-super-3d') {
+    closeVirgoSuper3DView();
     setViewMode('earth');
   }
 });

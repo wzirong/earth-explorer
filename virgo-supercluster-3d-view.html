@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>室女座超星系团 · 3D</title>
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+  #container { position: fixed; inset: 0; cursor: grab; }
+  #container.dragging { cursor: grabbing; }
+  #info { position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+          color: rgba(255,255,255,0.85); font: 600 16px sans-serif; letter-spacing: 2px;
+          text-shadow: 0 2px 10px rgba(0,0,0,0.8); pointer-events: none; z-index: 10; white-space: nowrap; }
+  #hint { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+          color: rgba(255,255,255,0.45); font: 12px sans-serif; pointer-events: none; z-index: 10; white-space: nowrap; }
+  #tooltip { position: fixed; background: rgba(20,22,28,0.95); color: #fff; padding: 10px 14px;
+             border-radius: 8px; font-size: 13px; pointer-events: none; display: none; z-index: 100;
+             border: 1px solid rgba(255,255,255,0.15); max-width: 300px; line-height: 1.5; }
+  #close-btn { position: fixed; top: 14px; right: 16px; padding: 8px 16px;
+               background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3);
+               border-radius: 8px; color: #fff; font-size: 13px; cursor: pointer; z-index: 20; font-weight: 600; }
+  #close-btn:hover { background: rgba(255,255,255,0.2); }
+</style>
+</head>
+<body>
+<div id="container"></div>
+<div id="info">🌐 室女座超星系团 · 3D (2037 颗星系 · 13 个星系群/团)</div>
+<div id="hint">🖱 左键拖动: 平移 · 右键拖动: 旋转 · 滚轮: 缩放</div>
+<div id="tooltip"></div>
+<button id="close-btn">← 返回地球</button>
+
+<script src="three.min.js"></script>
+<script src="CSS2DRenderer.js"></script>
+<script>
+// ── 室女座超星系团 3D (真实数据: 2MRS 2037 星系 + 13 群团) ──
+let DATA = null;
+fetch('data/virgo_supercluster_3d.json').then(r=>r.json()).then(d => { DATA = d; init(); });
+
+const container = document.getElementById('container');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000006);
+
+// 星空背景
+const starField = new THREE.Points(
+  new THREE.BufferGeometry(),
+  new THREE.PointsMaterial({ color: 0x8899bb, size: 1.0, sizeAttenuation: false, transparent: true, opacity: 0.6 })
+);
+{
+  const count = 2500, pos = new Float32Array(count*3);
+  for (let i=0;i<count;i++){
+    const r = 300 + Math.random()*400;
+    const th = Math.random()*Math.PI*2, ph = Math.acos(2*Math.random()-1);
+    pos[i*3]=r*Math.sin(ph)*Math.cos(th); pos[i*3+1]=r*Math.sin(ph)*Math.sin(th); pos[i*3+2]=r*Math.cos(ph);
+  }
+  starField.geometry.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  scene.add(starField);
+}
+
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 10000);
+camera.position.set(10, 12, 40);
+camera.lookAt(-5, 0, 3);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+container.appendChild(renderer.domElement);
+
+const labelRenderer = new THREE.CSS2DRenderer();
+labelRenderer.setSize(window.innerWidth, window.innerHeight);
+labelRenderer.domElement.style.position = 'fixed';
+labelRenderer.domElement.style.inset = '0';
+labelRenderer.domElement.style.pointerEvents = 'none';
+container.appendChild(labelRenderer.domElement);
+
+const LABEL_STYLE = { fontSize:'13px', color:'#fff', background:'rgba(15,20,30,0.75)', padding:'3px 10px',
+  borderRadius:'12px', border:'1px solid rgba(120,180,255,0.5)', whiteSpace:'nowrap',
+  fontFamily:'sans-serif', letterSpacing:'0.5px', userSelect:'none', pointerEvents:'auto',
+  textShadow:'0 1px 4px rgba(0,0,0,0.9)' };
+function makeLabel(text, target) {
+  const el = document.createElement('div');
+  el.textContent = text;
+  Object.assign(el.style, LABEL_STYLE);
+  const label = new THREE.CSS2DObject(el);
+  label.position.set(0, 1.2, 0);
+  target.add(label);
+  return label;
+}
+
+const GROUP = new THREE.Group();
+scene.add(GROUP);
+
+function rng(seed) {
+  let s = seed >>> 0;
+  return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 0xffffffff; };
+}
+function gaussRand(r) {
+  let u1 = r(), u2 = r();
+  while (u1 < 1e-6) u1 = r();
+  return Math.sqrt(-2*Math.log(u1)) * Math.cos(2*Math.PI*u2);
+}
+
+// 生成星系群的粒子云 (椭圆/球状密集恒星)
+function makeGroupCloud(radius, seed, colorWarm) {
+  const r = rng(seed);
+  const group = new THREE.Group();
+  const N = 400;
+  const positions = new Float32Array(N*3), colors = new Float32Array(N*3);
+  for (let i = 0; i < N; i++) {
+    const g1 = gaussRand(r), g2 = gaussRand(r), g3 = gaussRand(r);
+    positions[i*3]   = g1 * radius;
+    positions[i*3+1] = g2 * radius * 0.6;
+    positions[i*3+2] = g3 * radius;
+    const c = new THREE.Color(colorWarm ? (r()<0.5 ? 0xfff0c0 : 0xffd89a) : 0xc8d8ff).multiplyScalar(0.7+r()*0.4);
+    colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  const mat = new THREE.PointsMaterial({
+    size: 0.18, sizeAttenuation: true, vertexColors: true,
+    transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.NormalBlending,
+    map: (()=>{ const c=document.createElement('canvas'); c.width=c.height=16;
+      const g=c.getContext('2d'); const gr=g.createRadialGradient(8,8,0,8,8,8);
+      gr.addColorStop(0,'rgba(255,255,255,1)'); gr.addColorStop(0.5,'rgba(255,255,255,0.4)'); gr.addColorStop(1,'rgba(255,255,255,0)');
+      g.fillStyle=gr; g.fillRect(0,0,16,16); return new THREE.CanvasTexture(c); })()
+  });
+  group.add(new THREE.Points(geo, mat));
+  return group;
+}
+
+function init() {
+  // 1. 全部 2037 颗星系: 单点集 (高效)
+  const gals = DATA.galaxies;
+  const gPos = new Float32Array(gals.length*3);
+  const gCol = new Float32Array(gals.length*3);
+  gals.forEach((g, i) => {
+    gPos[i*3]=g.x; gPos[i*3+1]=g.y; gPos[i*3+2]=g.z;
+    // 颜色: 近的亮, 远的暗 (真实距离衰减)
+    const bright = Math.max(0.3, 1 - g.d/33);
+    const c = new THREE.Color(0xaaccff).multiplyScalar(bright);
+    gCol[i*3]=c.r; gCol[i*3+1]=c.g; gCol[i*3+2]=c.b;
+  });
+  const gGeo = new THREE.BufferGeometry();
+  gGeo.setAttribute('position', new THREE.BufferAttribute(gPos, 3));
+  gGeo.setAttribute('color', new THREE.BufferAttribute(gCol, 3));
+  const gMat = new THREE.PointsMaterial({
+    size: 0.35, sizeAttenuation: true, vertexColors: true,
+    transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.NormalBlending,
+    map: (()=>{ const c=document.createElement('canvas'); c.width=c.height=16;
+      const g=c.getContext('2d'); const gr=g.createRadialGradient(8,8,0,8,8,8);
+      gr.addColorStop(0,'rgba(255,255,255,1)'); gr.addColorStop(0.5,'rgba(255,255,255,0.4)'); gr.addColorStop(1,'rgba(255,255,255,0)');
+      g.fillStyle=gr; g.fillRect(0,0,16,16); return new THREE.CanvasTexture(c); })()
+  });
+  GROUP.add(new THREE.Points(gGeo, gMat));
+
+  // 2. 13 个星系群/团: 粒子云 + 标签
+  DATA.groups.forEach((grp, i) => {
+    const isVirgo = grp.name.includes('室女星系团');
+    const isLocal = grp.name.includes('本星系群');
+    const radius = isVirgo ? 2.5 : (isLocal ? 1.5 : 1.2);
+    const cloud = makeGroupCloud(radius, i*100+7, !isVirgo && !isLocal);
+    cloud.position.set(grp.x, grp.y, grp.z);
+    GROUP.add(cloud);
+    makeLabel(grp.name, cloud);
+  });
+}
+
+// ── 交互 ──
+let action = null, prevX = 0, prevY = 0;
+const panTarget = new THREE.Vector3(-5, 0, 3);
+let rotY = 0.9, rotX = 0.4, viewDist = 45;
+container.addEventListener('contextmenu', e => e.preventDefault());
+container.addEventListener('mousedown', e => {
+  action = (e.button === 2) ? 'rotate' : 'pan';
+  prevX = e.clientX; prevY = e.clientY;
+  container.classList.add('dragging');
+});
+window.addEventListener('mouseup', () => { action = null; container.classList.remove('dragging'); });
+window.addEventListener('mousemove', e => {
+  if (!action) return;
+  const dx = e.clientX - prevX, dy = e.clientY - prevY;
+  if (action === 'rotate') {
+    rotY += dx * 0.005;
+    rotX = Math.max(-1.45, Math.min(1.45, rotX + dy*0.005));
+  } else {
+    const s = viewDist * 0.0022;
+    const right = new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion);
+    const up = new THREE.Vector3(0,1,0).applyQuaternion(camera.quaternion);
+    panTarget.addScaledVector(right, -dx*s);
+    panTarget.addScaledVector(up, dy*s);
+  }
+  prevX = e.clientX; prevY = e.clientY;
+});
+container.addEventListener('wheel', e => {
+  e.preventDefault();
+  viewDist *= (e.deltaY > 0 ? 1.1 : 0.9);
+  viewDist = Math.max(10, Math.min(200, viewDist));
+}, { passive: false });
+
+function animate() {
+  requestAnimationFrame(animate);
+  const dist = camera.position.distanceTo(panTarget);
+  camera.position.set(
+    panTarget.x + dist*Math.sin(rotY)*Math.cos(rotX),
+    panTarget.y + dist*Math.sin(rotX),
+    panTarget.z + dist*Math.cos(rotY)*Math.cos(rotX)
+  );
+  camera.lookAt(panTarget);
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  labelRenderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+document.getElementById('close-btn').onclick = () => {
+  if (window.parent) window.parent.postMessage({ type: 'close-virgo-super-3d' }, '*');
+};
+</script>
+</body>
+</html>

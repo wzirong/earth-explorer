@@ -49,6 +49,7 @@
       "galaxy-3d-view.html",
       "local-group-3d-view.html",
       "virgo-cluster-3d-view.html",
+      "virgo-supercluster-3d-view.html",
       "renderer.js",
       "renderer.bak.js",
       "cesium-renderer.js",
