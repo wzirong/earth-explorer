@@ -64,26 +64,65 @@ container.appendChild(renderer.domElement);
 const GROUP = new THREE.Group();
 scene.add(GROUP);
 
-// ── 银河系 (原点, ESO 盘面贴图, sprite 始终朝向相机) ──
+// ── 银河系 (原点, 3D 椭圆盘面 + 核球隆起) ──
 const mwTex = new THREE.TextureLoader().load('data/galaxy_disk.png');
 mwTex.anisotropy = 8;
-const mw = new THREE.Sprite(new THREE.SpriteMaterial({
-  map: mwTex, transparent: true, depthWrite: false, blending: THREE.NormalBlending
-}));
-mw.scale.set(2.4, 2.4, 1);
-GROUP.add(mw);
+const mwGroup = new THREE.Group();   // 包装旋转/倾斜
+const mw = new THREE.Mesh(
+  new THREE.CircleGeometry(1.2, 64),     // 圆形盘, 半径1.2 (直径2.4)
+  new THREE.MeshBasicMaterial({ map: mwTex, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.NormalBlending })
+);
+mw.rotation.x = -Math.PI / 2;
+mwGroup.add(mw);
+// 核球隆起: 中央发光黄白球
+const mwBulge = new THREE.Mesh(
+  new THREE.SphereGeometry(0.32, 24, 24),
+  new THREE.MeshBasicMaterial({ color: 0xffd89a, transparent: true, opacity: 0.7 })
+);
+mwGroup.add(mwBulge);
+// 暗尘埃带: 沿盘面径向的暗带 (模拟银河系中央暗带)
+const mwDust = new THREE.Mesh(
+  new THREE.PlaneGeometry(2.2, 0.32),
+  new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.45, depthWrite: false })
+);
+mwDust.rotation.x = -Math.PI / 2;
+mwDust.rotation.z = 0.6;
+mwGroup.add(mwDust);
+// 倾斜盘面: 从外部看本星系群时, 银盘是斜视(仰角 + 方位)
+mwGroup.rotation.x = 0.35;
+mwGroup.rotation.y = 0.5;
+GROUP.add(mwGroup);
 
-// ── 仙女座 M31 (sprite, Y 轴压扁模拟斜视倾角) ──
+// ── 仙女座 M31 (3D 倾斜盘面 + 核球, 倾角 ~77° 细长椭圆) ──
 const andTex = new THREE.TextureLoader().load('data/andromeda_disk.png');
 andTex.anisotropy = 8;
 const andData = GALAXIES.find(g => g.norm === 'M31' || (g.name||'').toLowerCase()==='andromeda');
 const andPos = andData ? new THREE.Vector3(andData.x, andData.y, andData.z) : new THREE.Vector3(0.3, 0.4, 0.5);
-const and = new THREE.Sprite(new THREE.SpriteMaterial({
-  map: andTex, transparent: true, depthWrite: false, blending: THREE.NormalBlending
-}));
-and.position.copy(andPos);
-and.scale.set(1.8, 1.15, 1);   // 压扁模拟斜视
-GROUP.add(and);
+const andGroup = new THREE.Group();
+const and = new THREE.Mesh(
+  new THREE.CircleGeometry(0.9, 64),     // 半径0.9
+  new THREE.MeshBasicMaterial({ map: andTex, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.NormalBlending })
+);
+and.rotation.x = -Math.PI / 2;
+andGroup.add(and);
+const andBulge = new THREE.Mesh(
+  new THREE.SphereGeometry(0.22, 20, 20),
+  new THREE.MeshBasicMaterial({ color: 0xffd8a0, transparent: true, opacity: 0.65 })
+);
+andGroup.add(andBulge);
+const andDust = new THREE.Mesh(
+  new THREE.PlaneGeometry(1.7, 0.22),
+  new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4, depthWrite: false })
+);
+andDust.rotation.x = -Math.PI / 2;
+andDust.rotation.z = 0.3;
+andGroup.add(andDust);
+andGroup.position.copy(andPos);
+// 仙女座倾角 ~77°(几乎侧视), 用 Y 轴尺度压缩模拟 (0.4 倍, 仰角大)
+andGroup.scale.set(1, 0.5, 1);   // 压扁, 模拟侧视
+andGroup.rotation.x = 0.25;
+andGroup.rotation.y = -0.6;
+GROUP.add(andGroup);
 
 // ── 矮星系形态/亮度分级 (真实天文中矮星系多为暗斑, 这里按真实类型分层) ──
 // 旋涡/不规则亮星系: LMC, SMC, M33, NGC6822, IC10, NGC3109, NGC55, NGC300, IC1613 等
@@ -151,7 +190,7 @@ const mwHalo = new THREE.Sprite(new THREE.SpriteMaterial({
     g2.fillStyle=gr; g2.fillRect(0,0,64,64); return new THREE.CanvasTexture(c); })(),
   transparent: true, depthWrite: false
 }));
-mwHalo.scale.set(2.5, 2.5, 1); mw.add(mwHalo);
+mwHalo.scale.set(2.5, 2.5, 1); mwGroup.add(mwHalo);
 clickables.push({ mesh: mw, info: { name: '银河系 Milky Way', sub: '我们的家园星系', rows: ['直径约 10 万光年','含太阳系与 2000 亿+ 恒星'] } });
 
 // ── 交互: 左键平移 / 右键旋转 / 滚轮缩放 ──
