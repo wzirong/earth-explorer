@@ -351,7 +351,7 @@ function animate() {
     camera.position.lerp(desired, 0.08);
     cameraTarget.lerp(focused.mesh.position.clone(), 0.08);
   } else {
-    const targetRotY = rotY + (isDragging ? 0 : totalTime * 0.02);
+    const targetRotY = rotY;
     camera.position.set(
       viewDist * Math.sin(targetRotY) * Math.cos(rotX),
       viewDist * Math.sin(rotX),
