@@ -1253,21 +1253,6 @@ function closeLocalGroup3DView() {
   viewer.scene.globe.show = true;
 }
 
-// 室女团 3D 视图 (iframe)
-let virgo3DIframe = null;
-function openVirgo3DView() {
-  if (virgo3DIframe) { virgo3DIframe.style.display = 'block'; return; }
-  virgo3DIframe = document.createElement('iframe');
-  virgo3DIframe.src = '/virgo-cluster-3d-view.html';
-  virgo3DIframe.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:none;z-index:60;background:#000;';
-  document.body.appendChild(virgo3DIframe);
-}
-function closeVirgo3DView() {
-  if (virgo3DIframe) virgo3DIframe.remove();
-  virgo3DIframe = null;
-  viewer.scene.globe.show = true;
-}
-
 // 室女座超星系团 3D 视图 (iframe)
 let virgoSuper3DIframe = null;
 function openVirgoSuper3DView() {
@@ -1315,7 +1300,6 @@ function setViewMode(mode) {
     closeSolarSystemView();
     closeGalaxy3DView();
     closeLocalGroup3DView();
-    closeVirgo3DView();
     closeVirgoSuper3DView();
     clearGalaxy();
     hideCosmosOverlays();
@@ -1347,23 +1331,11 @@ function setViewMode(mode) {
     hideCesium();
     viewer.scene.globe.show = false;
     openLocalGroup3DView();
-  } else if (mode === 'virgo') {
-    showSolarNav(false);
-    closeSolarSystemView();
-    closeGalaxy3DView();
-    closeLocalGroup3DView();
-    closeVirgoSuper3DView();
-    clearGalaxy();
-    hideCosmosOverlays();
-    hideCesium();
-    viewer.scene.globe.show = false;
-    openVirgo3DView();
   } else if (mode === 'virgo-supercluster') {
     showSolarNav(false);
     closeSolarSystemView();
     closeGalaxy3DView();
     closeLocalGroup3DView();
-    closeVirgo3DView();
     clearGalaxy();
     hideCosmosOverlays();
     hideCesium();
@@ -1527,10 +1499,6 @@ window.addEventListener('message', (ev) => {
   }
   if (ev.data && ev.data.type === 'close-localgroup-3d') {
     closeLocalGroup3DView();
-    setViewMode('earth');
-  }
-  if (ev.data && ev.data.type === 'close-virgo-3d') {
-    closeVirgo3DView();
     setViewMode('earth');
   }
   if (ev.data && ev.data.type === 'close-virgo-super-3d') {

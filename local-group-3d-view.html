@@ -171,10 +171,11 @@ function makeGalaxyParticles(cls, radius, seed, profile=null) {
   const hasBar = !!p.bar;
 
   let positions = [], colors = [];
-  const bulgeCount = isMajor ? 120 : 30;
-  const armCount = isMajor ? (arms_n * 80) : (arms_n * 30);
-  const diskCount = isMajor ? 250 : 80;
-  const haloCount = isMajor ? 100 : 30;
+  // 粒子数增加 (大星系更丰满, 更像真实星系照片的密度)
+  const bulgeCount = isMajor ? 220 : 40;
+  const armCount = isMajor ? (arms_n * 130) : (arms_n * 40);
+  const diskCount = isMajor ? 400 : 100;
+  const haloCount = isMajor ? 160 : 40;
   function pushParticle(x, y, z, color) {
     positions.push(x, y, z); colors.push(color.r, color.g, color.b);
   }
@@ -262,7 +263,7 @@ function makeGalaxyParticles(cls, radius, seed, profile=null) {
   geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
   geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
   const mat = new THREE.PointsMaterial({
-    size: 0.012, sizeAttenuation: true, vertexColors: true,
+    size: 0.03, sizeAttenuation: true, vertexColors: true,
     transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.NormalBlending,
     map: (()=>{ const c=document.createElement('canvas'); c.width=c.height=16;
       const g=c.getContext('2d'); const gr=g.createRadialGradient(8,8,0,8,8,8);
