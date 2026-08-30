@@ -33,7 +33,8 @@ viewer.cesiumWidget.creditContainer.style.display = 'none';
 // 暗色大气 / 太空背景
 viewer.scene.backgroundColor = Cesium.Color.BLACK;
 viewer.scene.skyAtmosphere = new Cesium.SkyAtmosphere();
-viewer.scene.globe.enableLighting = false;  // 关闭昼夜光照，让贴图全可见
+viewer.scene.globe.enableLighting = true;   // 实时光照 (昼夜明暗)
+viewer.scene.light = new Cesium.DirectionalLight({ direction: new Cesium.Cartesian3(1, 1, -1) });
 viewer.scene.globe.atmosphereLightIntensity = 12;
 viewer.scene.globe.showGroundAtmosphere = true;
 // galaxy 模式开关
@@ -118,8 +119,8 @@ function setLayer(key) {
   document.getElementById('img-source').textContent = `NASA GIBS / ${cfg.label}`;
 }
 
-// 默认 VIIRS
-setLayer('viirs');
+// 默认 Blue Marble
+setLayer('blueMarble');
 
 // ── 大洲导航 / 视图跳转 ─────────────────────────────────
 const CONTINENT_VIEW = {
@@ -992,7 +993,7 @@ document.getElementById('toggle-lighting')?.addEventListener('change', e => {
     });
   }
 });
-viewer.scene.globe.enableLighting = false;  // 默认关闭
+
 
 // ── 银河系（10万光年视角）───────────────────────────────
 // 银河系直径 10万光年。本应用采用"象征性缩放":1光年 = 100km
@@ -1011,6 +1012,9 @@ function clearGalaxy(skipEarthReset) {
   viewer.scene.skyAtmosphere.show = true;
   const overlay = document.getElementById('galaxy-overlay');
   if (overlay) overlay.style.display = 'none';
+  // 停止银河系旋转
+  const spinEl = document.getElementById('galaxy-spin');
+  if (spinEl) spinEl.style.animation = 'none';
   // 还原 sgr/sun 标签默认 css, 避免切到其他视图时还残留 z-index/position
   const sgrLabel = document.getElementById('galaxy-sgr-label');
   if (sgrLabel) sgrLabel.style.cssText = 'position:absolute;left:50%;top:51%;transform:translate(-50%,-50%);color:rgba(255,255,255,0.92);font:600 13px sans-serif;text-shadow:0 1px 4px rgba(0,0,0,0.95), 0 0 12px rgba(0,0,0,0.7);cursor:pointer;text-align:center;';
@@ -1028,20 +1032,22 @@ function buildGalaxy() {
   overlay.style.display = 'block';
 
   // ── 银心/太阳 圆点创建 (挂到 overlay 内, overlay 隐藏自动隐藏) ──
+  const spin = document.getElementById('galaxy-spin');
   let sgrDot = document.getElementById('galaxy-dot-sgr');
   if (!sgrDot) {
     sgrDot = document.createElement('div');
     sgrDot.id = 'galaxy-dot-sgr';
-    overlay.appendChild(sgrDot);
+    spin.appendChild(sgrDot);
   }
   let sunDot = document.getElementById('galaxy-dot-sun');
   if (!sunDot) {
     sunDot = document.createElement('div');
     sunDot.id = 'galaxy-dot-sun';
-    overlay.appendChild(sunDot);
+    spin.appendChild(sunDot);
   }
   function drawGalaxyDot(dot, x, y, color, glow) {
-    dot.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;background:${color};box-shadow:0 0 4px ${color},0 0 12px ${glow};z-index:54;cursor:pointer;`;
+    // x/y 可为像素或百分比, 统一拼接
+    dot.style.cssText = `position:absolute;left:${x};top:${y};width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;background:${color};box-shadow:0 0 4px ${color},0 0 12px ${glow};z-index:54;cursor:pointer;`;
   }
 
   // ── 动态定位标记 (基于图片实际显示区域, 而非窗口百分比) ──
@@ -1051,30 +1057,28 @@ function buildGalaxy() {
     if (!img) return;
     const rect = img.getBoundingClientRect();
     if (rect.width === 0) return;
-    // 图片内百分比 → 屏幕坐标
+    // spin 容器尺寸/位置 = 图片实际显示区域; 旋转轴 = 银心 (52%, 40%)
+    const spin = document.getElementById('galaxy-spin');
+    if (spin) {
+      spin.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;display:flex;align-items:center;justify-content:center;transform-origin:52% 40%;will-change:transform;animation:galaxySpin 600s linear infinite;`;
+    }
+    // 银心/太阳 位置: NASA Spitzer 图实测 (银心 52%, 40%; 太阳 52%, 69%)
+    const pct = (x, y) => `position:absolute;left:${x}%;top:${y}%;`;
     const sgr = document.getElementById('galaxy-sgr');
     const sgrLabel = document.getElementById('galaxy-sgr-label');
     const sun = document.getElementById('galaxy-sun');
     const sunLabel = document.getElementById('galaxy-sun-label');
-    const gx = rect.left, gy = rect.top, gw = rect.width, gh = rect.height;
-    // 银心与太阳位置: 基于 VVV (VISTA eso1242a) 实测 (核球质心 49.9%, 40.5%; 太阳引线右下角)
-    const sgrX = gx + gw * 0.499, sgrY = gy + gh * 0.405;
-    const sunX = gx + gw * 0.92, sunY = gy + gh * 0.92;
+    // 把标签移进 spin 容器, 跟随图片旋转
+    [sgr, sgrLabel, sun, sunLabel].forEach(el => { if (el && el.parentElement !== spin) spin.appendChild(el); });
 
-    // 银心文字标签 (放在 Sgr A* 正下方, 不用黑底框以免与核球暗区混淆)
-    if (sgr) sgr.style.cssText = `position:absolute;left:${sgrX}px;top:${sgrY}px;width:0;height:0;display:none;`;
-    if (sgrLabel) sgrLabel.style.cssText = `position:absolute;left:${sgrX}px;top:${sgrY + 18}px;transform:translate(-50%,0);color:rgba(255,235,180,0.98);font:600 13px sans-serif;text-shadow:0 1px 5px rgba(0,0,0,0.98), 0 0 12px rgba(0,0,0,0.9);cursor:pointer;text-align:center;`;
+    if (sgr) sgr.style.cssText = pct(52, 40) + 'width:0;height:0;display:none;';
+    if (sgrLabel) sgrLabel.style.cssText = pct(52, 40) + 'transform:translate(-50%,18px);color:rgba(255,235,180,0.98);font:600 13px sans-serif;text-shadow:0 1px 5px rgba(0,0,0,0.98), 0 0 12px rgba(0,0,0,0.9);cursor:pointer;text-align:center;';
+    if (sun) { sun.innerHTML = ''; sun.style.cssText = pct(52, 69) + 'width:0;height:0;display:none;'; }
+    if (sunLabel) sunLabel.style.cssText = pct(52, 69) + 'transform:translate(-50%,18px);color:rgba(255,235,180,0.98);font:600 13px sans-serif;text-shadow:0 1px 5px rgba(0,0,0,0.98), 0 0 12px rgba(0,0,0,0.9);cursor:pointer;text-align:center;';
 
-    // 太阳标签 (猎户臂 2/3 半径处, 同上仅文字描边不铺黑底)
-    if (sun) {
-      sun.innerHTML = '';
-      sun.style.cssText = `position:absolute;left:${sunX}px;top:${sunY}px;width:0;height:0;display:none;`;
-    }
-    if (sunLabel) sunLabel.style.cssText = `position:absolute;left:${sunX}px;top:${sunY + 18}px;transform:translate(-50%,0);color:rgba(255,235,180,0.98);font:600 13px sans-serif;text-shadow:0 1px 5px rgba(0,0,0,0.98), 0 0 12px rgba(0,0,0,0.9);cursor:pointer;text-align:center;`;
-
-    // ── 银心/太阳 圆点标记 (小点+光晕, 视觉锚点; 不覆盖 ESO 真实暗区) ──
-    if (sgrDot) drawGalaxyDot(sgrDot, sgrX, sgrY, 'rgba(255, 90, 60, 0.95)', 'rgba(255, 120, 60, 0.5)');
-    if (sunDot) drawGalaxyDot(sunDot, sunX, sunY, 'rgba(100, 180, 255, 0.95)', 'rgba(100, 180, 255, 0.5)');
+    // 银心/太阳 圆点标记
+    if (sgrDot) drawGalaxyDot(sgrDot, '52%', '40%', 'rgba(255, 90, 60, 0.95)', 'rgba(255, 120, 60, 0.5)');
+    if (sunDot) drawGalaxyDot(sunDot, '52%', '69%', 'rgba(100, 180, 255, 0.95)', 'rgba(100, 180, 255, 0.5)');
   }
   // 图片加载后定位 + 窗口变化时重定位 (只绑定一次)
   const gimg = document.getElementById('galaxy-img');

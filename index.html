@@ -119,12 +119,15 @@
 <div id="cesiumContainer"></div>
 <div id="galaxy-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
   <button id="galaxy-back" style="position:absolute;top:16px;right:16px;padding:8px 16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);border-radius:8px;color:#fff;font-size:13px;cursor:pointer;z-index:60;font-weight:600;backdrop-filter:blur(4px);">返回地球</button>
-  <img src="/data/galaxy_diagram.jpg" id="galaxy-img" style="width:100%;height:100%;object-fit:contain;">
+  <div id="galaxy-spin" style="position:fixed;display:flex;align-items:center;justify-content:center;transform-origin:52% 40%;will-change:transform;">
+    <img src="/data/galaxy_diagram.jpg" id="galaxy-img" style="width:100%;height:100%;object-fit:contain;">
+  </div>
+  <style>@keyframes galaxySpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }</style>
   <div id="galaxy-sgr" style="display:none;" title="Sgr A* 黑洞"></div>
   <div id="galaxy-sgr-label" style="position:absolute;left:52%;top:40%;transform:translate(-50%,-50%);color:rgba(255,255,255,0.92);font:600 13px sans-serif;text-shadow:0 1px 4px rgba(0,0,0,0.95), 0 0 12px rgba(0,0,0,0.7);cursor:pointer;text-align:center;">银心黑洞 (Sgr A*)</div>
   <div id="galaxy-sun" style="display:none;" title="太阳"></div>
   <div id="galaxy-sun-label" style="position:absolute;left:52%;top:69%;transform:translate(-50%,-50%);color:rgba(255,255,255,0.92);font:600 13px sans-serif;text-shadow:0 1px 4px rgba(0,0,0,0.95), 0 0 12px rgba(0,0,0,0.7);cursor:pointer;text-align:center;">太阳 (我们在这里)</div>
-  <div id="galaxy-title" style="position:absolute;top:18px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.85);font:600 20px sans-serif;text-shadow:0 2px 10px rgba(0,0,0,0.8);letter-spacing:2px;">银河系 · NASA Spitzer 红外巡天 (4 条主旋臂 + 中央棒旋)</div>
+  <div id="galaxy-title" style="position:absolute;top:18px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.85);font:600 20px sans-serif;text-shadow:0 2px 10px rgba(0,0,0,0.8);letter-spacing:2px;">银河系 · NASA Spitzer 红外巡天 · 自转中 (太阳绕银心 2.25 亿年/圈, 加速显示)</div>
   <div id="galaxy-scale" style="position:absolute;bottom:24px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.55);font:12px sans-serif;text-shadow:0 1px 6px rgba(0,0,0,0.9);">盘直径约 10 万光年 · 太阳位于猎户臂距银心约 2.6 万光年 · 银心为 Sgr A* 超大质量黑洞</div>
 </div>
 
@@ -329,16 +332,16 @@
       <button id="btn-view-cmb" class="view-mode-btn" data-view="cmb" style="flex:1;padding:6px 3px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:rgba(255,255,255,0.7);font-size:11px;cursor:pointer;">🌡️ 微波背景</button>
     </div>
   </div>
-  <div class="layer-row active" data-layer="viirs"><div class="layer-radio"></div><span>卫星影像 (VIIRS)</span></div>
+  <div class="layer-row" data-layer="viirs"><div class="layer-radio"></div><span>卫星影像 (VIIRS)</span></div>
   <div class="layer-row" data-layer="blackMarble"><div class="layer-radio"></div><span>夜灯 (Black Marble)</span></div>
   <div class="layer-row" data-layer="tempDay"><div class="layer-radio"></div><span>白天地表温度</span></div>
   <div class="layer-row" data-layer="precipitation"><div class="layer-radio"></div><span>实时降水 (IMERG)</span></div>
   <div class="layer-row" data-layer="aod"><div class="layer-radio"></div><span>空气质量 (AOD)</span></div>
-  <div class="layer-row" data-layer="blueMarble"><div class="layer-radio"></div><span>Blue Marble</span></div>
+  <div class="layer-row active" data-layer="blueMarble"><div class="layer-radio"></div><span>Blue Marble</span></div>
   <div class="layer-row" data-layer="none"><div class="layer-radio"></div><span>无图层（纯色）</span></div>
   <div style="padding:8px 16px;border-top:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:6px;">
     <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.8);cursor:pointer;"><input type="checkbox" id="toggle-daynight" checked style="accent-color:#4fc3f7;"> 昼夜分界线（实时太阳）</label>
-    <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.8);cursor:pointer;"><input type="checkbox" id="toggle-lighting" style="accent-color:#4fc3f7;"> 实时太阳光照（贴图随日照变化）</label>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.8);cursor:pointer;"><input type="checkbox" id="toggle-lighting" checked style="accent-color:#4fc3f7;"> 实时太阳光照（贴图随日照变化）</label>
     <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.8);cursor:pointer;"><input type="checkbox" id="toggle-borders" checked style="accent-color:#4fc3f7;"> 国家/省界</label>
     <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.8);cursor:pointer;"><input type="checkbox" id="toggle-timezones" style="accent-color:#4fc3f7;"> 时区线</label>
   </div>
