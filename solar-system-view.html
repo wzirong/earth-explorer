@@ -124,8 +124,8 @@ container.addEventListener('wheel', e => {
   }
 }, { passive: false });
 
-// 太阳 (发光球 + 光晕) — 半径 1.8 单位(可见但小于水星轨道)
-const SUN_R = 1.8;
+// 太阳 (发光球 + 光晕) — 平衡点: 半径 1.5, 小于水星轨道 2.34
+const SUN_R = 1.5;
 const sunGeo = new THREE.SphereGeometry(SUN_R, 48, 48);
 const sunMat = new THREE.MeshBasicMaterial({ map: loadTex('textures/planets/sun.jpg') });
 const sun = new THREE.Mesh(sunGeo, sunMat);
@@ -137,7 +137,7 @@ const glow = new THREE.Sprite(new THREE.SpriteMaterial({
     g.fillStyle = gr; g.fillRect(0,0,128,128); return new THREE.CanvasTexture(c); })(),
   transparent: true, depthWrite: false
 }));
-glow.scale.set(SUN_R * 3.0, SUN_R * 3.0, 1);
+glow.scale.set(SUN_R * 2.2, SUN_R * 2.2, 1);
 scene.add(glow);
 
 // ── 太阳系 (轨道真实 AU 比例, 体积真实分级) ──
@@ -147,17 +147,17 @@ const AU = 6;
 const MIN_SIZE = 0.10;
 function realSize(diamKm) { return Math.max(MIN_SIZE, SUN_R * (diamKm / 1392700)); }
 
-// 行星数据: 轨道半径 / 大小 / 纹理 / 周期(天) / 倾角 / 自转速度
+// 行星数据: 轨道真实 AU 比例; 体积平衡点(气态巨行星真实相对比, 类地行星最小可见+大小区分)
 const PLANETS = [
-  { name: '水星', en: 'Mercury', r: 0.39*AU,  size: 0.10, tex: 'mercury', period: 88,   incl: 7.0,  rotPeriod: 58.6 },
-  { name: '金星', en: 'Venus',   r: 0.72*AU,  size: 0.12, tex: 'venus',   period: 225,  incl: 3.4,  rotPeriod: -243 },
-  { name: '地球', en: 'Earth',   r: 1.00*AU,  size: 0.13, tex: 'earth',   period: 365,  incl: 0,    rotPeriod: 1, isEarth: true },
-  { name: '火星', en: 'Mars',    r: 1.52*AU,  size: 0.10, tex: 'mars',    period: 687,  incl: 1.9,  rotPeriod: 1.03 },
-  { name: '木星', en: 'Jupiter', r: 5.20*AU,  size: 0.55, tex: 'jupiter', period: 4333, incl: 1.3,  rotPeriod: 0.41 },
-  { name: '土星', en: 'Saturn',  r: 9.54*AU,  size: 0.47, tex: 'saturn',  period: 10759,incl: 2.5,  rotPeriod: 0.45, hasRing: true },
-  { name: '天王星', en: 'Uranus', r: 19.2*AU, size: 0.20, tex: 'uranus',  period: 30687,incl: 0.8,  rotPeriod: -0.72 },
-  { name: '海王星', en: 'Neptune',r: 30.1*AU, size: 0.20, tex: 'neptune', period: 60190,incl: 1.8,  rotPeriod: 0.67 },
-  { name: '冥王星', en: 'Pluto',  r: 39.5*AU, size: 0.08, tex: 'mercury', period: 90560,incl: 17.2, rotPeriod: -6.4, dwarf: true },
+  { name: '水星', en: 'Mercury', r: 0.39*AU,  size: 0.08, tex: 'mercury', period: 88,   incl: 7.0,  rotPeriod: 58.6 },
+  { name: '金星', en: 'Venus',   r: 0.72*AU,  size: 0.11, tex: 'venus',   period: 225,  incl: 3.4,  rotPeriod: -243 },
+  { name: '地球', en: 'Earth',   r: 1.00*AU,  size: 0.12, tex: 'earth',   period: 365,  incl: 0,    rotPeriod: 1, isEarth: true },
+  { name: '火星', en: 'Mars',    r: 1.52*AU,  size: 0.09, tex: 'mars',    period: 687,  incl: 1.9,  rotPeriod: 1.03 },
+  { name: '木星', en: 'Jupiter', r: 5.20*AU,  size: 0.45, tex: 'jupiter', period: 4333, incl: 1.3,  rotPeriod: 0.41 },
+  { name: '土星', en: 'Saturn',  r: 9.54*AU,  size: 0.37, tex: 'saturn',  period: 10759,incl: 2.5,  rotPeriod: 0.45, hasRing: true },
+  { name: '天王星', en: 'Uranus', r: 19.2*AU, size: 0.16, tex: 'uranus',  period: 30687,incl: 0.8,  rotPeriod: -0.72 },
+  { name: '海王星', en: 'Neptune',r: 30.1*AU, size: 0.15, tex: 'neptune', period: 60190,incl: 1.8,  rotPeriod: 0.67 },
+  { name: '冥王星', en: 'Pluto',  r: 39.5*AU, size: 0.06, tex: 'mercury', period: 90560,incl: 17.2, rotPeriod: -6.4, dwarf: true },
 ];
 
 // 月球 (绕地球): 小可见点, 轨道 = 地球半径的 ~3 倍
