@@ -33,9 +33,9 @@
 <script>
 let DATA = null;
 fetch('data/laniakea_3d.json').then(r=>r.json()).then(d => { DATA = d; init(); });
-// 纤维连线数据
-let FIL = null;
-fetch('data/laniakea_filaments.json').then(r=>r.json()).then(f => { FIL = f; initFilaments(); });
+// 流线数据 (Tully 风格羽毛流线)
+let STREAM = null;
+fetch('data/laniakea_streamlines.json').then(r=>r.json()).then(s => { STREAM = s; initStreamlines(); });
 
 const container = document.getElementById('container');
 const scene = new THREE.Scene();
@@ -162,19 +162,21 @@ function init() {
   });
 }
 
-// 纤维连线 (Delaunay 宇宙网, 形成羽毛/纤维结构)
-function initFilaments() {
-  if (!FIL || !FIL.segments) return;
-  const flat = FIL.segments;
-  const nSeg = flat.length / 6;
-  const positions = new Float32Array(flat);
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+// 羽毛流线 (平滑曲线, 流向巨引源)
+function initStreamlines() {
+  if (!STREAM || !STREAM.streamlines) return;
   const mat = new THREE.LineBasicMaterial({
-    color: 0x4a6a8a, transparent: true, opacity: 0.35, depthWrite: false
+    color: 0xc8d8f0, transparent: true, opacity: 0.55, depthWrite: false
   });
-  const lines = new THREE.LineSegments(geo, mat);
-  GROUP.add(lines);
+  STREAM.streamlines.forEach(flat => {
+    const pts = [];
+    for (let i = 0; i < flat.length; i += 3) {
+      pts.push(new THREE.Vector3(flat[i], flat[i+1], flat[i+2]));
+    }
+    if (pts.length < 2) return;
+    const geo = new THREE.BufferGeometry().setFromPoints(pts);
+    GROUP.add(new THREE.Line(geo, mat));
+  });
 }
 
 // ── 交互 ──
