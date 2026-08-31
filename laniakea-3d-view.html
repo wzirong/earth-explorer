@@ -33,9 +33,9 @@
 <script>
 let DATA = null;
 fetch('data/laniakea_3d.json').then(r=>r.json()).then(d => { DATA = d; init(); });
-// 候选1 提取的星系点(从底图提取, z起伏, 3D 粒子云叠加在底图上)
-let STARS = null;
-fetch('data/laniakea_stars.json').then(r=>r.json()).then(s => { STARS = s; initStarCloud(); });
+// 纤维 (Delaunay 宇宙网, J 版核心: 真实数据生成的宇宙网纤维网格)
+let FIL = null;
+fetch('data/laniakea_filaments_sg.json').then(r=>r.json()).then(f => { FIL = f; initFilaments(); });
 
 
 const container = document.getElementById('container');
@@ -160,29 +160,17 @@ function init() {
   });
 }
 
-// 3. 从候选1底图提取的星系点: 3D 粒子云 (带 z 起伏, J 版风格)
-function initStarCloud() {
-  if (!STARS) return;
-  const N = STARS.count;
-  const positions = new Float32Array(N * 3);
-  const colors = new Float32Array(N * 3);
-  for (let i = 0; i < N; i++) {
-    positions[i*3]   = STARS.x[i];
-    positions[i*3+1] = STARS.y[i];
-    positions[i*3+2] = STARS.z[i];
-    // 颜色: 按亮度(亮星白, 暗星黄白)
-    const t = Math.min(1, (STARS.lum[i] - 180) / 60);
-    const c = new THREE.Color().setHSL(0.12, 0.2, 0.5 + t*0.5);
-    colors[i*3] = c.r; colors[i*3+1] = c.g; colors[i*3+2] = c.b;
-  }
+// 3. Delaunay 纤维网 (J 版核心: 真实宇宙网纤维, 叠加在底图上)
+function initFilaments() {
+  if (!FIL || !FIL.segments) return;
+  const flat = FIL.segments;
+  const positions = new Float32Array(flat);
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  const mat = new THREE.PointsMaterial({
-    size: 0.35, sizeAttenuation: true, vertexColors: true,
-    transparent: true, opacity: 0.9, depthWrite: false
+  const mat = new THREE.LineBasicMaterial({
+    color: 0xc8d8f0, transparent: true, opacity: 0.4, depthWrite: false
   });
-  GROUP.add(new THREE.Points(geo, mat));
+  GROUP.add(new THREE.LineSegments(geo, mat));
 }
 
 
