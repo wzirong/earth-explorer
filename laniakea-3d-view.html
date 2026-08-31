@@ -24,7 +24,7 @@
 <body>
 <div id="container"></div>
 <div id="info">✨ 拉尼亚凯亚超星系团 · 3D (2MRS 18856 颗真实星系)</div>
-<div id="hint">🖱 左键拖动: 平移 · 右键拖动: 旋转 · 滚轮: 缩放</div>
+<div id="hint">🖱 左键平移 · 右键旋转(看3D透视) · 滚轮缩放</div>
 <div id="tooltip"></div>
 <button id="close-btn">← 返回地球</button>
 
@@ -33,9 +33,7 @@
 <script>
 let DATA = null;
 fetch('data/laniakea_3d.json').then(r=>r.json()).then(d => { DATA = d; init(); });
-// 流线数据 (Tully 风格羽毛流线)
-let STREAM = null;
-fetch('data/laniakea_streamlines.json').then(r=>r.json()).then(s => { STREAM = s; initStreamlines(); });
+
 
 const container = document.getElementById('container');
 const scene = new THREE.Scene();
@@ -58,7 +56,7 @@ const starField = new THREE.Points(
 }
 
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 10000);
-camera.position.set(0, 40, 210);
+camera.position.set(0, 75, 230);
 camera.lookAt(0, 0, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -129,55 +127,37 @@ function makeBranchCloud(radius, seed) {
 }
 
 function init() {
-  // 1. 18856 颗星系: 单点集 (2MRS 真实分布)  const gals = DATA.galaxies;
-  const gPos = new Float32Array(gals.length*3);
-  const gCol = new Float32Array(gals.length*3);
-  gals.forEach((g, i) => {
-    gPos[i*3]=g.x; gPos[i*3+1]=g.y; gPos[i*3+2]=g.z;
-    // 颜色随距离: 近的暖白, 远的冷蓝 (真实距离衰减)
-    const bright = Math.max(0.25, 1 - g.d/120);
-    const c = new THREE.Color(0xa8c4e8).multiplyScalar(bright);
-    gCol[i*3]=c.r; gCol[i*3+1]=c.g; gCol[i*3+2]=c.b;
-  });
-  const gGeo = new THREE.BufferGeometry();
-  gGeo.setAttribute('position', new THREE.BufferAttribute(gPos, 3));
-  gGeo.setAttribute('color', new THREE.BufferAttribute(gCol, 3));
-  const gMat = new THREE.PointsMaterial({
-    size: 1.0, sizeAttenuation: true, vertexColors: true,
-    transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.NormalBlending,
-    map: (()=>{ const c=document.createElement('canvas'); c.width=c.height=16;
-      const g=c.getContext('2d'); const gr=g.createRadialGradient(8,8,0,8,8,8);
-      gr.addColorStop(0,'rgba(255,255,255,1)'); gr.addColorStop(0.5,'rgba(255,255,255,0.4)'); gr.addColorStop(1,'rgba(255,255,255,0)');
-      g.fillStyle=gr; g.fillRect(0,0,16,16); return new THREE.CanvasTexture(c); })()
-  });
-  GROUP.add(new THREE.Points(gGeo, gMat));
+  // 1. 候选1 Tully 2014 真实图作为 3D 底图 (Lavoisier Group, 最接近真实)
+  const tex = new THREE.TextureLoader().load('data/laniakea_realistic.jpg');
+  tex.anisotropy = 8;
+  // 原图 2500:1830 ≈ 1.366:1 (横向延展), 平面大小 220×160 (覆盖 ±100 Mpc)
+  const plane = new THREE.Mesh(
+    new THREE.PlaneGeometry(220, 160),
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide, depthWrite: false, blending: THREE.NormalBlending })
+  );
+  GROUP.add(plane);
 
-  // 2. 超星系团分支: 粒子云 + 标签
+  // 2. 超星系团分支: 发光标记 + 标签 (在真实位置叠加, 底图已有完整结构)
   DATA.branches.forEach((b, i) => {
-    const radius = b.name.includes('室女') ? 6 : 10;
-    const cloud = makeBranchCloud(radius, i*77+3);
-    cloud.position.set(b.x, b.y, b.z);
-    GROUP.add(cloud);
-    makeLabel(b.name, cloud);
+    const isGA = b.name.includes('巨引源');
+    const isVirgo = b.name.includes('室女');
+    const color = isGA ? 0xff5a3c : (isVirgo ? 0x4fc3f7 : 0xffc060);
+    const size = isGA ? 1.4 : (isVirgo ? 1.0 : 0.8);
+    const dot = new THREE.Sprite(new THREE.SpriteMaterial({
+      color, transparent: true, opacity: 0.95, depthWrite: false,
+      map: (()=>{ const c=document.createElement('canvas'); c.width=c.height=32;
+        const g=c.getContext('2d'); const gr=g.createRadialGradient(16,16,0,16,16,16);
+        gr.addColorStop(0,'rgba(255,255,255,1)'); gr.addColorStop(0.5,'rgba(255,255,255,0.5)'); gr.addColorStop(1,'rgba(255,255,255,0)');
+        g.fillStyle=gr; g.fillRect(0,0,32,32); return new THREE.CanvasTexture(c); })()
+    }));
+    dot.scale.set(size*3, size*3, 1);
+    dot.position.set(b.x, b.y, 0.5);
+    GROUP.add(dot);
+    makeLabel(b.name, dot);
   });
 }
 
-// 羽毛流线 (平滑曲线, 流向巨引源)
-function initStreamlines() {
-  if (!STREAM || !STREAM.streamlines) return;
-  const mat = new THREE.LineBasicMaterial({
-    color: 0xc8d8f0, transparent: true, opacity: 0.55, depthWrite: false
-  });
-  STREAM.streamlines.forEach(flat => {
-    const pts = [];
-    for (let i = 0; i < flat.length; i += 3) {
-      pts.push(new THREE.Vector3(flat[i], flat[i+1], flat[i+2]));
-    }
-    if (pts.length < 2) return;
-    const geo = new THREE.BufferGeometry().setFromPoints(pts);
-    GROUP.add(new THREE.Line(geo, mat));
-  });
-}
+
 
 // ── 交互 ──
 let action = null, prevX = 0, prevY = 0;
