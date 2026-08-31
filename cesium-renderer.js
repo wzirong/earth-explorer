@@ -1283,6 +1283,21 @@ function closeLaniakea3DView() {
   viewer.scene.globe.show = true;
 }
 
+// 全天已知星系 3D 视图
+let allsky3DIframe = null;
+function openAllsky3DView() {
+  if (allsky3DIframe) { allsky3DIframe.style.display = 'block'; return; }
+  allsky3DIframe = document.createElement('iframe');
+  allsky3DIframe.src = '/allsky-3d-view.html';
+  allsky3DIframe.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:none;z-index:60;background:#000;';
+  document.body.appendChild(allsky3DIframe);
+}
+function closeAllsky3DView() {
+  if (allsky3DIframe) allsky3DIframe.remove();
+  allsky3DIframe = null;
+  viewer.scene.globe.show = true;
+}
+
 // 宇宙大尺度 overlay 切换
 function showCosmosOverlay(which) {
   // 隐藏所有宇宙 overlay
@@ -1317,6 +1332,7 @@ function setViewMode(mode) {
     closeLocalGroup3DView();
     closeVirgoSuper3DView();
     closeLaniakea3DView();
+    closeAllsky3DView();
     clearGalaxy();
     hideCosmosOverlays();
     showCesium();
@@ -1368,7 +1384,20 @@ function setViewMode(mode) {
     hideCesium();
     viewer.scene.globe.show = false;
     openLaniakea3DView();
-  } else if (mode === 'sloan' || mode === 'allsky' || mode === 'observable' || mode === 'hubble' || mode === 'cmb'  || mode === 'pisces-cetus' || mode === 'giant-arc' || mode === 'huge-lqg' || mode === 'giant-grb-ring' || mode === 'hercules-corona') {
+  } else if (mode === 'allsky') {
+    showSolarNav(false);
+    closeSolarSystemView();
+    closeGalaxy3DView();
+    closeLocalGroup3DView();
+    closeVirgoSuper3DView();
+    closeLaniakea3DView();
+    closeAllsky3DView();
+    clearGalaxy();
+    hideCosmosOverlays();
+    hideCesium();
+    viewer.scene.globe.show = false;
+    openAllsky3DView();
+  } else if (mode === 'sloan' || mode === 'observable' || mode === 'hubble' || mode === 'cmb'  || mode === 'pisces-cetus' || mode === 'giant-arc' || mode === 'huge-lqg' || mode === 'giant-grb-ring' || mode === 'hercules-corona') {
     showSolarNav(false);
     closeSolarSystemView();
     closeGalaxy3DView();
@@ -1534,6 +1563,10 @@ window.addEventListener('message', (ev) => {
   }
   if (ev.data && ev.data.type === 'close-laniakea-3d') {
     closeLaniakea3DView();
+    setViewMode('earth');
+  }
+  if (ev.data && ev.data.type === 'close-allsky-3d') {
+    closeAllsky3DView();
     setViewMode('earth');
   }
 });

@@ -50,6 +50,7 @@
       "local-group-3d-view.html",
       "virgo-supercluster-3d-view.html",
       "laniakea-3d-view.html",
+      "allsky-3d-view.html",
       "renderer.js",
       "renderer.bak.js",
       "cesium-renderer.js",
