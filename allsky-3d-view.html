@@ -113,7 +113,7 @@ function init() {
   geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   const mat = new THREE.PointsMaterial({
-    size: 0.012, sizeAttenuation: true, vertexColors: true,
+    size: 4, sizeAttenuation: false, vertexColors: true,
     transparent: true, opacity: 0.85, depthWrite: false
   });
   GROUP.add(new THREE.Points(geo, mat));
