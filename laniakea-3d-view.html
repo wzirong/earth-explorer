@@ -32,7 +32,7 @@
 <script src="CSS2DRenderer.js"></script>
 <script>
 let DATA = null;
-fetch('data/laniakea_3d.json').then(r=>r.json()).then(d => { DATA = d; init(); });
+fetch('data/laniakea_spherical.json').then(r=>r.json()).then(d => { DATA = d; init(); });
 
 
 
@@ -57,7 +57,7 @@ const starField = new THREE.Points(
 }
 
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 10000);
-camera.position.set(0, 75, 230);
+camera.position.set(40, 60, 130);
 camera.lookAt(0, 0, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -128,63 +128,50 @@ function makeBranchCloud(radius, seed) {
 }
 
 function init() {
-  // 1. 候选2 Tully 2014 原图作 3D 底图 (白色流线 + 星系点 + 红点银河系, Lavoisier Group 渲染)
-  const tex = new THREE.TextureLoader().load('data/laniakea_realistic.jpg');
-  tex.anisotropy = 8;
-  // 原图 1024:512 = 2:1 (横向延展), 平面大小 240×120 (覆盖 ±100 Mpc)
-  const plane = new THREE.Mesh(
-    new THREE.PlaneGeometry(240, 120),
-    new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide, depthWrite: false, blending: THREE.NormalBlending })
-  );
-  GROUP.add(plane);
+  // G 版: 18856 颗 2MRS 星系球状分布, 加 z 起伏 (3D 立体感强, 从外部看的球状模型)
 
-  // 2. I 版扁平散点 (2MRS 数据, 超星系团坐标 SGZ 压扁 0.3) 叠在底图上
+  // 1. 球状散点 (18856 颗, z ±8 起伏增强厚度, 按距离衰减亮度)
   {
     const gals = DATA.galaxies;
-    // 抽稀到 4000 (避免 18856 太多)
+    const N = gals.length;
     const rng = (() => { let s = 42; return () => { s = (s*1664525+1013904223)>>>0; return s/0xffffffff; }; })();
-    const N = Math.min(4000, gals.length);
-    const idx = [];
-    while (idx.length < N) {
-      const k = Math.floor(rng() * gals.length);
-      if (!idx.includes(k)) idx.push(k);
-    }
     const positions = new Float32Array(N*3);
     const colors = new Float32Array(N*3);
     for (let i = 0; i < N; i++) {
-      const g = gals[idx[i]];
+      const g = gals[i];
       positions[i*3]   = g.x;
       positions[i*3+1] = g.y;
-      positions[i*3+2] = g.z + 0.3;  // 略浮于底图
+      positions[i*3+2] = g.z + (rng() - 0.5) * 16;  // z ±8 起伏
+      // 颜色: 按距离, 近的暖白, 远的冷蓝
       const bright = Math.max(0.35, 1 - g.d/130);
-      const c = new THREE.Color(0xfff0c0).multiplyScalar(bright);
+      const c = new THREE.Color(0xaaccff).multiplyScalar(bright);
       colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b;
     }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     const mat = new THREE.PointsMaterial({
-      size: 0.25, sizeAttenuation: true, vertexColors: true,
-      transparent: true, opacity: 0.85, depthWrite: false
+      size: 0.4, sizeAttenuation: true, vertexColors: true,
+      transparent: true, opacity: 0.9, depthWrite: false
     });
     GROUP.add(new THREE.Points(geo, mat));
   }
 
-  // 3. 超星系团分支: 发光标记 + 标签
+  // 2. 分支标记 (球状位置, 发光更明显)
   DATA.branches.forEach((b, i) => {
     const isGA = b.name.includes('巨引源');
     const isVirgo = b.name.includes('室女');
     const color = isGA ? 0xff5a3c : (isVirgo ? 0x4fc3f7 : 0xffc060);
-    const size = isGA ? 1.4 : (isVirgo ? 1.0 : 0.8);
+    const size = isGA ? 2.0 : (isVirgo ? 1.4 : 1.1);
     const dot = new THREE.Sprite(new THREE.SpriteMaterial({
       color, transparent: true, opacity: 0.95, depthWrite: false,
-      map: (()=>{ const c=document.createElement('canvas'); c.width=c.height=32;
-        const g=c.getContext('2d'); const gr=g.createRadialGradient(16,16,0,16,16,16);
-        gr.addColorStop(0,'rgba(255,255,255,1)'); gr.addColorStop(0.5,'rgba(255,255,255,0.5)'); gr.addColorStop(1,'rgba(255,255,255,0)');
-        g.fillStyle=gr; g.fillRect(0,0,32,32); return new THREE.CanvasTexture(c); })()
+      map: (()=>{ const c=document.createElement('canvas'); c.width=c.height=48;
+        const g=c.getContext('2d'); const gr=g.createRadialGradient(24,24,0,24,24,24);
+        gr.addColorStop(0,'rgba(255,255,255,1)'); gr.addColorStop(0.4,'rgba(255,255,255,0.6)'); gr.addColorStop(1,'rgba(255,255,255,0)');
+        g.fillStyle=gr; g.fillRect(0,0,48,48); return new THREE.CanvasTexture(c); })()
     }));
-    dot.scale.set(size*3, size*3, 1);
-    dot.position.set(b.x, b.y, 0.5);
+    dot.scale.set(size*4, size*4, 1);
+    dot.position.set(b.x, b.y, b.z);
     GROUP.add(dot);
     makeLabel(b.name, dot);
   });
