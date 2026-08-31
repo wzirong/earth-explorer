@@ -138,7 +138,39 @@ function init() {
   );
   GROUP.add(plane);
 
-  // 2. 超星系团分支: 发光标记 + 标签 (在真实位置叠加, 底图已有完整结构)
+  // 2. I 版扁平散点 (2MRS 数据, 超星系团坐标 SGZ 压扁 0.3) 叠在底图上
+  {
+    const gals = DATA.galaxies;
+    // 抽稀到 4000 (避免 18856 太多)
+    const rng = (() => { let s = 42; return () => { s = (s*1664525+1013904223)>>>0; return s/0xffffffff; }; })();
+    const N = Math.min(4000, gals.length);
+    const idx = [];
+    while (idx.length < N) {
+      const k = Math.floor(rng() * gals.length);
+      if (!idx.includes(k)) idx.push(k);
+    }
+    const positions = new Float32Array(N*3);
+    const colors = new Float32Array(N*3);
+    for (let i = 0; i < N; i++) {
+      const g = gals[idx[i]];
+      positions[i*3]   = g.x;
+      positions[i*3+1] = g.y;
+      positions[i*3+2] = g.z + 0.3;  // 略浮于底图
+      const bright = Math.max(0.35, 1 - g.d/130);
+      const c = new THREE.Color(0xfff0c0).multiplyScalar(bright);
+      colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    const mat = new THREE.PointsMaterial({
+      size: 0.25, sizeAttenuation: true, vertexColors: true,
+      transparent: true, opacity: 0.85, depthWrite: false
+    });
+    GROUP.add(new THREE.Points(geo, mat));
+  }
+
+  // 3. 超星系团分支: 发光标记 + 标签
   DATA.branches.forEach((b, i) => {
     const isGA = b.name.includes('巨引源');
     const isVirgo = b.name.includes('室女');
