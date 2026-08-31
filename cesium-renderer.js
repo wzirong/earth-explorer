@@ -1268,6 +1268,21 @@ function closeVirgoSuper3DView() {
   viewer.scene.globe.show = true;
 }
 
+// 拉尼亚凯亚 3D 视图 (iframe)
+let laniakea3DIframe = null;
+function openLaniakea3DView() {
+  if (laniakea3DIframe) { laniakea3DIframe.style.display = 'block'; return; }
+  laniakea3DIframe = document.createElement('iframe');
+  laniakea3DIframe.src = '/laniakea-3d-view.html';
+  laniakea3DIframe.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:none;z-index:60;background:#000;';
+  document.body.appendChild(laniakea3DIframe);
+}
+function closeLaniakea3DView() {
+  if (laniakea3DIframe) laniakea3DIframe.remove();
+  laniakea3DIframe = null;
+  viewer.scene.globe.show = true;
+}
+
 // 宇宙大尺度 overlay 切换
 function showCosmosOverlay(which) {
   // 隐藏所有宇宙 overlay
@@ -1301,6 +1316,7 @@ function setViewMode(mode) {
     closeGalaxy3DView();
     closeLocalGroup3DView();
     closeVirgoSuper3DView();
+    closeLaniakea3DView();
     clearGalaxy();
     hideCosmosOverlays();
     showCesium();
@@ -1341,7 +1357,18 @@ function setViewMode(mode) {
     hideCesium();
     viewer.scene.globe.show = false;
     openVirgoSuper3DView();
-  } else if (mode === 'laniakea' || mode === 'sloan' || mode === 'allsky' || mode === 'observable' || mode === 'hubble' || mode === 'cmb'  || mode === 'pisces-cetus' || mode === 'giant-arc' || mode === 'huge-lqg' || mode === 'giant-grb-ring' || mode === 'hercules-corona') {
+  } else if (mode === 'laniakea') {
+    showSolarNav(false);
+    closeSolarSystemView();
+    closeGalaxy3DView();
+    closeLocalGroup3DView();
+    closeVirgoSuper3DView();
+    clearGalaxy();
+    hideCosmosOverlays();
+    hideCesium();
+    viewer.scene.globe.show = false;
+    openLaniakea3DView();
+  } else if (mode === 'sloan' || mode === 'allsky' || mode === 'observable' || mode === 'hubble' || mode === 'cmb'  || mode === 'pisces-cetus' || mode === 'giant-arc' || mode === 'huge-lqg' || mode === 'giant-grb-ring' || mode === 'hercules-corona') {
     showSolarNav(false);
     closeSolarSystemView();
     closeGalaxy3DView();
@@ -1503,6 +1530,10 @@ window.addEventListener('message', (ev) => {
   }
   if (ev.data && ev.data.type === 'close-virgo-super-3d') {
     closeVirgoSuper3DView();
+    setViewMode('earth');
+  }
+  if (ev.data && ev.data.type === 'close-laniakea-3d') {
+    closeLaniakea3DView();
     setViewMode('earth');
   }
 });
