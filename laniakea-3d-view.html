@@ -33,9 +33,7 @@
 <script>
 let DATA = null;
 fetch('data/laniakea_3d.json').then(r=>r.json()).then(d => { DATA = d; init(); });
-// 纤维 (Delaunay 宇宙网, J 版核心: 真实数据生成的宇宙网纤维网格)
-let FIL = null;
-fetch('data/laniakea_filaments_sg.json').then(r=>r.json()).then(f => { FIL = f; initFilaments(); });
+
 
 
 const container = document.getElementById('container');
@@ -130,12 +128,12 @@ function makeBranchCloud(radius, seed) {
 }
 
 function init() {
-  // 1. 候选1 Tully 2014 真实图作为 3D 底图 (Lavoisier Group, 最接近真实)
+  // 1. 候选2 Tully 2014 原图作 3D 底图 (白色流线 + 星系点 + 红点银河系, Lavoisier Group 渲染)
   const tex = new THREE.TextureLoader().load('data/laniakea_realistic.jpg');
   tex.anisotropy = 8;
-  // 原图 2500:1830 ≈ 1.366:1 (横向延展), 平面大小 220×160 (覆盖 ±100 Mpc)
+  // 原图 1024:512 = 2:1 (横向延展), 平面大小 240×120 (覆盖 ±100 Mpc)
   const plane = new THREE.Mesh(
-    new THREE.PlaneGeometry(220, 160),
+    new THREE.PlaneGeometry(240, 120),
     new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide, depthWrite: false, blending: THREE.NormalBlending })
   );
   GROUP.add(plane);
@@ -160,18 +158,7 @@ function init() {
   });
 }
 
-// 3. Delaunay 纤维网 (J 版核心: 真实宇宙网纤维, 叠加在底图上)
-function initFilaments() {
-  if (!FIL || !FIL.segments) return;
-  const flat = FIL.segments;
-  const positions = new Float32Array(flat);
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  const mat = new THREE.LineBasicMaterial({
-    color: 0xc8d8f0, transparent: true, opacity: 0.4, depthWrite: false
-  });
-  GROUP.add(new THREE.LineSegments(geo, mat));
-}
+
 
 
 
