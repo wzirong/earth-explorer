@@ -218,8 +218,9 @@ PLANETS.forEach((p, idx) => {
   }
   const orbitGeo = new THREE.BufferGeometry().setFromPoints(orbitPts);
   const orbitLine = new THREE.Line(orbitGeo, new THREE.LineBasicMaterial({
-    color: p.isEarth ? 0x4fc3f7 : 0x555566,
-    transparent: true, opacity: p.isEarth ? 0.6 : 0.35
+    color: p.isEarth ? 0x4fc3f7 : 0x7a8db0,
+    transparent: true, opacity: p.isEarth ? 0.85 : 0.7,
+    linewidth: 2
   }));
   scene.add(orbitLine);
   orbitLines.push(orbitLine);
