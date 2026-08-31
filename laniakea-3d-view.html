@@ -33,6 +33,9 @@
 <script>
 let DATA = null;
 fetch('data/laniakea_3d.json').then(r=>r.json()).then(d => { DATA = d; init(); });
+// 纤维连线数据
+let FIL = null;
+fetch('data/laniakea_filaments.json').then(r=>r.json()).then(f => { FIL = f; initFilaments(); });
 
 const container = document.getElementById('container');
 const scene = new THREE.Scene();
@@ -55,8 +58,8 @@ const starField = new THREE.Points(
 }
 
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 10000);
-camera.position.set(40, 60, 220);
-camera.lookAt(-10, 0, -10);
+camera.position.set(0, 40, 210);
+camera.lookAt(0, 0, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -126,8 +129,7 @@ function makeBranchCloud(radius, seed) {
 }
 
 function init() {
-  // 1. 18856 颗星系: 单点集 (2MRS 真实分布)
-  const gals = DATA.galaxies;
+  // 1. 18856 颗星系: 单点集 (2MRS 真实分布)  const gals = DATA.galaxies;
   const gPos = new Float32Array(gals.length*3);
   const gCol = new Float32Array(gals.length*3);
   gals.forEach((g, i) => {
@@ -160,10 +162,25 @@ function init() {
   });
 }
 
+// 纤维连线 (Delaunay 宇宙网, 形成羽毛/纤维结构)
+function initFilaments() {
+  if (!FIL || !FIL.segments) return;
+  const flat = FIL.segments;
+  const nSeg = flat.length / 6;
+  const positions = new Float32Array(flat);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const mat = new THREE.LineBasicMaterial({
+    color: 0x4a6a8a, transparent: true, opacity: 0.35, depthWrite: false
+  });
+  const lines = new THREE.LineSegments(geo, mat);
+  GROUP.add(lines);
+}
+
 // ── 交互 ──
 let action = null, prevX = 0, prevY = 0;
-const panTarget = new THREE.Vector3(-10, 0, -10);
-let rotY = 0.9, rotX = 0.4, viewDist = 250;
+const panTarget = new THREE.Vector3(0, 0, 0);
+let rotY = 0, rotX = 0.12, viewDist = 220;
 container.addEventListener('contextmenu', e => e.preventDefault());
 container.addEventListener('mousedown', e => {
   action = (e.button === 2) ? 'rotate' : 'pan';
