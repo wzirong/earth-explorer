@@ -78,6 +78,27 @@ const TEX_RATIOS = {
     return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 0xffffffff; };
   }
 
+  // 软渐变粒子贴图 (径向衰减 alpha, 中心亮边缘透明)
+  // 让每个点看起来像柔和的小光晕, 多点叠加后形成连续光滑的星系光分布
+  let _starTexCache = null;
+  function makeSoftStarTexture() {
+    if (_starTexCache) return _starTexCache;
+    const c = document.createElement('canvas');
+    c.width = c.height = 64;
+    const g = c.getContext('2d');
+    const grd = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grd.addColorStop(0.00, 'rgba(255,255,255,1.0)');
+    grd.addColorStop(0.15, 'rgba(255,255,255,0.7)');
+    grd.addColorStop(0.40, 'rgba(255,255,255,0.25)');
+    grd.addColorStop(0.70, 'rgba(255,255,255,0.05)');
+    grd.addColorStop(1.00, 'rgba(255,255,255,0)');
+    g.fillStyle = grd;
+    g.fillRect(0, 0, 64, 64);
+    _starTexCache = new THREE.CanvasTexture(c);
+    _starTexCache.minFilter = THREE.LinearFilter;
+    return _starTexCache;
+  }
+
   // 根据距中心的距离, 用指数衰减采样真实径向分布
   function radialSample(rng, scale, exp=1.5) {
     return Math.pow(rng(), 1/exp) * scale;
@@ -90,21 +111,21 @@ const TEX_RATIOS = {
       seed = 12345,
       arms = 4,
       winding = 1.0,
-      armCount = 280,           // 每条旋臂粒子数
-      bulgeCount = 80,         // 核球粒子数
-      haloCount = 100,         // 晕粒子数
-      dustCount = 50,          // 暗尘埃粒子 (M31 有明显尘埃带)
+      armCount = 1800,          // 大幅加密, 让旋臂连续
+      bulgeCount = 1200,        // 核球超高密度
+      haloCount = 500,          // 晕加密度
+      dustCount = 250,          // 暗带加密度
       bar = false,
       barLen = 0.3,
       hasDust = false,
-      bulgeRel = 0.18,         // 核球相对半径
-      diskThickness = 0.04,    // 盘面厚度 (Y 方向散开度)
-      inclination = 60,        // 倾角 (度)
-      type = 'spiral',         // 'spiral' | 'elliptical' | 'irregular'
-      colorCore = [1.0, 0.96, 0.82],   // 核球色 (暖黄白)
-      colorMid = [1.0, 0.88, 0.65],    // 旋臂内侧 (黄)
-      colorOuter = [0.78, 0.85, 1.0],  // 旋臂外侧 (蓝)
-      colorHalo = [0.7, 0.78, 0.92],
+      bulgeRel = 0.18,
+      diskThickness = 0.04,
+      inclination = 60,
+      type = 'spiral',
+      colorCore = [1.0, 0.88, 0.55],   // 橙黄 (更深饱和)
+      colorMid = [1.0, 0.72, 0.35],    // 深橙
+      colorOuter = [0.45, 0.6, 1.0],   // 深蓝
+      colorHalo = [0.35, 0.45, 0.85],
     } = opts;
 
     const r = rng(seed);
@@ -243,12 +264,14 @@ const TEX_RATIOS = {
     // PointsMaterial - 单次 draw call
     // sizeAttenuation:true 让远处变小 (透视感), 不会糊成一片
     const mat = new THREE.PointsMaterial({
-      size: 0.04,
+      size: 0.05,          // 软粒子粒径大, 重叠成连续光
       sizeAttenuation: true,
       vertexColors: true,
       transparent: true,
-      opacity: 0.95,
-      depthWrite: false,  // 多个粒子云叠加时不会被遮挡
+      opacity: 0.25,        // 低不透明度, 重叠区自然叠加
+      depthWrite: false,
+      blending: THREE.NormalBlending,
+      map: makeSoftStarTexture(),
     });
 
     return new THREE.Points(geo, mat);
@@ -260,7 +283,7 @@ const TEX_RATIOS = {
     const positions = [];
     const colors = [];
     const sizes = [];
-    const N = 40;
+    const N = 120;  // 加倍密度
     for (let i = 0; i < N; i++) {
       const dist = Math.pow(r(), 0.6) * radius;
       const theta = r() * Math.PI * 2;
@@ -270,19 +293,21 @@ const TEX_RATIOS = {
       const z = dist * Math.sin(phi) * Math.sin(theta);
       positions.push(x, y, z);
       colors.push(color[0], color[1], color[2]);
-      sizes.push(0.6 + r() * 0.5);
+      sizes.push(0.5 + r() * 0.4);
     }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
     geo.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
     const mat = new THREE.PointsMaterial({
-      size: 0.04,
+      size: 0.045,
       sizeAttenuation: true,
       vertexColors: true,
       transparent: true,
-      opacity: 0.85,
+      opacity: 0.35,
       depthWrite: false,
+      blending: THREE.NormalBlending,
+      map: makeSoftStarTexture(),
     });
     return new THREE.Points(geo, mat);
   }
