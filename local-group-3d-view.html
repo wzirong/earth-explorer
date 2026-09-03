@@ -70,7 +70,235 @@ const TEX_RATIOS = {
   'data/real_disk/NGC_300.png': 1.0,
 };
 
-function initScene() {
+// ── 3D 程序化星系生成器 (无贴图, 无 sprite) ──
+  // 每颗"星"是一个 3D BufferGeometry 点, 有真实位置/颜色/大小
+  // 不面向相机, 不产生贴图感/模糊感
+  function rng(seed) {
+    let s = seed >>> 0;
+    return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 0xffffffff; };
+  }
+
+  // 根据距中心的距离, 用指数衰减采样真实径向分布
+  function radialSample(rng, scale, exp=1.5) {
+    return Math.pow(rng(), 1/exp) * scale;
+  }
+
+  // 真实感星系粒子云: 中心核球 + 旋臂粒子(颜色随径向) + 暗带 + 晕
+  // 返回一个 Points 对象 (单次 draw call, 高效)
+  function buildSpiralGalaxy3D(radius, opts) {
+    const {
+      seed = 12345,
+      arms = 4,
+      winding = 1.0,
+      armCount = 280,           // 每条旋臂粒子数
+      bulgeCount = 80,         // 核球粒子数
+      haloCount = 100,         // 晕粒子数
+      dustCount = 50,          // 暗尘埃粒子 (M31 有明显尘埃带)
+      bar = false,
+      barLen = 0.3,
+      hasDust = false,
+      bulgeRel = 0.18,         // 核球相对半径
+      diskThickness = 0.04,    // 盘面厚度 (Y 方向散开度)
+      inclination = 60,        // 倾角 (度)
+      type = 'spiral',         // 'spiral' | 'elliptical' | 'irregular'
+      colorCore = [1.0, 0.96, 0.82],   // 核球色 (暖黄白)
+      colorMid = [1.0, 0.88, 0.65],    // 旋臂内侧 (黄)
+      colorOuter = [0.78, 0.85, 1.0],  // 旋臂外侧 (蓝)
+      colorHalo = [0.7, 0.78, 0.92],
+    } = opts;
+
+    const r = rng(seed);
+    const positions = [];
+    const colors = [];
+    const sizes = [];
+
+    // ── 1. 中心核球: 球形分布, 颜色暖黄 ──
+    for (let i = 0; i < bulgeCount; i++) {
+      // Sersic 分布: 中心密集, 边缘衰减
+      const br = Math.pow(r(), 2.5) * radius * bulgeRel;
+      const theta = r() * Math.PI * 2;
+      const phi = (r() - 0.5) * Math.PI;
+      const x = br * Math.cos(phi) * Math.cos(theta);
+      const y = br * Math.sin(phi) * 0.7;  // 核球也略扁
+      const z = br * Math.cos(phi) * Math.sin(theta);
+      positions.push(x, y, z);
+      // 核球渐变: 中心纯黄, 边缘偏外色
+      const blend = br / (radius * bulgeRel);
+      colors.push(
+        colorCore[0] * (1-blend) + colorMid[0] * blend,
+        colorCore[1] * (1-blend) + colorMid[1] * blend,
+        colorCore[2] * (1-blend) + colorMid[2] * blend
+      );
+      sizes.push(1.8 + r() * 1.2);
+    }
+
+    if (type === 'spiral') {
+      // ── 2. 旋臂: 粒子沿对数螺旋分布 ──
+      for (let a = 0; a < arms; a++) {
+        const baseAngle = (a / arms) * Math.PI * 2;
+        for (let i = 0; i < armCount; i++) {
+          const t = i / armCount;
+          // 径向: 指数衰减 (中心密, 边缘稀)
+          const armR = (radius * bulgeRel * 1.5) + Math.pow(t, 0.7) * radius * 0.95;
+          const angle = baseAngle + t * winding * Math.PI * 1.5;
+          // 盘面厚度
+          const y = (r() - 0.5) * radius * diskThickness;
+          // 旋臂散开
+          const scatter = (r() - 0.5) * radius * 0.06;
+          const x = armR * Math.cos(angle) + scatter;
+          const z = armR * Math.sin(angle) + scatter;
+          positions.push(x, y, z);
+          // 颜色: 内黄 → 外蓝
+          const blend = Math.min(1, t * 1.5);
+          colors.push(
+            colorMid[0] * (1-blend) + colorOuter[0] * blend,
+            colorMid[1] * (1-blend) + colorOuter[1] * blend,
+            colorMid[2] * (1-blend) + colorOuter[2] * blend
+          );
+          sizes.push(1.0 + (1 - t) * 1.0 + r() * 0.5);
+        }
+      }
+
+      // ── 3. 棒 (Barred Spiral): MW 是 SBbc 型 ──
+      if (bar) {
+        const barN = 30;
+        for (let i = 0; i < barN; i++) {
+          const t = (r() - 0.5);  // -0.5 to 0.5
+          const along = t * radius * barLen * 2;
+          const perp = (r() - 0.5) * radius * 0.04;
+          const y = (r() - 0.5) * radius * diskThickness * 1.5;
+          positions.push(along, y, perp);
+          colors.push(...colorCore);
+          sizes.push(1.5 + r() * 0.8);
+        }
+      }
+
+      // ── 4. 暗尘埃带 (M31 显著特征) ──
+      if (hasDust) {
+        for (let i = 0; i < dustCount; i++) {
+          const dustR = radius * bulgeRel * 2 + r() * radius * 0.5;
+          const dustAngle = (r() - 0.5) * 0.4;  // 沿主轴分布
+          const y = (r() - 0.5) * radius * diskThickness * 0.5;
+          const x = dustR * Math.cos(dustAngle) + (r() - 0.5) * 0.05;
+          const z = dustR * Math.sin(dustAngle) + (r() - 0.5) * 0.05;
+          positions.push(x, y, z);
+          colors.push(0.1, 0.08, 0.05);  // 极暗
+          sizes.push(0.8 + r() * 0.5);
+        }
+      }
+    } else if (type === 'elliptical') {
+      // ── 椭圆星系: 椭球分布, 颜色渐变 ──
+      const eN = 400;
+      for (let i = 0; i < eN; i++) {
+        // 椭球: a (长轴) > b (短轴) > c (短短轴)
+        const er = Math.pow(r(), 1.5) * radius * 0.85;
+        const theta = r() * Math.PI * 2;
+        const phi = (r() - 0.5) * Math.PI;
+        const x = er * Math.cos(phi) * Math.cos(theta);
+        const y = er * Math.sin(phi) * 0.55;  // 椭球压扁
+        const z = er * Math.cos(phi) * Math.sin(theta);
+        positions.push(x, y, z);
+        // 中心亮, 边缘暗 (de Vaucouleurs profile 近似)
+        const blend = Math.pow(er / (radius * 0.85), 0.5);
+        colors.push(
+          colorCore[0] * (1-blend*0.3) + colorMid[0] * blend*0.3,
+          colorCore[1] * (1-blend*0.3) + colorMid[1] * blend*0.3,
+          colorCore[2] * (1-blend*0.3) + colorMid[2] * blend*0.3
+        );
+        sizes.push(1.4 - blend * 0.8 + r() * 0.5);
+      }
+    } else if (type === 'irregular') {
+      // ── 不规则星系: 散布粒子, 无旋臂结构 ──
+      const irN = 200;
+      for (let i = 0; i < irN; i++) {
+        const dist = Math.pow(r(), 0.6) * radius;
+        const theta = r() * Math.PI * 2;
+        const x = dist * Math.cos(theta) * (0.8 + r() * 0.4);
+        const y = (r() - 0.5) * radius * diskThickness * 2;
+        const z = dist * Math.sin(theta) * (0.6 + r() * 0.5);
+        positions.push(x, y, z);
+        colors.push(...colorMid);
+        sizes.push(1.0 + r() * 0.8);
+      }
+    }
+
+    // ── 5. 球状晕 (halo): 散落球状粒子 ──
+    for (let i = 0; i < haloCount; i++) {
+      const dist = Math.pow(r(), 0.4) * radius * 1.3;
+      const theta = r() * Math.PI * 2;
+      const phi = r() * Math.PI;
+      const x = dist * Math.sin(phi) * Math.cos(theta);
+      const y = dist * Math.cos(phi) * 0.35;  // 晕也略扁
+      const z = dist * Math.sin(phi) * Math.sin(theta);
+      positions.push(x, y, z);
+      colors.push(...colorHalo);
+      sizes.push(0.6 + r() * 0.4);
+    }
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    geo.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+
+    // PointsMaterial - 单次 draw call
+    // sizeAttenuation:true 让远处变小 (透视感), 不会糊成一片
+    const mat = new THREE.PointsMaterial({
+      size: 0.04,
+      sizeAttenuation: true,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.95,
+      depthWrite: false,  // 多个粒子云叠加时不会被遮挡
+    });
+
+    return new THREE.Points(geo, mat);
+  }
+
+  // 矮星系: 简单粒子云
+  function buildDwarfGalaxy3D(radius, color, seed) {
+    const r = rng(seed);
+    const positions = [];
+    const colors = [];
+    const sizes = [];
+    const N = 40;
+    for (let i = 0; i < N; i++) {
+      const dist = Math.pow(r(), 0.6) * radius;
+      const theta = r() * Math.PI * 2;
+      const phi = r() * Math.PI;
+      const x = dist * Math.sin(phi) * Math.cos(theta);
+      const y = dist * Math.cos(phi) * 0.5;
+      const z = dist * Math.sin(phi) * Math.sin(theta);
+      positions.push(x, y, z);
+      colors.push(color[0], color[1], color[2]);
+      sizes.push(0.6 + r() * 0.5);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    geo.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+    const mat = new THREE.PointsMaterial({
+      size: 0.04,
+      sizeAttenuation: true,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.85,
+      depthWrite: false,
+    });
+    return new THREE.Points(geo, mat);
+  }
+
+  // 应用 3D 倾角: 把整个星系倾斜 (旋转 + 缩放)
+  function applyInclination(obj, inclinationDeg) {
+    const inclRad = inclinationDeg * Math.PI / 180;
+    // 倾角 = 盘面法线与视线夹角, 0=正面, 90=完全侧视
+    // 实现: 把星系平躺 (绕 X 转 -π/2), 然后绕 X 加倾角偏移
+    // 让盘面"几乎平"但倾斜 inclinationDeg 度
+    obj.rotation.x = -Math.PI / 2 + inclRad;
+    // 位置角 PA: 盘面在视场里的方向
+    obj.rotation.z = Math.random() * Math.PI * 2;
+  }
+
+  function initScene() {
   const container = document.getElementById('container');
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x000006);
@@ -145,92 +373,63 @@ function initScene() {
     subgroupBounds[sg] = { wire, radius, center };
   });
 
-  // ── 渲染每个星系 ──
+  // ── 渲染每个星系 (全部用 3D 粒子云, 不再用贴图/sprite) ──
   const clickables = [];
   const galObjs = [];   // { mesh, info, subgroup }
 
-  GALAXIES.forEach(g => {
+  // 星系个性化参数 (基于真实观测)
+  const GALAXY_PROFILES = {
+    '银河系 Milky Way': { arms: 4, winding: 1.0, bar: true, barLen: 0.4, bulgeRel: 0.22, diskThickness: 0.05, hasDust: false, colorCore: [1.0, 0.96, 0.78], colorMid: [1.0, 0.92, 0.7], colorOuter: [0.85, 0.9, 1.0] },
+    'LMC':             { arms: 1, winding: 0.3, bar: true, barLen: 0.5, bulgeRel: 0.18, diskThickness: 0.10, hasDust: false, colorCore: [1.0, 0.9, 0.7], colorMid: [0.9, 0.85, 0.65], colorOuter: [0.7, 0.8, 0.95], irregular: true },
+    'SMC':             { arms: 0, winding: 0, bar: false, bulgeRel: 0.15, diskThickness: 0.12, hasDust: false, type: 'irregular', colorCore: [1.0, 0.85, 0.6], colorMid: [0.9, 0.8, 0.55], colorOuter: [0.7, 0.75, 0.9] },
+    'Andromeda':       { arms: 4, winding: 1.4, bar: false, bulgeRel: 0.20, diskThickness: 0.04, hasDust: true, colorCore: [1.0, 0.95, 0.75], colorMid: [1.0, 0.88, 0.6], colorOuter: [0.7, 0.8, 1.0] },
+    'M32':             { type: 'elliptical', bulgeRel: 0.95, diskThickness: 0.55, colorCore: [1.0, 0.92, 0.72], colorMid: [0.95, 0.85, 0.65], colorOuter: [0.8, 0.75, 0.6] },
+    'NGC 205':         { type: 'elliptical', bulgeRel: 0.9, diskThickness: 0.5, colorCore: [1.0, 0.9, 0.7], colorMid: [0.95, 0.82, 0.6], colorOuter: [0.78, 0.72, 0.55] },
+    'NGC 147':         { type: 'elliptical', bulgeRel: 0.85, diskThickness: 0.5, colorCore: [1.0, 0.92, 0.72], colorMid: [0.93, 0.83, 0.62], colorOuter: [0.78, 0.72, 0.55] },
+    'NGC 185':         { type: 'elliptical', bulgeRel: 0.88, diskThickness: 0.5, colorCore: [1.0, 0.92, 0.7], colorMid: [0.94, 0.82, 0.6], colorOuter: [0.78, 0.7, 0.55] },
+    'Triangulum':      { arms: 3, winding: 0.9, bar: false, bulgeRel: 0.12, diskThickness: 0.04, hasDust: false, colorCore: [1.0, 0.97, 0.85], colorMid: [1.0, 0.92, 0.72], colorOuter: [0.85, 0.9, 1.0] },
+    'NGC 300':         { arms: 4, winding: 0.7, bar: false, bulgeRel: 0.10, diskThickness: 0.04, hasDust: false, colorCore: [1.0, 0.95, 0.78], colorMid: [0.95, 0.88, 0.7], colorOuter: [0.85, 0.92, 1.0] },
+    'NGC 6822':        { type: 'irregular', bulgeRel: 0.18, diskThickness: 0.15, colorCore: [1.0, 0.9, 0.7], colorMid: [0.95, 0.85, 0.65], colorOuter: [0.7, 0.78, 0.95] },
+    'IC 1613':         { type: 'irregular', bulgeRel: 0.15, diskThickness: 0.18, colorCore: [1.0, 0.92, 0.7], colorMid: [0.95, 0.85, 0.6], colorOuter: [0.75, 0.8, 0.95] },
+    'IC 10':           { type: 'irregular', bulgeRel: 0.22, diskThickness: 0.15, colorCore: [1.0, 0.85, 0.6], colorMid: [0.95, 0.78, 0.55], colorOuter: [0.7, 0.7, 0.85] },
+    'WLM':             { type: 'irregular', bulgeRel: 0.15, diskThickness: 0.18, colorCore: [1.0, 0.9, 0.7], colorMid: [0.95, 0.85, 0.65], colorOuter: [0.75, 0.8, 0.95] },
+    'NGC 55':          { arms: 4, winding: 0.6, bar: true, barLen: 0.5, bulgeRel: 0.10, diskThickness: 0.03, hasDust: false, colorCore: [1.0, 0.95, 0.78], colorMid: [0.95, 0.88, 0.7], colorOuter: [0.85, 0.9, 1.0] },
+    'NGC 3109':        { arms: 2, winding: 0.3, bar: false, bulgeRel: 0.15, diskThickness: 0.05, hasDust: false, colorCore: [1.0, 0.92, 0.7], colorMid: [0.95, 0.85, 0.6], colorOuter: [0.78, 0.82, 0.95], irregular: true },
+  };
+
+  GALAXIES.forEach((g, idx) => {
     const sg = g.subgroup || 'field';
     const sgColor = sg === 'mw' ? 0x5588cc : (sg === 'm31' ? 0xcc7755 : 0x888888);
-    let obj;
+    // 大小: 大星系固定大, 矮星系按距离衰减
+    let baseR;
+    if (g.type === 'milkyway') baseR = 0.45;
+    else if (g.type === 'major') baseR = 0.35;
+    else baseR = Math.max(0.04, 0.10 - (g.d || 0.5) * 0.02);
 
-    if (g.texture) {
-      // 大星系: 用真实贴图 + 3D 倾斜 (不再是 sprite!)
-      const tex = loadTex(g.texture);
-      const ratio = TEX_RATIOS[g.texture] || 1.0;
-      // 真实尺寸: MW 大, 其他 major 中, dwarf 小
-      let baseR;
-      if (g.type === 'milkyway') baseR = 0.65;
-      else if (g.type === 'major') baseR = 0.42;
-      else baseR = 0.13;  // dwarf elliptical
-      const w = baseR * Math.sqrt(ratio);
-      const h = baseR / Math.sqrt(ratio);
-      const geo = new THREE.PlaneGeometry(w, h);
-      const mat = new THREE.MeshBasicMaterial({
-        map: tex,
-        transparent: true,
-        side: THREE.DoubleSide,
-        depthWrite: false,
-        opacity: 1.0
+    const incl = g.inclination || 0;
+    const profile = GALAXY_PROFILES[g.name] || {};
+    const isMajor = !!g.texture;
+
+    let obj;
+    if (isMajor) {
+      // 大星系: 3D 粒子云 + 真实 3D 倾角旋转 (不是 scale 压扁!)
+      obj = buildSpiralGalaxy3D(baseR, {
+        ...profile,
+        seed: idx * 31 + 17,
+        inclination: incl,
       });
-      obj = new THREE.Mesh(geo, mat);
-      // 3D 倾斜: 直接用 scale.y 压缩, 不要旋转
-      const incl = (g.inclination || 0) * Math.PI / 180;
-      const flatFactor = Math.cos(incl);  // 0° = 1, 90° = 0
-      // 椭球星系 (M32, NGC 147/185): 显示成球状, 不压扁
-      if (g.inclination === 0) {
-        obj.scale.set(1, 1, 1);
-        obj.rotation.z = (Math.random() - 0.5) * 0.5;
-        obj.rotation.y = Math.random() * Math.PI * 2;
-      } else {
-        // 盘状星系: scale.y 压缩 = 看到盘面的扁率
-        // 补一个 scale.x 比例 (因为贴图可能有 RATIO 不是 1)
-        // 倾角让盘面看起来更椭圆 (X方向不变, Y方向缩小)
-        obj.scale.set(1, Math.max(0.15, flatFactor), 1);
-        // 给盘面一个固定随机位置角 (PA), 旋转让它朝向有变化
-        obj.rotation.z = Math.random() * Math.PI * 2;
-      }
+      // 真实 3D 倾角: 旋转整个星系 (不是压扁)
+      applyInclination(obj, incl);
     } else {
-      // 矮星系: 距离衰减的小 sprite + 淡淡光晕
-      const d = g.d || 0.5;
-      const sz = Math.max(0.025, 0.08 - d * 0.015);
-      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
-        color: sgColor,
-        transparent: true,
-        opacity: 0.7,
-        depthWrite: false,
-        map: (() => { const c = document.createElement('canvas'); c.width=c.height=16;
-          const g2 = c.getContext('2d'); const gr = g2.createRadialGradient(8,8,0,8,8,8);
-          gr.addColorStop(0,'rgba(255,255,255,1)'); gr.addColorStop(0.5,'rgba(255,255,255,0.4)'); gr.addColorStop(1,'rgba(255,255,255,0)');
-          g2.fillStyle=gr; g2.fillRect(0,0,16,16); return new THREE.CanvasTexture(c); })()
-      }));
-      sprite.scale.set(sz, sz, 1);
-      obj = sprite;
+      // 矮星系: 简单 3D 粒子云
+      const colorNorm = sg === 'mw' ? [0.6, 0.75, 1.0] : (sg === 'm31' ? [1.0, 0.7, 0.5] : [0.85, 0.85, 0.95]);
+      obj = buildDwarfGalaxy3D(baseR, colorNorm, idx * 31 + 17);
     }
 
     obj.position.set(g.x || 0, g.y || 0, g.z || 0);
     GROUP.add(obj);
 
-    // 子群指示光晕 (中心星系用大光晕, 其他淡化或省略)
-    if (g.texture && (g.type === 'milkyway' || g.norm === 'ANDROMEDA' || g.norm === 'M31')) {
-      const halo = new THREE.Sprite(new THREE.SpriteMaterial({
-        color: sgColor,
-        transparent: true,
-        opacity: 0.2,
-        depthWrite: false,
-        map: (() => { const c = document.createElement('canvas'); c.width=c.height=64;
-          const g2 = c.getContext('2d'); const gr = g2.createRadialGradient(32,32,0,32,32,32);
-          gr.addColorStop(0,'rgba(255,255,255,0.6)'); gr.addColorStop(0.5,'rgba(255,255,255,0.2)'); gr.addColorStop(1,'rgba(255,255,255,0)');
-          g2.fillStyle=gr; g2.fillRect(0,0,64,64); return new THREE.CanvasTexture(c); })()
-      }));
-      // 光晕小一点, 不要遮住星系本身
-      const haloSize = g.type === 'milkyway' ? 0.5 : 0.35;
-      halo.scale.set(haloSize, haloSize, 1);
-      // 光晕加在 GROUP 上而不是星系上, 防止 scale.y 把它也压扁
-      const haloPos = new THREE.Vector3(g.x || 0, g.y || 0, g.z || 0);
-      halo.position.copy(haloPos);
-      GROUP.add(halo);
-    }
+    // 不再用 sprite 光晕 — 3D 粒子云自身已有核球亮区, 不需要额外光晕
 
     // 主星系标签 - 尽量少, 避免重叠
     // 只显示 12 个最重要的, 其他点击查看
