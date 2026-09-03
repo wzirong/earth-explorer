@@ -62,25 +62,146 @@ function makeStarSprite() {
   g.fillStyle = gr; g.fillRect(0,0,32,32);
   return new THREE.CanvasTexture(c);
 }
-const STAR_TEX = makeStarSprite();
+var STAR_TEX = makeStarSprite();
 
 // 主场景组
 const SCENE = new THREE.Group();
 scene.add(SCENE);
+const labelObjs = []; // 标签项目表
+
+// ── 软渐变粒子贴图 (径向衰减 alpha) ──
+let _softStarTex = null;
+function softStarTex() {
+  if (_softStarTex) return _softStarTex;
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d');
+  const grd = g.createRadialGradient(32,32,0,32,32,32);
+  grd.addColorStop(0.00, 'rgba(255,255,255,1.0)');
+  grd.addColorStop(0.20, 'rgba(255,255,255,0.6)');
+  grd.addColorStop(0.50, 'rgba(255,255,255,0.15)');
+  grd.addColorStop(1.00, 'rgba(255,255,255,0)');
+  g.fillStyle = grd;
+  g.fillRect(0, 0, 64, 64);
+  _softStarTex = new THREE.CanvasTexture(c);
+  _softStarTex.minFilter = THREE.LinearFilter;
+  return _softStarTex;
+}
+
+// ── 附近星系 3D 模型生成器 ──
+function rng(seed) {
+  let s = seed >>> 0;
+  return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 0xffffffff; };
+}
+function buildNearbyGalaxy3D(g, radius) {
+  const r = rng(g.name.charCodeAt(0) * 100 + g.name.length * 13);
+  const positions = [];
+  const colors = [];
+  const sizes = [];
+  const colorCore = [1.0, 0.88, 0.55];
+  const colorMid  = [1.0, 0.75, 0.35];
+  const colorOuter = [0.45, 0.6, 1.0];
+  const colorHalo = [0.4, 0.5, 0.85];
+
+  // 1. 中心核球 (亮黄白) - 加密
+  for (let i = 0; i < 400; i++) {
+    const br = Math.pow(r(), 2.5) * radius * 0.3;
+    const th = r() * Math.PI * 2, ph = (r() - 0.5) * Math.PI;
+    positions.push(br * Math.cos(ph) * Math.cos(th), br * Math.sin(ph) * 0.5, br * Math.cos(ph) * Math.sin(th));
+    colors.push(...colorCore);
+    sizes.push(1.5 + r() * 1.0);
+  }
+  // 2. 旋臂/盘面 (if not elliptical/irregular)
+  if (g.type !== 'elliptical') {
+    const arms = g.type === 'spiral' ? 4 : 0;
+    const winding = g.type === 'spiral' ? 1.2 : 0;
+    if (arms > 0) {
+      for (let a = 0; a < arms; a++) {
+        const baseA = (a / arms) * Math.PI * 2;
+        for (let i = 0; i < 250; i++) {
+          const t = i / 250;
+          const armR = radius * 0.18 + Math.pow(t, 0.7) * radius;
+          const angle = baseA + t * winding * Math.PI;
+          const y = (r() - 0.5) * radius * 0.04;
+          const scatter = (r() - 0.5) * radius * 0.06;
+          positions.push(armR * Math.cos(angle) + scatter, y, armR * Math.sin(angle) + scatter);
+          const blend = Math.min(1, t * 1.5);
+          colors.push(colorMid[0]*(1-blend) + colorOuter[0]*blend,
+                      colorMid[1]*(1-blend) + colorOuter[1]*blend,
+                      colorMid[2]*(1-blend) + colorOuter[2]*blend);
+          sizes.push(1.2 - t * 0.5 + r() * 0.4);
+        }
+      }
+    } else {
+      // 不规则: 散布粒子
+      for (let i = 0; i < 250; i++) {
+        const dist = Math.pow(r(), 0.6) * radius;
+        const th = r() * Math.PI * 2;
+        const y = (r() - 0.5) * radius * 0.2;
+        positions.push(dist * Math.cos(th), y, dist * Math.sin(th));
+        colors.push(...colorMid);
+        sizes.push(0.8 + r() * 0.5);
+      }
+    }
+    // 暗带 (如果指定)
+    if (g.hasDust) {
+      for (let i = 0; i < 100; i++) {
+        const dr = radius * 0.3 + r() * radius * 0.4;
+        const da = (r() - 0.5) * 0.3;
+        positions.push(dr * Math.cos(da) + (r()-0.5)*0.03, (r()-0.5)*radius*0.02, dr * Math.sin(da) + (r()-0.5)*0.03);
+        colors.push(0.08, 0.06, 0.04);
+        sizes.push(0.6 + r() * 0.4);
+      }
+    }
+  } else {
+    // 椭圆: 椭球分布
+    for (let i = 0; i < 400; i++) {
+      const er = Math.pow(r(), 1.5) * radius * 0.85;
+      const th = r() * Math.PI * 2, ph = (r() - 0.5) * Math.PI;
+      positions.push(er * Math.cos(ph) * Math.cos(th), er * Math.sin(ph) * 0.55, er * Math.cos(ph) * Math.sin(th));
+      const blend = Math.pow(er / (radius * 0.85), 0.5);
+      colors.push(colorCore[0]*(1-blend*0.3) + colorMid[0]*blend*0.3,
+                  colorCore[1]*(1-blend*0.3) + colorMid[1]*blend*0.3,
+                  colorCore[2]*(1-blend*0.3) + colorMid[2]*blend*0.3);
+      sizes.push(1.4 - blend * 0.8 + r() * 0.5);
+    }
+  }
+  // 3. 晕
+  for (let i = 0; i < 100; i++) {
+    const dist = Math.pow(r(), 0.4) * radius * 1.3;
+    const th = r() * Math.PI * 2, ph = r() * Math.PI;
+    positions.push(dist * Math.sin(ph) * Math.cos(th), dist * Math.cos(ph) * 0.35, dist * Math.sin(ph) * Math.sin(th));
+    colors.push(...colorHalo);
+    sizes.push(0.6 + r() * 0.4);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  geo.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+  const mat = new THREE.PointsMaterial({
+    size: 0.03,
+    sizeAttenuation: true,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.55,
+    depthWrite: false,
+    blending: THREE.NormalBlending,
+    map: softStarTex(),
+  });
+  const obj = new THREE.Points(geo, mat);
+  // 倾角旋转
+  if (g.incl && g.incl > 0 && g.type !== 'elliptical') {
+    const inclRad = g.incl * Math.PI / 180;
+    obj.rotation.x = -Math.PI / 2 + inclRad;
+    obj.rotation.z = r() * Math.PI * 2;
+  }
+  return obj;
+}
 
 async function init() {
-  // 1. 全天真实影像球 (天球内表面, 我们在球心看)
-  const skyTex = await loadSky();
-  const skyGeo = new THREE.SphereGeometry(8, 64, 32);
-  // SphereGeometry 默认法线朝外 (从外看). 我们在球心看 -> 法线朝内.
-  // 法线保持朝外 (默认), 但用 BackSide 渲染从内部看
-  const skyMat = new THREE.MeshBasicMaterial({
-    map: skyTex, side: THREE.BackSide, depthWrite: false
-  });
-  const sky = new THREE.Mesh(skyGeo, skyMat);
-  SCENE.add(sky);
+  // 0. 不使用 2MASS 全天影像球 (本身就是彩虹噪点). 用纯黑背景 + 深空星点
 
-  // 2. 地球标记 (球心, 红点 + 光晕)
+  // 1. 地球标记 (球心, 红点 + 光晕)
   const earthDot = new THREE.Mesh(
     new THREE.SphereGeometry(0.04, 16, 16),
     new THREE.MeshBasicMaterial({ color: 0x4fc3f7 })
@@ -92,67 +213,222 @@ async function init() {
   earthHalo.scale.set(0.2, 0.2, 1);
   SCENE.add(earthHalo);
 
-  // 3. SIMBAD 2636 颗星系 (按 RA/Dec + 红移距离, 分布在全天3D空间)
+  // 2. 随机背景星点 (深空, 不抢戏)
+  {
+    const starCount = 4000;
+    const positions = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount; i++) {
+      const u = Math.random(), v = Math.random();
+      const th = 2 * Math.PI * u;
+      const ph = Math.acos(2 * v - 1);
+      const r = 7.95;
+      positions[i*3]   = r * Math.sin(ph) * Math.cos(th);
+      positions[i*3+1] = r * Math.cos(ph);
+      positions[i*3+2] = r * Math.sin(ph) * Math.sin(th);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const mat = new THREE.PointsMaterial({
+      size: 1.5,
+      sizeAttenuation: false,
+      color: 0xcccccc,
+      transparent: true,
+      opacity: 0.6,
+      depthWrite: false,
+      map: STAR_TEX,
+    });
+    SCENE.add(new THREE.Points(geo, mat));
+  }
+
+  // 3. SIMBAD 2636 颗星系: 单色稀疏点 (不是彩虹)
   const galaxies = (typeof ALL === 'string' ? JSON.parse(ALL) : ALL);
   if (!galaxies || !galaxies.length) {
     document.getElementById('info').textContent = '⚠ 数据加载失败';
     return;
   }
-  document.getElementById('info').textContent = `🌌 全天已知星系 · 3D (SIMBAD ${galaxies.length} 颗 + 2MASS 全天影像)`;
+  document.getElementById('info').textContent = `🌌 全天已知星系 · 3D (SIMBAD ${galaxies.length} 颗 + 附近大星系 30+ 颗 3D 模型)`;
 
-  // SCALE: 把星系放在全天球壳内 (半径 4-7, 因为全天底图是半径 8 的球, 真实全天星系在内层)
-  // SCALE: 1 Mpc -> 1 unit. 数据范围 0-2 Mpc. 星系放在 4-6 之间 (全天底图内壁 8, 星系 4-6 形成"近/中"层)
-  const N = galaxies.length;
-  const positions = new Float32Array(N*3);
-  const colors = new Float32Array(N*3);
-  for (let i = 0; i < N; i++) {
-    const g = galaxies[i];
-    // 距离映射到 4-6 (全天底图内壁之内)
-    const r = 4 + Math.min(g.d, 2) * 1.0;
-    const ra_r = g.ra * Math.PI / 180;
-    const dec_r = g.dec * Math.PI / 180;
-    positions[i*3]   = r * Math.cos(dec_r) * Math.cos(ra_r);
-    positions[i*3+1] = r * Math.sin(dec_r);  // Y轴是赤纬
-    positions[i*3+2] = r * Math.cos(dec_r) * Math.sin(ra_r);
-    // 颜色按红移: 近的暖黄, 远的冷蓝
-    const t = Math.min(1, g.z * 2000);
-    const c = new THREE.Color().setHSL(0.13 - t * 0.45, 0.75, 0.7);
-    colors[i*3] = c.r; colors[i*3+1] = c.g; colors[i*3+2] = c.b;
+  // 球坐标 → 笛卡尔 (全天)
+  function radecToXYZ(ra_deg, dec_deg, radius) {
+    const ra = ra_deg * Math.PI / 180;
+    const dec = dec_deg * Math.PI / 180;
+    return new THREE.Vector3(
+      radius * Math.cos(dec) * Math.cos(ra),
+      radius * Math.sin(dec),
+      radius * Math.cos(dec) * Math.sin(ra)
+    );
   }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  const mat = new THREE.PointsMaterial({
-    map: STAR_TEX,
-    size: 0.06,           // 世界单位, 在半径 5 处 ≈ 10 像素清晰
-    sizeAttenuation: true,
-    vertexColors: true,
-    transparent: true,
-    opacity: 0.95,
-    depthWrite: false,
-    alphaTest: 0.1
-  });
-  SCENE.add(new THREE.Points(geo, mat));
 
-  // 4. 著名星系 (M31, M33, M81, NGC253) 标注 - 黄色亮大点
-  const notable = ['M31', 'M33', 'M81', 'NGC253', 'NGC5128'];
-  galaxies.forEach(g => {
-    const id = g.id.replace(/\s/g, '');
-    if (notable.includes(id)) {
-      const pPos = new Float32Array([
-        (4 + Math.min(g.d, 2) * 1.0) * Math.cos(g.dec * Math.PI / 180) * Math.cos(g.ra * Math.PI / 180),
-        (4 + Math.min(g.d, 2) * 1.0) * Math.sin(g.dec * Math.PI / 180),
-        (4 + Math.min(g.d, 2) * 1.0) * Math.cos(g.dec * Math.PI / 180) * Math.sin(g.ra * Math.PI / 180)
-      ]);
-      const pGeo = new THREE.BufferGeometry();
-      pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-      const pMat = new THREE.PointsMaterial({
-        map: STAR_TEX, size: 0.18, sizeAttenuation: true,
-        color: 0xffd060, transparent: true, opacity: 1.0, depthWrite: false
-      });
-      SCENE.add(new THREE.Points(pGeo, pMat));
-    }
+  // ── SIMBAD 背景点: 单色暗白点, 按 z 距离分布 (作为全天星系背景) ──
+  // 只取 1/3 (880 颗), 固定像素, 不再是彩虹
+  const SUB = Math.max(1, Math.floor(galaxies.length / 3));
+  const positions = new Float32Array(SUB*3);
+  const step = Math.floor(galaxies.length / SUB);
+  for (let i = 0; i < SUB; i++) {
+    const g = galaxies[i * step] || galaxies[galaxies.length-1];
+    const z = Math.abs(g.z || 0);
+    const r = 5.5 + Math.min(z, 0.5) * 2;  // 5.5-6.5 距离分层
+    const p = radecToXYZ(g.ra, g.dec, r);
+    positions[i*3]   = p.x;
+    positions[i*3+1] = p.y;
+    positions[i*3+2] = p.z;
+  }
+  const bgGeo = new THREE.BufferGeometry();
+  bgGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const bgMat = new THREE.PointsMaterial({
+    size: 1.5,           // 固定小点
+    sizeAttenuation: false,
+    color: 0xaabbcc,     // 统一冷白, 不彩虹
+    transparent: true,
+    opacity: 0.5,
+    depthWrite: false,
+    blending: THREE.NormalBlending,
+    map: STAR_TEX,
   });
+  SCENE.add(new THREE.Points(bgGeo, bgMat));
+
+  // ── 附近知名星系 (8 Mpc 内 ~30 颗): 3D 粒子云模型 ──
+  // 数据来源: NASA/IPAC, NED. (RA°, Dec°, d_Mpc, 类型, 真实倾角)
+  const NEARBY = [
+    // 本星系群 (Local Group, ~0.5-1 Mpc)
+    { name: 'MW',     ra: 266.4,  dec: -29.0,  d: 0.000, type: 'milkyway', incl: 60 },
+    { name: 'M31',    ra: 10.68,  dec: 41.27,  d: 0.78,  type: 'spiral',   incl: 77, size: 0.55 },
+    { name: 'M33',    ra: 23.46,  dec: 30.66,  d: 0.81,  type: 'spiral',   incl: 50, size: 0.35 },
+    { name: 'LMC',    ra: 80.89,  dec: -69.76, d: 0.05,  type: 'irregular',incl: 30, size: 0.18 },
+    { name: 'SMC',    ra: 13.19,  dec: -72.83, d: 0.06,  type: 'irregular',incl: 70, size: 0.12 },
+    { name: 'IC 10',  ra: 5.07,   dec: 59.30,  d: 0.70,  type: 'irregular',incl: 30, size: 0.10 },
+    { name: 'NGC6822',ra: 296.24, dec: -14.79, d: 0.46,  type: 'irregular',incl: 30, size: 0.10 },
+    // 玉夫/宝瓶 附近大星系 (3-5 Mpc)
+    { name: 'NGC55',  ra: 3.72,   dec: -39.20, d: 1.9,   type: 'spiral',   incl: 80, size: 0.20 },
+    { name: 'NGC300', ra: 13.72,  dec: -37.68, d: 2.0,   type: 'spiral',   incl: 60, size: 0.20 },
+    { name: 'NGC253', ra: 11.89,  dec: -25.29, d: 3.5,   type: 'spiral',   incl: 78, size: 0.30 },
+    { name: 'IC 342', ra: 56.70,  dec: 68.10,  d: 3.3,   type: 'spiral',   incl: 25, size: 0.28 },
+    // M81/M82 星系群 (3.6 Mpc)
+    { name: 'M81',    ra: 148.89, dec: 69.07,  d: 3.6,   type: 'spiral',   incl: 62, size: 0.28 },
+    { name: 'M82',    ra: 148.97, dec: 69.68,  d: 3.7,   type: 'irregular',incl: 80, size: 0.18, hasDust: true },
+    { name: 'NGC2403',ra: 114.21, dec: 65.60,  d: 3.2,   type: 'spiral',   incl: 60, size: 0.22 },
+    // 半人马/的人马 系 (3.5-4.7 Mpc)
+    { name: 'NGC4945',ra: 196.36, dec: -49.47, d: 3.8,   type: 'spiral',   incl: 90, size: 0.28, hasDust: true },
+    { name: 'NGC5128',ra: 201.36, dec: -43.01, d: 3.8,   type: 'elliptical',incl: 0, size: 0.32 },
+    { name: 'M83',    ra: 204.25, dec: -29.87, d: 4.7,   type: 'spiral',   incl: 24, size: 0.28 },
+    // 中远 (~5-9 Mpc)
+    { name: 'M64',    ra: 194.27, dec: 21.68,  d: 5.3,   type: 'spiral',   incl: 60, size: 0.22 },
+    { name: 'NGC6946',ra: 308.69, dec: 60.15,  d: 5.5,   type: 'spiral',   incl: 38, size: 0.22 },
+    { name: 'M101',   ra: 210.80, dec: 54.35,  d: 6.4,   type: 'spiral',   incl: 0,  size: 0.32 },
+    { name: 'M51',    ra: 202.46, dec: 47.20,  d: 8.6,   type: 'spiral',   incl: 22, size: 0.30 },
+    { name: 'M104',   ra: 189.99, dec: -11.62, d: 9.5,   type: 'spiral',   incl: 90, size: 0.30, hasDust: true },
+    { name: 'NGC4565',ra: 189.09, dec: 25.99,  d: 11.7,  type: 'spiral',   incl: 93, size: 0.30, hasDust: true },
+    { name: 'NGC1068',ra: 40.67,  dec: -0.01,  d: 14.4,  type: 'spiral',   incl: 35, size: 0.30 },
+  ];
+
+  NEARBY.forEach(g => {
+    const pos = radecToXYZ(g.ra, g.dec, 4.0 + Math.min(g.d, 10) * 0.15); // 拉近一点
+    const galaxy = buildNearbyGalaxy3D(g, (g.size || 0.2) * 1.5);  // ×1.5 加大
+    galaxy.position.copy(pos);
+    SCENE.add(galaxy);
+
+    // 标签 (DOM)
+    const lbl = document.createElement('div');
+    lbl.textContent = g.name;
+    Object.assign(lbl.style, {
+      position:'absolute', color:'#fff', font:'600 11px sans-serif',
+      background:'rgba(15,20,30,0.7)', padding:'2px 7px', borderRadius:'8px',
+      border:'1px solid rgba(120,200,255,0.4)',
+      pointerEvents:'none', whiteSpace:'nowrap', userSelect:'none',
+      willChange:'transform'
+    });
+    document.body.appendChild(lbl);
+    labelObjs.push({ obj: galaxy, label: lbl });
+  });
+
+  // ── 远距超星系团标记 ──
+  const CLUSTERS = [
+    { name: '室女团', en: 'Virgo',    ra: 187.5,  dec: 12.3,  z: 0.004,  d: 16.5,  color: 0xff8855 },
+    { name: '天炉团', en: 'Fornax',   ra: 54.0,   dec: -35.5, z: 0.005,  d: 19.0,  color: 0xffaa55 },
+    { name: '玉夫座团', en: 'Sculptor',ra: 11.5,   dec: -33.5, z: 0.005,  d: 20.0,  color: 0xffaa55 },
+    { name: '半人马团', en: 'Centaurus',ra: 194.5,  dec: -41.3, z: 0.011,  d: 45.0,  color: 0xffcc66 },
+    { name: '英仙团', en: 'Perseus',  ra: 49.95,  dec: 41.51, z: 0.018,  d: 75.0,  color: 0x66aaff },
+    { name: '后发团', en: 'Coma',     ra: 194.95, dec: 27.98, z: 0.023,  d: 100.0, color: 0x55ddff },
+    { name: '长蛇团', en: 'Hydra',    ra: 139.52, dec: -12.09,z: 0.012,  d: 50.0,  color: 0x99ccff },
+    { name: '大熊团', en: 'Ursa Major',ra: 162.0, dec: 53.0,  z: 0.005,  d: 22.0,  color: 0xffd680 },
+    { name: '宝瓶团', en: 'Aquarius', ra: 311.7,  dec: -12.8, z: 0.006,  d: 25.0,  color: 0xaaddff },
+    { name: '飞马团', en: 'Pegasus',  ra: 352.2,  dec: 14.7,  z: 0.012,  d: 53.0,  color: 0x88ddff },
+  ];
+  CLUSTERS.forEach(c => {
+    const r = 5.0 + Math.min(c.d, 200) * 0.005;
+    const pos = radecToXYZ(c.ra, c.dec, r);
+    // 标记: 软发光球 (不发闪烁, 稳定)
+    const marker = new THREE.Mesh(
+      new THREE.SphereGeometry(0.08, 16, 16),
+      new THREE.MeshBasicMaterial({
+        color: c.color, transparent: true, opacity: 0.6, depthWrite: false
+      })
+    );
+    marker.position.copy(pos);
+    SCENE.add(marker);
+    // 光晕 (但不闪烁, 稳定)
+    const halo = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: STAR_TEX, color: c.color, transparent: true, opacity: 0.25, depthWrite: false
+    }));
+    halo.scale.set(0.35, 0.35, 1);
+    halo.position.copy(pos);
+    SCENE.add(halo);
+    // 标签
+    const lbl = document.createElement('div');
+    lbl.textContent = `${c.name} ${c.d}Mpc`;
+    Object.assign(lbl.style, {
+      position:'absolute', color:'rgba(255,255,255,0.85)', font:'11px sans-serif',
+      background:'rgba(15,20,30,0.7)', padding:'2px 6px', borderRadius:'6px',
+      border:'1px solid rgba(255,255,255,0.2)',
+      pointerEvents:'none', whiteSpace:'nowrap', userSelect:'none',
+      willChange:'transform'
+    });
+    document.body.appendChild(lbl);
+    labelObjs.push({ obj: halo, label: lbl, offset: new THREE.Vector3(0, 0.2, 0) });
+  });
+
+  // ── 银道面遮挡区 (Zone of Avoidance) ──
+  // 银河平面: b=0, 银河中心在 (l=0, b=0) = RA 266.4° Dec -29.0°
+  // 用一个透明深色圆环表现“看不到的区域”
+  const zoaGeo = new THREE.RingGeometry(7.5, 7.95, 64, 4);
+  const zoaMat = new THREE.MeshBasicMaterial({
+    color: 0x000000, transparent: true, opacity: 0.4,
+    side: THREE.DoubleSide, depthWrite: false
+  });
+  const zoa = new THREE.Mesh(zoaGeo, zoaMat);
+  // 环默认在 XY 面, 银河平面与 XY 夹角约 63° (银道北极在 RA=192.86°, Dec=27.13°)
+  // 将环转成与银道面平行
+  zoa.rotation.x = Math.PI / 2 + 27.13 * Math.PI / 180;  // 仰角
+  zoa.rotation.y = -192.86 * Math.PI / 180;             // 方位
+  SCENE.add(zoa);
+
+  // ── 银河系中心方向标记 (Sgr A*, 稳定不闪烁) ──
+  const sgPos = radecToXYZ(266.4, -29.0, 4.5);
+  const sgCore = new THREE.Mesh(
+    new THREE.SphereGeometry(0.05, 16, 16),
+    new THREE.MeshBasicMaterial({ color: 0xffee88, transparent: true, opacity: 0.9 })
+  );
+  sgCore.position.copy(sgPos);
+  SCENE.add(sgCore);
+  // 银河中心光晕 (稳定, 不闪烁)
+  const sgHalo = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: STAR_TEX, color: 0xffee88, transparent: true, opacity: 0.4, depthWrite: false
+  }));
+  sgHalo.scale.set(0.25, 0.25, 1);
+  sgHalo.position.copy(sgPos);
+  SCENE.add(sgHalo);
+  // 标签
+  const sgLbl = document.createElement('div');
+  sgLbl.textContent = '银河系中心 · Sgr A*';
+  Object.assign(sgLbl.style, {
+    position:'absolute', color:'#ffee88', font:'11px sans-serif',
+    background:'rgba(40,30,15,0.8)', padding:'2px 7px', borderRadius:'8px',
+    border:'1px solid rgba(255,238,136,0.4)',
+    pointerEvents:'none', whiteSpace:'nowrap', userSelect:'none',
+    willChange:'transform'
+  });
+  document.body.appendChild(sgLbl);
+  labelObjs.push({ obj: sgHalo, label: sgLbl, offset: new THREE.Vector3(0, 0.2, 0) });
 }
 
 // ── 交互 (旋转中心的天球) ──
@@ -188,6 +464,23 @@ function animate() {
   // 相机在球心(0,0,0), 旋转整个场景 (SCENE) 实现"看不同方向"
   SCENE.rotation.y = rotY;
   SCENE.rotation.x = rotX;
+  // 同步标签位置到 3D
+  const tmp = new THREE.Vector3();
+  for (const lo of labelObjs) {
+    lo.obj.getWorldPosition(tmp);
+    if (lo.offset) tmp.add(lo.offset);
+    const proj = tmp.clone().project(camera);
+    const x = (proj.x * 0.5 + 0.5) * window.innerWidth;
+    const y = (-proj.y * 0.5 + 0.5) * window.innerHeight;
+    if (proj.z < 1) {
+      lo.label.style.display = 'block';
+      lo.label.style.left = x + 'px';
+      lo.label.style.top = y + 'px';
+      lo.label.style.transform = 'translateX(-50%) translateY(-50%)';
+    } else {
+      lo.label.style.display = 'none';
+    }
+  }
   renderer.render(scene, camera);
 }
 animate();
@@ -202,7 +495,7 @@ document.getElementById('close-btn').onclick = () => {
   if (window.parent) window.parent.postMessage({ type: 'close-allsky-3d' }, '*');
 };
 
-init().catch(e => {
+init().catch(e => {console.error("INIT ERROR:", e);
   document.getElementById('info').textContent = '⚠ 加载失败: ' + e.message;
 });
 </script>
