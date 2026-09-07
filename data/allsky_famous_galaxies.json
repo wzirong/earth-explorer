@@ -1,0 +1,16 @@
+[
+  { "name": "M31 仙女座", "name_en": "Andromeda", "ra": 10.68, "dec": 41.27, "type": "Sb", "dist_ly": 2.54e6 },
+  { "name": "M33 三角座", "name_en": "Triangulum", "ra": 23.46, "dec": 30.66, "type": "Sc", "dist_ly": 2.73e6 },
+  { "name": "玉夫 NGC253", "name_en": "Sculptor", "ra": 11.89, "dec": -25.29, "type": "Sc", "dist_ly": 1.14e7 },
+  { "name": "M81 波德", "name_en": "Bode's", "ra": 148.89, "dec": 69.07, "type": "Sb", "dist_ly": 1.18e7 },
+  { "name": "M82 雪茄", "name_en": "Cigar", "ra": 148.97, "dec": 69.68, "type": "I0", "dist_ly": 1.20e7 },
+  { "name": "M87 室女A", "name_en": "Virgo A", "ra": 187.71, "dec": 12.39, "type": "E0", "dist_ly": 5.30e7 },
+  { "name": "半人马A", "name_en": "Centaurus A", "ra": 201.37, "dec": -43.02, "type": "S0", "dist_ly": 1.37e7 },
+  { "name": "M104 草帽", "name_en": "Sombrero", "ra": 189.99, "dec": -11.62, "type": "Sa", "dist_ly": 2.93e7 },
+  { "name": "M51 涡状", "name_en": "Whirlpool", "ra": 202.47, "dec": 47.20, "type": "Sc", "dist_ly": 2.30e7 },
+  { "name": "M64 黑眼睛", "name_en": "Black Eye", "ra": 194.18, "dec": 21.68, "type": "Sab", "dist_ly": 2.40e7 },
+  { "name": "M101 风车", "name_en": "Pinwheel", "ra": 210.80, "dec": 54.35, "type": "Sc", "dist_ly": 2.10e7 },
+  { "name": "IC 1101 最大", "name_en": "IC 1101", "ra": 228.21, "dec": 5.85, "type": "E-S0", "dist_ly": 1.04e9 },
+  { "name": "GN-z11 最远", "name_en": "GN-z11", "ra": 189.05, "dec": 62.27, "type": "Galaxy", "dist_ly": 1.34e10 },
+  { "name": "银心方向", "name_en": "Galactic Center", "ra": 266.40, "dec": -29.0, "type": "-", "dist_ly": 26600 }
+]
