@@ -222,6 +222,7 @@
 <div id="allsky-overlay" class="cosmos-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
   <button class="cosmos-back" data-cosmos-back="allsky" style="position:absolute;top:16px;right:16px;padding:8px 16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);border-radius:8px;color:#fff;font-size:13px;cursor:pointer;z-index:60;font-weight:600;backdrop-filter:blur(4px);">← 返回地球</button>
   <div style="position:absolute;top:18px;left:18px;color:rgba(255,255,255,0.95);z-index:60;max-width:60%;">
+    <div style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.5px;padding:3px 8px;margin-bottom:6px;background:rgba(120,180,255,0.18);border:1px solid rgba(120,180,255,0.5);border-radius:5px;color:rgba(180,210,255,0.95);">🪐 整体视角</div>
     <div style="font-size:20px;font-weight:600;letter-spacing:1px;">🌌 全天已知星系分布 (SIMBAD 5万颗)</div>
     <div style="font-size:12px;color:rgba(255,220,150,0.95);margin-top:4px;font-weight:600;letter-spacing:0.3px;">📍 上一级尺度: ✨ 拉尼亚凯亚</div>
     <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">Mollweide 全天投影 · 红十标记为著名星系 · 点击星系查信息 · 注意：此为"全天目录"视图，非可观测宇宙尺度</div>
@@ -300,8 +301,11 @@
       <button id="btn-view-laniakea" class="view-mode-btn" data-view="laniakea" style="flex:1;padding:6px 3px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.75);font-size:11px;cursor:pointer;">✨ 拉尼亚凯亚</button>
     </div>
     <div style="display:flex;gap:4px;margin-top:4px;">
-      <button id="btn-view-allsky" class="view-mode-btn" data-view="allsky" style="flex:1;padding:6px 3px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.75);font-size:11px;cursor:pointer;">🌌 全天已知星系</button>
       <button id="btn-view-observable" class="view-mode-btn" data-view="observable" style="flex:1;padding:6px 3px;background:rgba(255,200,100,0.18);border:1px solid rgba(255,200,100,0.5);border-radius:6px;color:rgba(255,220,140,0.95);font-size:11px;cursor:pointer;font-weight:600;">🌐 可观测宇宙</button>
+    </div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:6px;margin-bottom:4px;letter-spacing:0.5px;">🪐 整体视角 (已知星系目录 · 非尺度递进)</div>
+    <div style="display:flex;gap:4px;">
+      <button id="btn-view-allsky" class="view-mode-btn" data-view="allsky" style="flex:1;padding:6px 3px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.75);font-size:11px;cursor:pointer;">🌌 全天已知星系</button>
     </div>
     <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:6px;margin-bottom:4px;letter-spacing:0.5px;">🌐 宇宙大尺度结构 (并列专题)</div>
     <div style="display:flex;gap:4px;">
