@@ -118,19 +118,23 @@ function makeLabel(text, color, target, fontSize='13px', bold=false) {
   return label;
 }
 
-// ── 圆点贴图 (发光小圆) ──
+// ── 圆点贴图 (高分辨率发光小圆) ──
 function makeDotTexture(rgb, alpha=1) {
   const c = document.createElement('canvas');
-  c.width = c.height = 48;
+  c.width = c.height = 64;
   const g = c.getContext('2d');
-  const gr = g.createRadialGradient(24,24,0,24,24,24);
+  const gr = g.createRadialGradient(32,32,0,32,32,32);
   const [r,b,bb] = rgb;
   gr.addColorStop(0, `rgba(${r},${b},${bb},${alpha})`);
-  gr.addColorStop(0.4, `rgba(${r},${b},${bb},${alpha*0.6})`);
+  gr.addColorStop(0.25, `rgba(${r},${b},${bb},${alpha*0.8})`);
+  gr.addColorStop(0.6, `rgba(${r},${b},${bb},${alpha*0.3})`);
   gr.addColorStop(1, `rgba(${r},${b},${bb},0)`);
   g.fillStyle = gr;
-  g.fillRect(0,0,48,48);
-  return new THREE.CanvasTexture(c);
+  g.fillRect(0,0,64,64);
+  const tex = new THREE.CanvasTexture(c);
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  return tex;
 }
 
 // ── 随机数 / 高斯分布 ──
@@ -147,7 +151,7 @@ function gaussRand(r) {
 // ── 子群粒子云 (细腻真实风格: 子群中心点云扩散) ──
 function makeGroupCloud(centerX, centerY, centerZ, radius, seed, colorWarm) {
   const r = rng(seed);
-  const N = 150;  // 减少粒子数, 避免太密
+  const N = 500;  // 匹配拉尼亚凯亚 500 颗/分支
   const positions = new Float32Array(N * 3);
   const colors = new Float32Array(N * 3);
   for (let i = 0; i < N; i++) {
@@ -157,16 +161,17 @@ function makeGroupCloud(centerX, centerY, centerZ, radius, seed, colorWarm) {
     positions[i*3+2] = centerZ + g3 * radius;
     // 颜色: 暖(银心/M31) 用黄白, 冷(场星系) 用蓝白
     const c = new THREE.Color(colorWarm ? (r()<0.5 ? 0xffe8c0 : 0xffd89a) : (r()<0.5 ? 0xc8d8ff : 0xa0b8e0))
-      .multiplyScalar(0.3 + r()*0.2);  // 更暗, 背景化
+      .multiplyScalar(0.5 + r()*0.4);
     colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b;
   }
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   const mat = new THREE.PointsMaterial({
-    size: 0.015, sizeAttenuation: true, vertexColors: true,
-    transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.NormalBlending,
-    map: makeDotTexture([255,255,255])
+    size: 0.06, sizeAttenuation: true, vertexColors: true,
+    transparent: true, opacity: 0.75, depthWrite: false,
+    map: makeDotTexture([255,255,255]),
+    alphaTest: 0.01
   });
   return new THREE.Points(geo, mat);
 }
@@ -253,9 +258,10 @@ function init() {
   geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   const mat = new THREE.PointsMaterial({
-    size: 0.07, sizeAttenuation: true, vertexColors: true,
+    size: 0.4, sizeAttenuation: true, vertexColors: true,
     transparent: true, opacity: 0.95, depthWrite: false,
-    map: makeDotTexture([200,210,240])
+    map: makeDotTexture([255,255,255]),
+    alphaTest: 0.01
   });
   GROUP.add(new THREE.Points(geo, mat));
 
@@ -279,26 +285,36 @@ function init() {
     const isMagellanic = g.name === 'LMC' || g.name === 'SMC';
     const isDwarf = g.name.startsWith('M32') || g.name.startsWith('NGC');
     let color = 0xfff0c0, size = 1.2;
-    if (isMW) { color = 0xffe080; size = 0.35; }  // 银河系 - 金黄
-    else if (isM31) { color = 0xff9a5a; size = 0.30; }  // M31 - 暖橙
-    else if (isM33) { color = 0xa0d0ff; size = 0.22; }  // M33 - 蓝白
-    else if (isMagellanic) { color = 0x90c0ff; size = 0.16; }  // 麦哲伦 - 冷蓝
-    else if (isDwarf) { color = 0xc0c0d0; size = 0.10; }  // 矮星系 - 灰白
-    else if (isBrightField) { color = 0xffe8b0; size = 0.14; }
+    if (isMW) { color = 0xffe080; size = 0.5; }  // 银河系 - 金黄
+    else if (isM31) { color = 0xff9a5a; size = 0.45; }  // M31 - 暖橙
+    else if (isM33) { color = 0xa0d0ff; size = 0.32; }  // M33 - 蓝白
+    else if (isMagellanic) { color = 0x90c0ff; size = 0.22; }  // 麦哲伦 - 冷蓝
+    else if (isDwarf) { color = 0xc0c0d0; size = 0.12; }  // 矮星系 - 灰白
+    else if (isBrightField) { color = 0xffe8b0; size = 0.18; }
 
-    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
-      color, transparent: true, opacity: 0.95, depthWrite: false,
-      map: makeDotTexture([(color>>16)&0xff, (color>>8)&0xff, color&0xff])
+    // 分层精灵: 外层淜晕 + 内层亮点
+    const rgb = [(color>>16)&0xff, (color>>8)&0xff, color&0xff];
+    const haloSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+      color, transparent: true, opacity: 0.35, depthWrite: false,
+      map: makeDotTexture(rgb)
     }));
-    sprite.scale.set(size, size, 1);
-    sprite.position.set(g.x, g.y, g.z);
-    GROUP.add(sprite);
+    haloSprite.scale.set(size * 2.5, size * 2.5, 1);
+    haloSprite.position.set(g.x, g.y, g.z);
+    GROUP.add(haloSprite);
 
-    // 标签 - 主要星系都加
+    const coreSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+      color: 0xffffff, transparent: true, opacity: 0.95, depthWrite: false,
+      map: makeDotTexture([255,255,255])
+    }));
+    coreSprite.scale.set(size, size, 1);
+    coreSprite.position.set(g.x, g.y, g.z);
+    GROUP.add(coreSprite);
+
+    // 标签 - 挂在外层淜晕上, 避免点击核心遮挡
     const labelColor = '#' + color.toString(16).padStart(6, '0');
-    const label = makeLabel(g.name, labelColor, sprite, '11px', isMW || isM31);
-    galaxyIndex.set(g.name.toLowerCase(), { pos: [g.x, g.y, g.z], info: g, sprite });
-    galaxyIndex.set(g.norm?.toLowerCase() || '', { pos: [g.x, g.y, g.z], info: g, sprite });
+    const label = makeLabel(g.name, labelColor, haloSprite, '11px', isMW || isM31);
+    galaxyIndex.set(g.name.toLowerCase(), { pos: [g.x, g.y, g.z], info: g, sprite: haloSprite });
+    galaxyIndex.set(g.norm?.toLowerCase() || '', { pos: [g.x, g.y, g.z], info: g, sprite: haloSprite });
   });
 
   // ─── 4. 子群标签 (在云团附近) ────────────
