@@ -1,0 +1,29 @@
+{
+  "structures": [
+    { "name": "本星系群", "type": "cluster", "ra": 266.40, "dec": -29.0, "d_gly": 0.00003, "desc": "银河系 + M31 + M33 等 80+ 星系" },
+    { "name": "室女座星系团", "type": "cluster", "ra": 187.71, "dec": 12.39, "d_gly": 0.055, "desc": "1300+ 星系, 距 54 Mly" },
+    { "name": "英仙-双鱼超团", "type": "supercluster", "ra": 55.0, "dec": 20.0, "d_gly": 0.25, "desc": "拉尼亚凯亚北延伸" },
+    { "name": "孔雀-印第安超团", "type": "supercluster", "ra": 330.0, "dec": -45.0, "d_gly": 0.25, "desc": "拉尼亚凯亚南延伸" },
+    { "name": "拉尼亚凯亚", "type": "supercluster", "ra": 265.0, "dec": 30.0, "d_gly": 0.25, "desc": "10万星系, 直径 520 Mly" },
+    { "name": "双鱼-鲸鱼 SC", "type": "supercluster", "ra": 20.0, "dec": 10.0, "d_gly": 0.30, "desc": "最长超星系团, ~1 Gly" },
+    { "name": "史隆长城", "type": "wall", "ra": 225.0, "dec": 0.0, "d_gly": 1.10, "desc": "1.38 Gly 长 (2003 发现)" },
+    { "name": "武仙-北冕长城", "type": "wall", "ra": 242.0, "dec": 28.0, "d_gly": 10.0, "desc": "z=0.022, 10 Gly 长 (2013)" },
+    { "name": "巨弧 (Giant Arc)", "type": "arc", "ra": 60.0, "dec": -20.0, "d_gly": 9.5, "desc": "类星体弧 3.3 Gly 长 (2021)" },
+    { "name": "Huge-LQG", "type": "lqg", "ra": 155.0, "dec": 55.0, "d_gly": 9.0, "desc": "73 类星体, ~4 Gly (2012)" },
+    { "name": "GRB 大环", "type": "arc", "ra": 160.0, "dec": 30.0, "d_gly": 9.5, "desc": "γ 暴环 5.6 Gly 直径 (2015)" },
+    { "name": "CMB 偶极", "type": "cmb-dipole", "ra": 173.0, "dec": -10.0, "d_gly": 0.0, "desc": "我们 370 km/s 飞向 l=264°" }
+  ],
+  "famous_galaxies": [
+    { "name": "银河系 (你在这里)", "ra": 266.40, "dec": -29.0, "d_gly": 0.0, "desc": "直径 10万光年, 2000亿恒星" },
+    { "name": "M31 仙女座", "ra": 10.68, "dec": 41.27, "d_gly": 0.0025, "desc": "距 254 万光年" },
+    { "name": "M33 三角座", "ra": 23.46, "dec": 30.66, "d_gly": 0.0027, "desc": "距 273 万光年" },
+    { "name": "M81 波德", "ra": 148.89, "dec": 69.07, "d_gly": 0.0117, "desc": "距 1180 万光年" },
+    { "name": "半人马A", "ra": 201.37, "dec": -43.02, "d_gly": 0.0136, "desc": "距 1370 万光年" },
+    { "name": "M87 室女A", "ra": 187.71, "dec": 12.39, "d_gly": 0.0530, "desc": "距 5300 万光年, 黑洞首照" },
+    { "name": "IC 1101 最大星系", "ra": 228.21, "dec": 5.85, "d_gly": 1.04, "desc": "已知最大星系, 直径 400 万光年" },
+    { "name": "EGS-zs8-1", "ra": 340.0, "dec": 53.0, "d_gly": 7.7, "desc": "深场观测, z=7.7" },
+    { "name": "MACS0647-JD", "ra": 101.0, "dec": 70.0, "d_gly": 10.5, "desc": "哈勃深场, 极遥远" },
+    { "name": "GN-z11", "ra": 189.05, "dec": 62.27, "d_gly": 13.4, "desc": "曾最远星系 z=11.1" },
+    { "name": "JADES-GS-z14-0", "ra": 4.0, "dec": -5.0, "d_gly": 14.32, "desc": "JWST 发现, 当前最远 z=14.32" }
+  ]
+}

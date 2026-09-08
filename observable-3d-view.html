@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>可观测宇宙 · 3D</title>
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+  #container { position: fixed; inset: 0; cursor: grab; }
+  #container.dragging { cursor: grabbing; }
+  #info { position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+          color: rgba(255,255,255,0.85); font: 600 16px sans-serif; letter-spacing: 2px;
+          text-shadow: 0 2px 10px rgba(0,0,0,0.8); pointer-events: none; z-index: 10; white-space: nowrap; }
+  #hint { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+          color: rgba(255,255,255,0.45); font: 12px sans-serif; pointer-events: none; z-index: 10; white-space: nowrap; }
+  #tooltip { position: fixed; background: rgba(20,22,28,0.95); color: #fff; padding: 10px 14px;
+             border-radius: 8px; font-size: 13px; pointer-events: none; display: none; z-index: 100;
+             border: 1px solid rgba(255,255,255,0.15); max-width: 320px; line-height: 1.5; }
+  #close-btn { position: fixed; top: 14px; right: 16px; padding: 8px 16px;
+               background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3);
+               border-radius: 8px; color: #fff; font-size: 13px; cursor: pointer; z-index: 20; font-weight: 600; }
+  #close-btn:hover { background: rgba(255,255,255,0.2); }
+  #scale-tip { position: fixed; top: 50px; left: 14px; color: rgba(255,220,150,0.85);
+               font: 11px sans-serif; z-index: 10; background: rgba(20,22,28,0.65);
+               padding: 6px 10px; border-radius: 6px; pointer-events: none;
+               border: 1px solid rgba(255,220,150,0.25); line-height: 1.7; max-width: 220px; }
+</style>
+</head>
+<body>
+<div id="container"></div>
+<div id="info">🌐 可观测宇宙 · 3D (2MRS 18856 颗真实星系 + 12 大尺度结构 + 11 著名星系)</div>
+<div id="hint">🖱 左键平移 · 右键旋转(看3D透视) · 滚轮缩放</div>
+<div id="tooltip"></div>
+<div id="scale-tip">
+  <b>尺度:</b> 1 单位 = 100 Mpc<br>
+  · 内核 0~1 单位: 2MRS 真实星系 (≤107 Mpc)<br>
+  · 外层结构: 对数压缩, 显示 0.00003~46.5 Gly 真实距离<br>
+  · 最外层球壳: 可观测宇宙边缘 46.5 Gly
+</div>
+<button id="close-btn">← 返回地球</button>
+
+<script src="three.min.js"></script>
+<script src="CSS2DRenderer.js"></script>
+<script>
+let GALAXIES = null;
+let STRUCTURES = null;
+let PROMISE_ALL = Promise.all([
+  fetch('data/laniakea_spherical.json').then(r => r.json()),
+  fetch('data/observable_structures.json').then(r => r.json())
+]).then(([g, s]) => {
+  GALAXIES = g.galaxies;
+  STRUCTURES = s;
+  init();
+});
+
+const container = document.getElementById('container');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000006);
+
+// 星空背景
+const starField = new THREE.Points(
+  new THREE.BufferGeometry(),
+  new THREE.PointsMaterial({ color: 0x8899bb, size: 1.0, sizeAttenuation: false, transparent: true, opacity: 0.5 })
+);
+{
+  const count = 2500, pos = new Float32Array(count*3);
+  for (let i=0;i<count;i++){
+    const r = 300 + Math.random()*400;
+    const th = Math.random()*Math.PI*2, ph = Math.acos(2*Math.random()-1);
+    pos[i*3]=r*Math.sin(ph)*Math.cos(th); pos[i*3+1]=r*Math.sin(ph)*Math.sin(th); pos[i*3+2]=r*Math.cos(ph);
+  }
+  starField.geometry.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  scene.add(starField);
+}
+
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 100000);
+camera.position.set(60, 90, 180);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+container.appendChild(renderer.domElement);
+
+const labelRenderer = new THREE.CSS2DRenderer();
+labelRenderer.setSize(window.innerWidth, window.innerHeight);
+labelRenderer.domElement.style.position = 'fixed';
+labelRenderer.domElement.style.inset = '0';
+labelRenderer.domElement.style.pointerEvents = 'none';
+container.appendChild(labelRenderer.domElement);
+
+const LABEL_STYLE_BASE = {
+  fontFamily: 'sans-serif', letterSpacing: '0.5px', userSelect: 'none',
+  pointerEvents: 'auto', textShadow: '0 1px 4px rgba(0,0,0,0.9)',
+  whiteSpace: 'nowrap', padding: '3px 10px', borderRadius: '12px'
+};
+function makeLabel(text, color, target, fontSize='13px') {
+  const el = document.createElement('div');
+  el.textContent = text;
+  Object.assign(el.style, LABEL_STYLE_BASE, {
+    fontSize,
+    color,
+    background: 'rgba(15,20,30,0.75)',
+    border: `1px solid ${color}80`
+  });
+  const label = new THREE.CSS2DObject(el);
+  label.position.set(0, 2, 0);
+  target.add(label);
+  return label;
+}
+
+const GROUP = new THREE.Group();
+scene.add(GROUP);
+
+// ★ 距离映射函数: 对数压缩, 让 0.00003~46.5 Gly 在合理范围内可见
+function distToUnits(d_gly) {
+  const d_min = 1e-5;  // 0.00001 Gly ≈ 3000 光年 (星系盘大小)
+  const d_max = 46.5;  // 可观测宇宙边界
+  if (d_gly < d_min) d_gly = d_min;
+  if (d_gly > d_max) return -1;
+  // log10 缩放: log(1e-5) = -5, log(46.5) ≈ 1.67
+  const log_d = Math.log10(d_gly);
+  const t = (log_d - (-5)) / (1.67 - (-5));  // 归一化 0~1
+  return 6 + t * 120;  // 6~126 单位 (内核空隙,外延到边界)
+}
+
+// RA/Dec/distance → 3D Cartesian (单位: 自定义)
+function celestialToXYZ(ra_deg, dec_deg, d_gly) {
+  const r = distToUnits(d_gly);
+  if (r < 0) return null;
+  const ra = ra_deg * Math.PI / 180;
+  const dec = dec_deg * Math.PI / 180;
+  return {
+    x: r * Math.cos(dec) * Math.cos(ra),
+    y: r * Math.cos(dec) * Math.sin(ra),
+    z: r * Math.sin(dec)
+  };
+}
+
+// 圆点贴图 (用于 sprite 和背景星)
+function makeDotTexture(rgb, alpha=1) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 48;
+  const g = c.getContext('2d');
+  const gr = g.createRadialGradient(24,24,0,24,24,24);
+  const [r,b,bb] = rgb;
+  gr.addColorStop(0, `rgba(${r},${b},${bb},${alpha})`);
+  gr.addColorStop(0.4, `rgba(${r},${b},${bb},${alpha*0.6})`);
+  gr.addColorStop(1, `rgba(${r},${b},${bb},0)`);
+  g.fillStyle = gr;
+  g.fillRect(0,0,48,48);
+  return new THREE.CanvasTexture(c);
+}
+
+function rng(seed) {
+  let s = seed >>> 0;
+  return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 0xffffffff; };
+}
+
+function init() {
+  // ─── 1. 真实星系点云 (2MRS 18856 颗) ────────────
+  {
+    const N = GALAXIES.length;
+    const r = rng(42);
+    const positions = new Float32Array(N * 3);
+    const colors = new Float32Array(N * 3);
+    for (let i = 0; i < N; i++) {
+      const g = GALAXIES[i];
+      const xyz = celestialToXYZ(g.ra, g.dec, g.d / 1000 * 3.2616);  // Mpc → Gly
+      if (!xyz) continue;
+      // 真实位置
+      positions[i*3]   = xyz.x;
+      positions[i*3+1] = xyz.y;
+      positions[i*3+2] = xyz.z;
+      // 按距离着色: 近邻暖白, 远距冷蓝
+      const bright = Math.max(0.3, 1 - g.d/130);
+      const c = new THREE.Color(0xaaccff).multiplyScalar(bright);
+      colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    const mat = new THREE.PointsMaterial({
+      size: 0.5, sizeAttenuation: true, vertexColors: true,
+      transparent: true, opacity: 0.9, depthWrite: false,
+      map: makeDotTexture([180,200,255])
+    });
+    GROUP.add(new THREE.Points(geo, mat));
+  }
+
+  // ─── 2. 大尺度结构 (12 个) ──────────────────────
+  const STRUCT_COLORS = {
+    'cluster':       0x4fc3f7,
+    'supercluster':  0xffc060,
+    'wall':          0xff5a3c,
+    'arc':           0xc080ff,
+    'lqg':           0x80ff90,
+    'cmb-dipole':    0xff90c0
+  };
+  STRUCTURES.structures.forEach(s => {
+    const xyz = celestialToXYZ(s.ra, s.dec, s.d_gly);
+    if (!xyz) return;
+    const color = STRUCT_COLORS[s.type] || 0xffffff;
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+      color, transparent: true, opacity: 0.95, depthWrite: false,
+      map: makeDotTexture([(color>>16)&0xff, (color>>8)&0xff, color&0xff])
+    }));
+    sprite.scale.set(5, 5, 1);
+    sprite.position.set(xyz.x, xyz.y, xyz.z);
+    GROUP.add(sprite);
+    makeLabel(s.name + ' · ' + s.type, '#' + color.toString(16).padStart(6,'0'), sprite, '12px');
+  });
+
+  // ─── 3. 著名星系 (11 个) ──────────────────────
+  STRUCTURES.famous_galaxies.forEach(g => {
+    const xyz = celestialToXYZ(g.ra, g.dec, g.d_gly);
+    if (!xyz) return;
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+      color: 0xfff0c0, transparent: true, opacity: 0.95, depthWrite: false,
+      map: makeDotTexture([255,240,192])
+    }));
+    sprite.scale.set(3, 3, 1);
+    sprite.position.set(xyz.x, xyz.y, xyz.z);
+    GROUP.add(sprite);
+    makeLabel(g.name, '#fff0c0', sprite, '11px');
+  });
+
+  // ─── 4. 银河系位置 (原点) ──────────────────────
+  {
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+      color: 0xffe080, transparent: true, opacity: 1.0, depthWrite: false,
+      map: makeDotTexture([255,224,128])
+    }));
+    sprite.scale.set(4, 4, 1);
+    sprite.position.set(0, 0, 0);
+    GROUP.add(sprite);
+    makeLabel('🌍 银河系 (你在这里)', '#ffe080', sprite, '13px');
+  }
+
+  // ─── 5. 可观测宇宙边界球壳 (46.5 Gly) ──────────
+  {
+    const r = distToUnits(46.5);
+    const geo = new THREE.SphereGeometry(r, 64, 32);
+    const mat = new THREE.MeshBasicMaterial({
+      color: 0x6080a0, wireframe: true, transparent: true, opacity: 0.15,
+      side: THREE.BackSide
+    });
+    const shell = new THREE.Mesh(geo, mat);
+    GROUP.add(shell);
+    // 边界标签 (顶部)
+    const labelDiv = document.createElement('div');
+    Object.assign(labelDiv.style, LABEL_STYLE_BASE, {
+      fontSize: '14px', fontWeight: '700',
+      color: '#aaccff',
+      background: 'rgba(0,0,20,0.6)',
+      border: '1px solid rgba(120,180,255,0.5)',
+      padding: '6px 12px'
+    });
+    labelDiv.textContent = '🌐 可观测宇宙边界 · 46.5 Gly · 光行距离';
+    const boundaryLabel = new THREE.CSS2DObject(labelDiv);
+    boundaryLabel.position.set(0, r * 1.05, 0);
+    GROUP.add(boundaryLabel);
+  }
+
+  // ─── 6. 距离刻度环 (1 Gly / 5 Gly / 10 Gly) ─────
+  [1, 5, 10].forEach(d => {
+    const r = distToUnits(d);
+    if (r < 0) return;
+    const ringGeo = new THREE.BufferGeometry();
+    const segs = 128;
+    const pts = [];
+    for (let i = 0; i <= segs; i++) {
+      const a = (i / segs) * Math.PI * 2;
+      pts.push(new THREE.Vector3(r * Math.cos(a), 0, r * Math.sin(a)));
+    }
+    ringGeo.setFromPoints(pts);
+    const ringMat = new THREE.LineBasicMaterial({
+      color: 0x406080, transparent: true, opacity: 0.4
+    });
+    GROUP.add(new THREE.Line(ringGeo, ringMat));
+  });
+}
+
+// ── 交互 ──
+let action = null, prevX = 0, prevY = 0;
+const panTarget = new THREE.Vector3(0, 0, 0);
+let rotY = 0, rotX = 0.12, viewDist = 260;
+container.addEventListener('contextmenu', e => e.preventDefault());
+container.addEventListener('mousedown', e => {
+  action = (e.button === 2) ? 'rotate' : 'pan';
+  prevX = e.clientX; prevY = e.clientY;
+  container.classList.add('dragging');
+});
+window.addEventListener('mouseup', () => { action = null; container.classList.remove('dragging'); });
+window.addEventListener('mousemove', e => {
+  if (!action) return;
+  const dx = e.clientX - prevX, dy = e.clientY - prevY;
+  if (action === 'rotate') {
+    rotY += dx * 0.005;
+    rotX = Math.max(-1.45, Math.min(1.45, rotX + dy*0.005));
+  } else {
+    const s = viewDist * 0.0022;
+    const right = new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion);
+    const up = new THREE.Vector3(0,1,0).applyQuaternion(camera.quaternion);
+    panTarget.addScaledVector(right, -dx*s);
+    panTarget.addScaledVector(up, dy*s);
+  }
+  prevX = e.clientX; prevY = e.clientY;
+});
+container.addEventListener('wheel', e => {
+  e.preventDefault();
+  viewDist *= (e.deltaY > 0 ? 1.1 : 0.9);
+  viewDist = Math.max(30, Math.min(900, viewDist));
+}, { passive: false });
+
+function animate() {
+  requestAnimationFrame(animate);
+  const dist = camera.position.distanceTo(panTarget);
+  camera.position.set(
+    panTarget.x + dist*Math.sin(rotY)*Math.cos(rotX),
+    panTarget.y + dist*Math.sin(rotX),
+    panTarget.z + dist*Math.cos(rotY)*Math.cos(rotX)
+  );
+  camera.lookAt(panTarget);
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  labelRenderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+document.getElementById('close-btn').onclick = () => {
+  window.parent.postMessage({ type: 'close-observable-3d' }, '*');
+};
+</script>
+</body>
+</html>

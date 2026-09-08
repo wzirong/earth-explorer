@@ -1199,14 +1199,19 @@ function closeSolarSystemView() {
   viewer.scene.globe.show = true;
 }
 
-// 太阳系底部导航开关: 切到太阳系显示, 其他隐藏
-function showSolarNav(show) {
+// 底部导航统一控制: 根据当前视图决定哪个显示
+// view: 'earth' / 'solar' / 'allsky' / null (其他全部隐藏)
+function updateBottomNav(view) {
   const solarNav = document.getElementById('solar-nav');
   const contNav = document.getElementById('continent-nav');
   const allskyNav = document.getElementById('allsky-nav');
-  if (solarNav) solarNav.style.display = show ? 'flex' : 'none';
-  if (contNav) contNav.style.display = show ? 'none' : 'flex';
-  if (allskyNav) allskyNav.style.display = 'none';
+  if (solarNav) solarNav.style.display = view === 'solar' ? 'flex' : 'none';
+  if (contNav) contNav.style.display = view === 'earth' ? 'flex' : 'none';
+  if (allskyNav) allskyNav.style.display = view === 'allsky' ? 'flex' : 'none';
+}
+// 太阳系底部导航开关: 切到太阳系显示, 其他隐藏 (保留为示名别名)
+function showSolarNav(show) {
+  updateBottomNav(show ? 'solar' : null);
 }
 // 太阳系导航按钮 → 通知 iframe 聚焦对应天体
 function setupSolarNav() {
@@ -1227,18 +1232,14 @@ setupSolarNav();
 
 // 全天主要星系导航开关: 只在全天已知星系视图显示, 其他隐藏
 function showAllskyNav(show) {
-  const allskyNav = document.getElementById('allsky-nav');
-  const contNav = document.getElementById('continent-nav');
-  const solarNav = document.getElementById('solar-nav');
-  if (allskyNav) allskyNav.style.display = show ? 'flex' : 'none';
-  if (contNav) contNav.style.display = show ? 'none' : 'flex';
-  if (solarNav) solarNav.style.display = 'none';
+  updateBottomNav(show ? 'allsky' : null);
   if (!show) {
     // 离开全天视图: 隐藏面板 + tooltip, 重置按钮高亮
     const panel = document.getElementById('allsky-panel');
     const tooltip = document.getElementById('allsky-tooltip');
     if (panel) panel.style.display = 'none';
     if (tooltip) tooltip.style.display = 'none';
+    const allskyNav = document.getElementById('allsky-nav');
     if (allskyNav) {
       allskyNav.querySelectorAll('.cont-btn').forEach(b => b.classList.remove('active'));
       const overview = allskyNav.querySelector('[data-famous="overview"]');
@@ -1370,6 +1371,21 @@ function closeAllsky3DView() {
   viewer.scene.globe.show = true;
 }
 
+// 可观测宇宙 3D 视图
+let observable3DIframe = null;
+function openObservable3DView() {
+  if (observable3DIframe) { observable3DIframe.style.display = 'block'; return; }
+  observable3DIframe = document.createElement('iframe');
+  observable3DIframe.src = '/observable-3d-view.html';
+  observable3DIframe.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:none;z-index:60;background:#000;';
+  document.body.appendChild(observable3DIframe);
+}
+function closeObservable3DView() {
+  if (observable3DIframe) observable3DIframe.remove();
+  observable3DIframe = null;
+  viewer.scene.globe.show = true;
+}
+
 // 宇宙大尺度 overlay 切换
 function showCosmosOverlay(which) {
   // 隐藏所有宇宙 overlay
@@ -1398,11 +1414,11 @@ function setViewMode(mode) {
     }
   });
   if (mode === 'earth') {
-    showSolarNav(false);
-    showAllskyNav(false);
+    updateBottomNav('earth');
     closeSolarSystemView();
     closeGalaxy3DView();
     closeLocalGroup3DView();
+    closeObservable3DView();
     closeVirgoSuper3DView();
     closeLaniakea3DView();
     closeAllsky3DView();
@@ -1418,20 +1434,17 @@ function setViewMode(mode) {
     clearGalaxy();
     hideCosmosOverlays();
     showCesium();
-    showSolarNav(true);
-    showAllskyNav(false);
+    updateBottomNav('solar');
     openSolarSystemView();
   } else if (mode === 'galaxy') {
-    showSolarNav(false);
-    showAllskyNav(false);
+    updateBottomNav(null);
     closeSolarSystemView();
     closeLocalGroup3DView();
     hideCosmosOverlays();
     showCesium();
     openGalaxy3DView();
   } else if (mode === 'localgroup') {
-    showSolarNav(false);
-    showAllskyNav(false);
+    updateBottomNav(null);
     closeSolarSystemView();
     closeGalaxy3DView();
     clearGalaxy();
@@ -1440,8 +1453,7 @@ function setViewMode(mode) {
     viewer.scene.globe.show = false;
     openLocalGroup3DView();
   } else if (mode === 'virgo-supercluster') {
-    showSolarNav(false);
-    showAllskyNav(false);
+    updateBottomNav(null);
     closeSolarSystemView();
     closeGalaxy3DView();
     closeLocalGroup3DView();
@@ -1451,8 +1463,7 @@ function setViewMode(mode) {
     viewer.scene.globe.show = false;
     openVirgoSuper3DView();
   } else if (mode === 'laniakea') {
-    showSolarNav(false);
-    showAllskyNav(false);
+    updateBottomNav(null);
     closeSolarSystemView();
     closeGalaxy3DView();
     closeLocalGroup3DView();
@@ -1463,8 +1474,7 @@ function setViewMode(mode) {
     viewer.scene.globe.show = false;
     openLaniakea3DView();
   } else if (mode === 'allsky') {
-    showSolarNav(false);
-    showAllskyNav(true);
+    updateBottomNav('allsky');
     closeSolarSystemView();
     closeGalaxy3DView();
     closeLocalGroup3DView();
@@ -1476,9 +1486,17 @@ function setViewMode(mode) {
     hideCesium();
     viewer.scene.globe.show = false;
     openAllsky3DView();
-  } else if (mode === 'sloan' || mode === 'observable' || mode === 'hubble' || mode === 'cmb'  || mode === 'pisces-cetus' || mode === 'giant-arc' || mode === 'huge-lqg' || mode === 'giant-grb-ring' || mode === 'hercules-corona') {
-    showSolarNav(false);
-    showAllskyNav(false);
+  } else if (mode === 'observable') {
+    updateBottomNav(null);
+    closeSolarSystemView();
+    closeGalaxy3DView();
+    closeLocalGroup3DView();
+    clearGalaxy();
+    hideCesium();
+    viewer.scene.globe.show = false;
+    openObservable3DView();
+  } else if (mode === 'sloan' || mode === 'hubble' || mode === 'cmb'  || mode === 'pisces-cetus' || mode === 'giant-arc' || mode === 'huge-lqg' || mode === 'giant-grb-ring' || mode === 'hercules-corona') {
+    updateBottomNav(null);
     closeSolarSystemView();
     closeGalaxy3DView();
     closeLocalGroup3DView();
@@ -1486,6 +1504,7 @@ function setViewMode(mode) {
     // 宇宙视图是纯 2D overlay: 隐藏 Cesium 画布, 避免 globe.show=false 时
     // Cesium 触发 'RangeError: Invalid array length' 渲染崩溃 + 错误弹窗遮挡图片
     hideCesium();
+    closeObservable3DView();
     viewer.scene.globe.show = false;
     showCosmosOverlay(mode);
   }
@@ -1647,6 +1666,10 @@ window.addEventListener('message', (ev) => {
   }
   if (ev.data && ev.data.type === 'close-allsky-3d') {
     closeAllsky3DView();
+    setViewMode('earth');
+  }
+  if (ev.data && ev.data.type === 'close-observable-3d') {
+    closeObservable3DView();
     setViewMode('earth');
   }
 });
