@@ -312,20 +312,36 @@ function init() {
     makeLabel(s.name, s.color, dummy, '12px');
   });
 
-  // ─── 5. 距离刻度环 (0.5 / 1.0 / 2.0 Mpc) ────────────
+  // ─── 5. 距离刻度参考 (四根短短的虚线 + 距离标签) ────────────
+  // 只显示 4 根点云,代表 0.5/1.0/2.0 Mpc 半径,明显是刻度不是轨道
   [0.5, 1.0, 2.0].forEach(d => {
-    const ringGeo = new THREE.BufferGeometry();
-    const segs = 96;
-    const pts = [];
-    for (let i = 0; i <= segs; i++) {
-      const a = (i / segs) * Math.PI * 2;
-      pts.push(new THREE.Vector3(d * Math.cos(a), 0, d * Math.sin(a)));
-    }
-    ringGeo.setFromPoints(pts);
-    const ringMat = new THREE.LineBasicMaterial({
-      color: 0x406080, transparent: true, opacity: 0.35
+    // 4 根小点, 间距 d/16, 位于 +X 方向一条线
+    const tickGroup = new THREE.Group();
+    const tickMat = new THREE.PointsMaterial({
+      color: 0x6090b0, size: 0.025, sizeAttenuation: true,
+      transparent: true, opacity: 0.6
     });
-    GROUP.add(new THREE.Line(ringGeo, ringMat));
+    const N = 8;
+    const positions = new Float32Array(N * 3);
+    for (let i = 0; i < N; i++) {
+      const r = d;
+      // 只画 4 个短点: 上下左右各一个 (示意半径)
+      const a = (i / N) * Math.PI * 2;
+      positions[i*3]   = r * Math.cos(a);
+      positions[i*3+1] = 0;
+      positions[i*3+2] = r * Math.sin(a);
+    }
+    const tickGeo = new THREE.BufferGeometry();
+    tickGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    tickGroup.add(new THREE.Points(tickGeo, tickMat));
+    GROUP.add(tickGroup);
+    // 距离标签: 黄色小标签标在该点旁
+    const labelDiv = document.createElement('div');
+    labelDiv.textContent = d + ' Mpc';
+    labelDiv.style.cssText = 'font-size:10px;color:#aaccdd;background:rgba(15,20,30,0.7);padding:2px 6px;border-radius:8px;border:1px solid rgba(120,180,220,0.4);font-family:sans-serif;';
+    const tickLabel = new THREE.CSS2DObject(labelDiv);
+    tickLabel.position.set(d + 0.05, 0, 0);
+    tickGroup.add(tickLabel);
   });
 }
 
