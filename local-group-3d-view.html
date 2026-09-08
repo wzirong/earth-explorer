@@ -703,9 +703,14 @@ const TEX_RATIOS = {
   window.addEventListener('message', (ev) => {
     if (ev.data && ev.data.type === 'focus-galaxy') {
       const name = (ev.data.name || '').toLowerCase();
+      if (name === 'overview') {
+        backToOverview();
+        return;
+      }
       const entry = clickables.find(c =>
         (c.info.name || '').toLowerCase() === name ||
-        (c.info.norm || '').toLowerCase() === name
+        (c.info.norm || '').toLowerCase() === name ||
+        (c.info.name || '').toLowerCase().includes(name)
       );
       if (entry) focusOn(entry);
     }
