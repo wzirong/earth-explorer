@@ -1436,10 +1436,15 @@ function setViewMode(mode) {
 function hideCesium() {
   const c = document.getElementById('cesiumContainer');
   if (c) c.style.display = 'none';
+  // 隐藏 Cesium 状态栏 (海拔/经纬度不适用于 3D 星系视图)
+  const sb = document.getElementById('status-bar');
+  if (sb) sb.style.display = 'none';
 }
 function showCesium() {
   const c = document.getElementById('cesiumContainer');
   if (c) c.style.display = '';
+  const sb = document.getElementById('status-bar');
+  if (sb) sb.style.display = '';
 }
 
 // 绑定宇宙 overlay 返回按钮

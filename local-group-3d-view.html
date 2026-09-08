@@ -275,16 +275,28 @@ function init() {
 
   // ─── 3. 主要星系: sprite + label (亮起) ────────────
   const MAJOR = new Set(['银河系 Milky Way','Andromeda','Triangulum','LMC','SMC','M32','NGC 205','NGC 147','NGC 185']);
-  // ─── 3. 主要星系: 3D 盘状平面 + 真实贴图 + 倾角旋转 ────────────
+  // ─── 3. 主要星系: 3D 盘状平面 + 程序化漩涡纹理 + 倾角旋转 ────────────
   // Sprite 永远正面朝相机 -> 看不到倾斜。改用 PlaneGeometry。
+  // 纹理映射: 星系名 → 高清程序化漩涡纹理
+  const TEX_MAP = {
+    '银河系 Milky Way': 'data/galaxy_tex/milkyway.png',
+    'Andromeda':         'data/galaxy_tex/andromeda.png',
+    'Triangulum':        'data/galaxy_tex/m33.png',
+    'LMC':               'data/galaxy_tex/lmc.png',
+    'SMC':               'data/galaxy_tex/smc.png',
+    'M32':               'data/galaxy_tex/m32.png',
+    'NGC 205':           'data/galaxy_tex/ngc205.png',
+    'NGC 185':           'data/galaxy_tex/ngc185.png',
+    'NGC 147':           'data/galaxy_tex/ngc147.png',
+    'NGC 300':           'data/galaxy_tex/ngc300.png',
+  };
   const diskTexCache = {};
   function getDiskTex(path) {
     if (diskTexCache[path]) return diskTexCache[path];
-    // three.js 加载同步不能用 fetch, 用 Image + CanvasTexture
-    // 这里用 TextureLoader (异步加载, 不影响首帧)
     const tex = new THREE.TextureLoader().load(path);
     tex.minFilter = THREE.LinearFilter;
     tex.magFilter = THREE.LinearFilter;
+    tex.colorSpace = THREE.SRGBColorSpace;
     diskTexCache[path] = tex;
     return tex;
   }
@@ -300,24 +312,25 @@ function init() {
     const isDwarf = g.name.startsWith('M32') || g.name.startsWith('NGC');
     let color = 0xfff0c0;
     let baseSize = 1.2;  // 盘状宽度 (单位 Mpc, 远大于真实尺寸仅为可见性)
-    if (isMW) { color = 0xffe080; baseSize = 1.0; }
-    else if (isM31) { color = 0xff9a5a; baseSize = 1.4; }
-    else if (isM33) { color = 0xa0d0ff; baseSize = 0.9; }
-    else if (isMagellanic) { color = 0x90c0ff; baseSize = 0.5; }
-    else if (isDwarf) { color = 0xc0c0d0; baseSize = 0.2; }
-    else if (isBrightField) { color = 0xffe8b0; baseSize = 0.55; }
+    if (isMW) { color = 0xffe080; baseSize = 1.2; }
+    else if (isM31) { color = 0xff9a5a; baseSize = 1.6; }
+    else if (isM33) { color = 0xa0d0ff; baseSize = 1.0; }
+    else if (isMagellanic) { color = 0x90c0ff; baseSize = 0.6; }
+    else if (isDwarf) { color = 0xc0c0d0; baseSize = 0.25; }
+    else if (isBrightField) { color = 0xffe8b0; baseSize = 0.7; }
 
-    // 圆盘 (PlaneGeometry + 真实贴图)
-    if (g.texture) {
+    // 圆盘 (PlaneGeometry + 程序化漩涡纹理)
+    const texPath = TEX_MAP[g.name];
+    if (texPath) {
       const diskGeo = new THREE.PlaneGeometry(baseSize, baseSize);
-      const tex = getDiskTex(g.texture);
+      const tex = getDiskTex(texPath);
       const diskMat = new THREE.MeshBasicMaterial({
         map: tex,
         transparent: true,
         opacity: 0.95,
         side: THREE.DoubleSide,
         depthWrite: false,
-        blending: THREE.NormalBlending
+        blending: THREE.AdditiveBlending
       });
       const disk = new THREE.Mesh(diskGeo, diskMat);
       // 倾角: 0=face-on (盘平), 90=edge-on (盘立)
