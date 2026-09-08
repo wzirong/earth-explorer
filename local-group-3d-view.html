@@ -147,7 +147,7 @@ function gaussRand(r) {
 // ── 子群粒子云 (细腻真实风格: 子群中心点云扩散) ──
 function makeGroupCloud(centerX, centerY, centerZ, radius, seed, colorWarm) {
   const r = rng(seed);
-  const N = 200;  // 减少粒子数, 避免太密
+  const N = 150;  // 减少粒子数, 避免太密
   const positions = new Float32Array(N * 3);
   const colors = new Float32Array(N * 3);
   for (let i = 0; i < N; i++) {
@@ -157,15 +157,15 @@ function makeGroupCloud(centerX, centerY, centerZ, radius, seed, colorWarm) {
     positions[i*3+2] = centerZ + g3 * radius;
     // 颜色: 暖(银心/M31) 用黄白, 冷(场星系) 用蓝白
     const c = new THREE.Color(colorWarm ? (r()<0.5 ? 0xffe8c0 : 0xffd89a) : (r()<0.5 ? 0xc8d8ff : 0xa0b8e0))
-      .multiplyScalar(0.4 + r()*0.3);  // 调暗
+      .multiplyScalar(0.3 + r()*0.2);  // 更暗, 背景化
     colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b;
   }
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   const mat = new THREE.PointsMaterial({
-    size: 0.025, sizeAttenuation: true, vertexColors: true,
-    transparent: true, opacity: 0.55, depthWrite: false, blending: THREE.NormalBlending,
+    size: 0.015, sizeAttenuation: true, vertexColors: true,
+    transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.NormalBlending,
     map: makeDotTexture([255,255,255])
   });
   return new THREE.Points(geo, mat);
@@ -253,7 +253,7 @@ function init() {
   geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   const mat = new THREE.PointsMaterial({
-    size: 0.05, sizeAttenuation: true, vertexColors: true,
+    size: 0.07, sizeAttenuation: true, vertexColors: true,
     transparent: true, opacity: 0.95, depthWrite: false,
     map: makeDotTexture([200,210,240])
   });
@@ -261,10 +261,10 @@ function init() {
 
   // ─── 2. 三个子群的粒子云 (密集恒星云效果) ────────────
   // 银河系群中心
-  const mw = makeGroupCloud(0, 0, 0, 0.3, 42, true);
+  const mw = makeGroupCloud(0, 0, 0, 0.18, 42, true);
   GROUP.add(mw);
   // 仙女座群中心
-  const m31 = makeGroupCloud(0.78, 0, 0, 0.5, 137, true);
+  const m31 = makeGroupCloud(0.78, 0, 0, 0.3, 137, true);
   GROUP.add(m31);
 
   // ─── 3. 主要星系: sprite + label (亮起) ────────────
@@ -279,12 +279,12 @@ function init() {
     const isMagellanic = g.name === 'LMC' || g.name === 'SMC';
     const isDwarf = g.name.startsWith('M32') || g.name.startsWith('NGC');
     let color = 0xfff0c0, size = 1.2;
-    if (isMW) { color = 0xffe080; size = 1.2; }  // 银河系 - 大金黄
-    else if (isM31) { color = 0xff9a5a; size = 1.0; }  // M31 - 暖橙
-    else if (isM33) { color = 0xa0d0ff; size = 0.7; }  // M33 - 蓝白
-    else if (isMagellanic) { color = 0x90c0ff; size = 0.45; }  // 麦哲伦 - 冷蓝
-    else if (isDwarf) { color = 0xc0c0d0; size = 0.25; }  // 矮星系 - 灰白
-    else if (isBrightField) { color = 0xffe8b0; size = 0.35; }
+    if (isMW) { color = 0xffe080; size = 0.35; }  // 银河系 - 金黄
+    else if (isM31) { color = 0xff9a5a; size = 0.30; }  // M31 - 暖橙
+    else if (isM33) { color = 0xa0d0ff; size = 0.22; }  // M33 - 蓝白
+    else if (isMagellanic) { color = 0x90c0ff; size = 0.16; }  // 麦哲伦 - 冷蓝
+    else if (isDwarf) { color = 0xc0c0d0; size = 0.10; }  // 矮星系 - 灰白
+    else if (isBrightField) { color = 0xffe8b0; size = 0.14; }
 
     const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
       color, transparent: true, opacity: 0.95, depthWrite: false,
