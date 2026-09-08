@@ -78,7 +78,7 @@ const starField = new THREE.Points(
 }
 
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 10000);
-camera.position.set(1.5, 1.2, 4.5);
+camera.position.set(2.5, 2.0, 4.0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -214,7 +214,7 @@ function backToOverview() {
   focusedGalaxy = null;
   document.getElementById('focus-hint').style.display = 'none';
   flyCameraTo(
-    new THREE.Vector3(1.5, 1.2, 4.5),
+    new THREE.Vector3(2.5, 2.0, 4.0),
     new THREE.Vector3(0, 0, 0),
     1.4
   );
@@ -275,6 +275,20 @@ function init() {
 
   // ─── 3. 主要星系: sprite + label (亮起) ────────────
   const MAJOR = new Set(['银河系 Milky Way','Andromeda','Triangulum','LMC','SMC','M32','NGC 205','NGC 147','NGC 185']);
+  // ─── 3. 主要星系: 3D 盘状平面 + 真实贴图 + 倾角旋转 ────────────
+  // Sprite 永远正面朝相机 -> 看不到倾斜。改用 PlaneGeometry。
+  const diskTexCache = {};
+  function getDiskTex(path) {
+    if (diskTexCache[path]) return diskTexCache[path];
+    // three.js 加载同步不能用 fetch, 用 Image + CanvasTexture
+    // 这里用 TextureLoader (异步加载, 不影响首帧)
+    const tex = new THREE.TextureLoader().load(path);
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    diskTexCache[path] = tex;
+    return tex;
+  }
+
   DATA.forEach((g, i) => {
     const isMajor = MAJOR.has(g.name);
     const isBrightField = g.name === 'NGC 300';  // 较亮的场星系也标记
@@ -284,37 +298,56 @@ function init() {
     const isM33 = g.name === 'Triangulum';
     const isMagellanic = g.name === 'LMC' || g.name === 'SMC';
     const isDwarf = g.name.startsWith('M32') || g.name.startsWith('NGC');
-    let color = 0xfff0c0, size = 1.2;
-    if (isMW) { color = 0xffe080; size = 0.5; }  // 银河系 - 金黄
-    else if (isM31) { color = 0xff9a5a; size = 0.45; }  // M31 - 暖橙
-    else if (isM33) { color = 0xa0d0ff; size = 0.32; }  // M33 - 蓝白
-    else if (isMagellanic) { color = 0x90c0ff; size = 0.22; }  // 麦哲伦 - 冷蓝
-    else if (isDwarf) { color = 0xc0c0d0; size = 0.12; }  // 矮星系 - 灰白
-    else if (isBrightField) { color = 0xffe8b0; size = 0.18; }
+    let color = 0xfff0c0;
+    let baseSize = 1.2;  // 盘状宽度 (单位 Mpc, 远大于真实尺寸仅为可见性)
+    if (isMW) { color = 0xffe080; baseSize = 1.0; }
+    else if (isM31) { color = 0xff9a5a; baseSize = 1.4; }
+    else if (isM33) { color = 0xa0d0ff; baseSize = 0.9; }
+    else if (isMagellanic) { color = 0x90c0ff; baseSize = 0.5; }
+    else if (isDwarf) { color = 0xc0c0d0; baseSize = 0.2; }
+    else if (isBrightField) { color = 0xffe8b0; baseSize = 0.55; }
 
-    // 分层精灵: 外层淜晕 + 内层亮点
-    const rgb = [(color>>16)&0xff, (color>>8)&0xff, color&0xff];
-    const haloSprite = new THREE.Sprite(new THREE.SpriteMaterial({
-      color, transparent: true, opacity: 0.35, depthWrite: false,
-      map: makeDotTexture(rgb)
-    }));
-    haloSprite.scale.set(size * 2.5, size * 2.5, 1);
-    haloSprite.position.set(g.x, g.y, g.z);
-    GROUP.add(haloSprite);
+    // 圆盘 (PlaneGeometry + 真实贴图)
+    if (g.texture) {
+      const diskGeo = new THREE.PlaneGeometry(baseSize, baseSize);
+      const tex = getDiskTex(g.texture);
+      const diskMat = new THREE.MeshBasicMaterial({
+        map: tex,
+        transparent: true,
+        opacity: 0.95,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+        blending: THREE.NormalBlending
+      });
+      const disk = new THREE.Mesh(diskGeo, diskMat);
+      // 倾角: 0=face-on (盘平), 90=edge-on (盘立)
+      const incl = (g.inclination || 0) * Math.PI / 180;
+      // 用 Euler YXZ: Y 轴随机旋转 (按星系位置) + X 轴倾角
+      const seedAngle = (g.x * 31.7 + g.z * 17.3) % (Math.PI * 2);
+      disk.rotation.order = 'YXZ';
+      disk.rotation.y = seedAngle;          // 绕 Y 轴任意旋转 (旋臂方向)
+      disk.rotation.x = Math.PI / 2 * (1 - incl / (Math.PI/2));  // X 轴倾角
+      disk.position.set(g.x, g.y, g.z);
+      GROUP.add(disk);
+    }
 
+    // 中心亮点 (叠加在盘中央, 不遮挡但提示中心)
     const coreSprite = new THREE.Sprite(new THREE.SpriteMaterial({
-      color: 0xffffff, transparent: true, opacity: 0.95, depthWrite: false,
+      color: 0xffffff, transparent: true, opacity: 0.85, depthWrite: false,
       map: makeDotTexture([255,255,255])
     }));
-    coreSprite.scale.set(size, size, 1);
+    coreSprite.scale.set(baseSize * 0.3, baseSize * 0.3, 1);
     coreSprite.position.set(g.x, g.y, g.z);
     GROUP.add(coreSprite);
 
-    // 标签 - 挂在外层淜晕上, 避免点击核心遮挡
+    // 标签
     const labelColor = '#' + color.toString(16).padStart(6, '0');
-    const label = makeLabel(g.name, labelColor, haloSprite, '11px', isMW || isM31);
-    galaxyIndex.set(g.name.toLowerCase(), { pos: [g.x, g.y, g.z], info: g, sprite: haloSprite });
-    galaxyIndex.set(g.norm?.toLowerCase() || '', { pos: [g.x, g.y, g.z], info: g, sprite: haloSprite });
+    const dummy = new THREE.Object3D();
+    dummy.position.set(g.x, g.y + baseSize * 0.4, g.z);
+    GROUP.add(dummy);
+    const label = makeLabel(g.name, labelColor, dummy, '11px', isMW || isM31);
+    galaxyIndex.set(g.name.toLowerCase(), { pos: [g.x, g.y, g.z], info: g, sprite: coreSprite });
+    galaxyIndex.set(g.norm?.toLowerCase() || '', { pos: [g.x, g.y, g.z], info: g, sprite: coreSprite });
   });
 
   // ─── 4. 子群标签 (在云团附近) ────────────
@@ -363,7 +396,7 @@ function init() {
 
 // ── 交互 ──
 let action = null, prevX = 0, prevY = 0;
-let rotY = 0.3, rotX = 0.25, viewDist = 4.5;
+let rotY = 0.4, rotX = 0.35, viewDist = 5.5;
 
 container.addEventListener('contextmenu', e => e.preventDefault());
 container.addEventListener('mousedown', e => {
