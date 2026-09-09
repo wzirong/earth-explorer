@@ -275,8 +275,9 @@ function init() {
 
   // ─── 3. 主要星系: sprite + label (亮起) ────────────
   const MAJOR = new Set(['银河系 Milky Way','Andromeda','Triangulum','LMC','SMC','M32','NGC 205','NGC 147','NGC 185']);
-  // ─── 3. 主要星系: 3D 盘状平面 + 程序化漩涡纹理 + 倾角旋转 ────────────
-  // Sprite 永远正面朝相机 -> 看不到倾斜。改用 PlaneGeometry。
+  // ─── 3. 主要星系: 3D 圆盘 + 程序化漩涡纹理 + 倾角旋转 ────────────
+  // Sprite 永远正面朝相机 -> 看不到倾斜。PlaneGeometry 是矩形会有'玻璃片'轮廓。
+  // 改用 CircleGeometry (圆形) 避免矩形边缘 + 给材质加 alphaTest 让圆外真正透明。
   // 纹理映射: 星系名 → 高清程序化漩涡纹理
   const TEX_MAP = {
     '银河系 Milky Way': 'data/galaxy_tex/milkyway.png',
@@ -319,18 +320,18 @@ function init() {
     else if (isDwarf) { color = 0xc0c0d0; baseSize = 0.25; }
     else if (isBrightField) { color = 0xffe8b0; baseSize = 0.7; }
 
-    // 圆盘 (PlaneGeometry + 程序化漩涡纹理)
+    // 圆盘 (CircleGeometry + 程序化漩涡纹理)
     const texPath = TEX_MAP[g.name];
     if (texPath) {
-      const diskGeo = new THREE.PlaneGeometry(baseSize, baseSize);
+      const diskGeo = new THREE.CircleGeometry(baseSize * 0.5, 64);
       const tex = getDiskTex(texPath);
       const diskMat = new THREE.MeshBasicMaterial({
         map: tex,
         transparent: true,
-        opacity: 0.95,
+        opacity: 1.0,
         side: THREE.DoubleSide,
         depthWrite: false,
-        blending: THREE.AdditiveBlending
+        alphaTest: 0.02  // 丢弃透明像素, 完全消除矩形玻璃轮廓
       });
       const disk = new THREE.Mesh(diskGeo, diskMat);
       // 倾角: 0=face-on (盘平), 90=edge-on (盘立)
