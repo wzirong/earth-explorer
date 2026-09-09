@@ -561,8 +561,8 @@ container.addEventListener('wheel', e => {
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 container.addEventListener('click', (e) => {
-  // 如果点击是 label 上 (是 label 自己的 click handler 处理的), 跳过
-  if (e.target.closest('div[style*="cursor: pointer"]')) return;
+  // 如果点击在 label 上 (label 自己的 click handler 处理的), 跳过
+  if (labelRenderer.domElement.contains(e.target)) return;
   mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
   raycaster.setFromCamera(mouse, camera);
