@@ -97,7 +97,7 @@ const LABEL_STYLE = {
   borderRadius:'12px', border:'1px solid rgba(255,200,100,0.5)', whiteSpace:'nowrap',
   fontFamily:'sans-serif', letterSpacing:'0.5px', userSelect:'none', pointerEvents:'auto',
   textShadow:'0 1px 4px rgba(0,0,0,0.9)', cursor:'pointer',
-  transition:'transform 0.15s, box-shadow 0.15s'
+  transition:'transform 0.15s, box-shadow 0.15s', touchAction:'manipulation'
 };
 // 大尺度结构标签: 更大更亮， hover 效果
 const BIG_LABEL_STYLE = {
@@ -121,8 +121,19 @@ function makeLabel(text, color, target, fontSize='13px', bold=false, onClick=nul
     el.style.transform = 'scale(1)';
     el.style.boxShadow = 'none';
   });
-  // 点击事件
+  // 点击事件 (pointerdown 比 click 更可靠, 不依赖 mousedown+mouseup 完整序列)
   if (onClick) {
+    let downX = 0, downY = 0, isDrag = false;
+    el.addEventListener('pointerdown', (e) => {
+      downX = e.clientX; downY = e.clientY; isDrag = false;
+    });
+    el.addEventListener('pointermove', (e) => {
+      if (Math.abs(e.clientX - downX) > 5 || Math.abs(e.clientY - downY) > 5) isDrag = true;
+    });
+    el.addEventListener('pointerup', (e) => {
+      if (!isDrag) { e.stopPropagation(); onClick(); }
+    });
+    // click 作为兑底 (某些浏览器/触屏可能不发 pointer 事件)
     el.addEventListener('click', (e) => { e.stopPropagation(); onClick(); });
   }
   const label = new THREE.CSS2DObject(el);
