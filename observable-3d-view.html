@@ -96,15 +96,35 @@ const LABEL_STYLE = {
   fontSize:'13px', color:'#fff', background:'rgba(15,20,30,0.75)', padding:'3px 10px',
   borderRadius:'12px', border:'1px solid rgba(255,200,100,0.5)', whiteSpace:'nowrap',
   fontFamily:'sans-serif', letterSpacing:'0.5px', userSelect:'none', pointerEvents:'auto',
-  textShadow:'0 1px 4px rgba(0,0,0,0.9)'
+  textShadow:'0 1px 4px rgba(0,0,0,0.9)', cursor:'pointer',
+  transition:'transform 0.15s, box-shadow 0.15s'
 };
-function makeLabel(text, color, target, fontSize='13px', bold=false) {
+// 大尺度结构标签: 更大更亮， hover 效果
+const BIG_LABEL_STYLE = {
+  fontSize:'14px', padding:'6px 14px', fontWeight:'700',
+  background:'linear-gradient(135deg, rgba(20,25,40,0.92), rgba(30,35,55,0.92))',
+  boxShadow:'0 2px 12px rgba(0,0,0,0.6)'
+};
+function makeLabel(text, color, target, fontSize='13px', bold=false, onClick=null) {
   const el = document.createElement('div');
   el.textContent = text;
   Object.assign(el.style, LABEL_STYLE, {
     fontSize, color, border: `1px solid ${color}80`
   });
   if (bold) el.style.fontWeight = '700';
+  // hover 放大效果
+  el.addEventListener('mouseenter', () => {
+    el.style.transform = 'scale(1.15)';
+    el.style.boxShadow = `0 4px 20px ${color}60`;
+  });
+  el.addEventListener('mouseleave', () => {
+    el.style.transform = 'scale(1)';
+    el.style.boxShadow = 'none';
+  });
+  // 点击事件
+  if (onClick) {
+    el.addEventListener('click', (e) => { e.stopPropagation(); onClick(); });
+  }
   const label = new THREE.CSS2DObject(el);
   label.position.set(0, 1.5, 0);
   target.add(label);
@@ -379,8 +399,18 @@ function init() {
 
     // 标签
     const labelColor = '#' + color.toString(16).padStart(6, '0');
-    const label = makeLabel(s.name + ' · ' + s.type, labelColor, sprite, '12px', true);
-    structIndex.set(s.name, { pos: [xyz.x, xyz.y, xyz.z], info: s, sprite });
+    // 6 个大尺度结构 (距离 0.3 Gly 以上) 用醒目大标签 + 可点击
+    const isLargeScale = ['双鱼-鲸鱼 SC','史隆长城','武仙-北冕长城','巨弧 (Giant Arc)','Huge-LQG','GRB 大环'].includes(s.name);
+    const labelText = isLargeScale ? '🌀 ' + s.name : (s.name + ' · ' + s.type);
+    const label = makeLabel(labelText, labelColor, sprite, isLargeScale ? '14px' : '12px', true,
+      () => focusOn([xyz.x, xyz.y, xyz.z])
+    );
+    if (isLargeScale) {
+      // 大标签额外加渐变背景 + 阴影
+      const el = label.element;
+      Object.assign(el.style, BIG_LABEL_STYLE);
+    }
+    structIndex.set(s.name, { pos: [xyz.x, xyz.y, xyz.z], info: s, sprite, label });
   });
 
   // ─── 3. 著名星系 (11 个) ────────────
@@ -531,6 +561,8 @@ container.addEventListener('wheel', e => {
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 container.addEventListener('click', (e) => {
+  // 如果点击是 label 上 (是 label 自己的 click handler 处理的), 跳过
+  if (e.target.closest('div[style*="cursor: pointer"]')) return;
   mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
   raycaster.setFromCamera(mouse, camera);
