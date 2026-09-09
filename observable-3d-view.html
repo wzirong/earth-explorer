@@ -15,6 +15,10 @@
   #tooltip { position: fixed; background: rgba(20,22,28,0.95); color: #fff; padding: 10px 14px;
              border-radius: 8px; font-size: 13px; pointer-events: none; display: none; z-index: 100;
              border: 1px solid rgba(255,255,255,0.15); max-width: 320px; line-height: 1.5; }
+  #focus-hint { position: fixed; top: 50px; left: 50%; transform: translateX(-50%);
+                color: #fff; font: 600 13px sans-serif; text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+                display: none; z-index: 30; background: rgba(20,22,28,0.8);
+                padding: 5px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); }
   #close-btn { position: fixed; top: 14px; right: 16px; padding: 8px 16px;
                background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3);
                border-radius: 8px; color: #fff; font-size: 13px; cursor: pointer; z-index: 20; font-weight: 600; }
@@ -22,20 +26,21 @@
   #scale-tip { position: fixed; top: 50px; left: 14px; color: rgba(255,220,150,0.85);
                font: 11px sans-serif; z-index: 10; background: rgba(20,22,28,0.65);
                padding: 6px 10px; border-radius: 6px; pointer-events: none;
-               border: 1px solid rgba(255,220,150,0.25); line-height: 1.7; max-width: 220px; }
+               border: 1px solid rgba(255,220,150,0.25); line-height: 1.7; max-width: 240px; }
 </style>
 </head>
 <body>
 <div id="container"></div>
 <div id="info">🌐 可观测宇宙 · 3D (2MRS 18856 颗真实星系 + 12 大尺度结构 + 11 著名星系)</div>
-<div id="hint">🖱 左键平移 · 右键旋转(看3D透视) · 滚轮缩放</div>
-<div id="tooltip"></div>
+<div id="hint">🖱 左键平移 · 右键旋转(看3D透视) · 滚轮缩放 · 点击结构聚焦</div>
 <div id="scale-tip">
   <b>尺度:</b> 1 单位 = 100 Mpc<br>
-  · 内核 0~1 单位: 2MRS 真实星系 (≤107 Mpc)<br>
-  · 外层结构: 对数压缩, 显示 0.00003~46.5 Gly 真实距离<br>
-  · 最外层球壳: 可观测宇宙边缘 46.5 Gly
+  · 内核: 2MRS 真实星系 (≤107 Mpc)<br>
+  · 外层结构: 对数压缩, 0.00003~46.5 Gly<br>
+  · 最外层球壳: 可观测宇宙边缘
 </div>
+<div id="tooltip"></div>
+<div id="focus-hint"></div>
 <button id="close-btn">← 返回地球</button>
 
 <script src="three.min.js"></script>
@@ -43,7 +48,7 @@
 <script>
 let GALAXIES = null;
 let STRUCTURES = null;
-let PROMISE_ALL = Promise.all([
+Promise.all([
   fetch('data/laniakea_spherical.json').then(r => r.json()),
   fetch('data/observable_structures.json').then(r => r.json())
 ]).then(([g, s]) => {
@@ -87,22 +92,21 @@ labelRenderer.domElement.style.inset = '0';
 labelRenderer.domElement.style.pointerEvents = 'none';
 container.appendChild(labelRenderer.domElement);
 
-const LABEL_STYLE_BASE = {
-  fontFamily: 'sans-serif', letterSpacing: '0.5px', userSelect: 'none',
-  pointerEvents: 'auto', textShadow: '0 1px 4px rgba(0,0,0,0.9)',
-  whiteSpace: 'nowrap', padding: '3px 10px', borderRadius: '12px'
+const LABEL_STYLE = {
+  fontSize:'13px', color:'#fff', background:'rgba(15,20,30,0.75)', padding:'3px 10px',
+  borderRadius:'12px', border:'1px solid rgba(255,200,100,0.5)', whiteSpace:'nowrap',
+  fontFamily:'sans-serif', letterSpacing:'0.5px', userSelect:'none', pointerEvents:'auto',
+  textShadow:'0 1px 4px rgba(0,0,0,0.9)'
 };
-function makeLabel(text, color, target, fontSize='13px') {
+function makeLabel(text, color, target, fontSize='13px', bold=false) {
   const el = document.createElement('div');
   el.textContent = text;
-  Object.assign(el.style, LABEL_STYLE_BASE, {
-    fontSize,
-    color,
-    background: 'rgba(15,20,30,0.75)',
-    border: `1px solid ${color}80`
+  Object.assign(el.style, LABEL_STYLE, {
+    fontSize, color, border: `1px solid ${color}80`
   });
+  if (bold) el.style.fontWeight = '700';
   const label = new THREE.CSS2DObject(el);
-  label.position.set(0, 2, 0);
+  label.position.set(0, 1.5, 0);
   target.add(label);
   return label;
 }
@@ -110,19 +114,17 @@ function makeLabel(text, color, target, fontSize='13px') {
 const GROUP = new THREE.Group();
 scene.add(GROUP);
 
-// ★ 距离映射函数: 对数压缩, 让 0.00003~46.5 Gly 在合理范围内可见
+// 距离映射: log scale
 function distToUnits(d_gly) {
-  const d_min = 1e-5;  // 0.00001 Gly ≈ 3000 光年 (星系盘大小)
-  const d_max = 46.5;  // 可观测宇宙边界
+  const d_min = 1e-5;
+  const d_max = 46.5;
   if (d_gly < d_min) d_gly = d_min;
   if (d_gly > d_max) return -1;
-  // log10 缩放: log(1e-5) = -5, log(46.5) ≈ 1.67
   const log_d = Math.log10(d_gly);
-  const t = (log_d - (-5)) / (1.67 - (-5));  // 归一化 0~1
-  return 6 + t * 120;  // 6~126 单位 (内核空隙,外延到边界)
+  const t = (log_d - (-5)) / (1.67 - (-5));
+  return 6 + t * 120;
 }
 
-// RA/Dec/distance → 3D Cartesian (单位: 自定义)
 function celestialToXYZ(ra_deg, dec_deg, d_gly) {
   const r = distToUnits(d_gly);
   if (r < 0) return null;
@@ -135,18 +137,17 @@ function celestialToXYZ(ra_deg, dec_deg, d_gly) {
   };
 }
 
-// 圆点贴图 (用于 sprite 和背景星)
 function makeDotTexture(rgb, alpha=1) {
   const c = document.createElement('canvas');
-  c.width = c.height = 48;
+  c.width = c.height = 64;
   const g = c.getContext('2d');
-  const gr = g.createRadialGradient(24,24,0,24,24,24);
+  const gr = g.createRadialGradient(32,32,0,32,32,32);
   const [r,b,bb] = rgb;
   gr.addColorStop(0, `rgba(${r},${b},${bb},${alpha})`);
   gr.addColorStop(0.4, `rgba(${r},${b},${bb},${alpha*0.6})`);
   gr.addColorStop(1, `rgba(${r},${b},${bb},0)`);
   g.fillStyle = gr;
-  g.fillRect(0,0,48,48);
+  g.fillRect(0,0,64,64);
   return new THREE.CanvasTexture(c);
 }
 
@@ -154,6 +155,149 @@ function rng(seed) {
   let s = seed >>> 0;
   return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 0xffffffff; };
 }
+function gaussRand(r) {
+  let u1 = r(), u2 = r();
+  while (u1 < 1e-6) u1 = r();
+  return Math.sqrt(-2*Math.log(u1)) * Math.cos(2*Math.PI*u2);
+}
+
+// ── 通用粒子云 (cluster/supercluster 用) ──
+function makeCloud(centerX, centerY, centerZ, radius, seed, colorWarm=true, N=200) {
+  const r = rng(seed);
+  const positions = new Float32Array(N*3);
+  const colors = new Float32Array(N*3);
+  for (let i = 0; i < N; i++) {
+    const g1 = gaussRand(r), g2 = gaussRand(r), g3 = gaussRand(r);
+    positions[i*3]   = centerX + g1 * radius;
+    positions[i*3+1] = centerY + g2 * radius * 0.7;
+    positions[i*3+2] = centerZ + g3 * radius;
+    const c = new THREE.Color(colorWarm ? (r()<0.5 ? 0xffe8c0 : 0xc8d8ff) : 0xa0c8ff)
+      .multiplyScalar(0.5 + r()*0.4);
+    colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  const mat = new THREE.PointsMaterial({
+    size: 0.5, sizeAttenuation: true, vertexColors: true,
+    transparent: true, opacity: 0.9, depthWrite: false,
+    map: makeDotTexture([200,210,240]),
+    alphaTest: 0.01
+  });
+  return new THREE.Points(geo, mat);
+}
+
+// ── 长城 (wall): 长条形粒子带 ──
+function makeWall(centerX, centerY, centerZ, length, thickness, dirDeg, seed, color, N=300) {
+  const r = rng(seed);
+  const dir = dirDeg * Math.PI / 180;
+  // dir 是赤经方向的偏移, 同时也要看 dec
+  // 简化: 用 sin/cos 描述在垂直于视线的平面内的长轴
+  // 实际上 wall 是"长条"——画一条沿经度方向的长条
+  const positions = new Float32Array(N*3);
+  const colors = new Float32Array(N*3);
+  const base = new THREE.Color(color);
+  for (let i = 0; i < N; i++) {
+    // 沿经度方向的偏移 (在赤道平面上)
+    const along = (r() - 0.5) * length;  // -L/2 ~ L/2
+    const across = (r() - 0.5) * thickness;
+    const vertical = (r() - 0.5) * thickness * 0.5;
+    // 旋转
+    const x = along * Math.cos(dir) - across * Math.sin(dir);
+    const z = along * Math.sin(dir) + across * Math.cos(dir);
+    positions[i*3]   = centerX + x;
+    positions[i*3+1] = centerY + vertical;
+    positions[i*3+2] = centerZ + z;
+    const c = base.clone().multiplyScalar(0.5 + r()*0.4);
+    colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  const mat = new THREE.PointsMaterial({
+    size: 0.4, sizeAttenuation: true, vertexColors: true,
+    transparent: true, opacity: 0.85, depthWrite: false,
+    map: makeDotTexture([(color>>16)&0xff,(color>>8)&0xff,color&0xff]),
+    alphaTest: 0.01
+  });
+  return new THREE.Points(geo, mat);
+}
+
+// ── 弧形 (arc): 一段弧线上的粒子 ──
+function makeArc(centerX, centerY, centerZ, radius, sweepDeg, dirDeg, thickness, seed, color, N=300) {
+  const r = rng(seed);
+  const positions = new Float32Array(N*3);
+  const colors = new Float32Array(N*3);
+  const base = new THREE.Color(color);
+  const startA = -sweepDeg/2 * Math.PI/180;
+  const endA = sweepDeg/2 * Math.PI/180;
+  for (let i = 0; i < N; i++) {
+    const t = r();
+    const ang = startA + t * (endA - startA);
+    const dist = radius + (r() - 0.5) * thickness;
+    const x = dist * Math.cos(ang);
+    const y = (r() - 0.5) * thickness * 0.3;
+    const z = dist * Math.sin(ang);
+    // 旋转到指定方向
+    const dir = dirDeg * Math.PI / 180;
+    const rx = x * Math.cos(dir) - z * Math.sin(dir);
+    const rz = x * Math.sin(dir) + z * Math.cos(dir);
+    positions[i*3]   = centerX + rx;
+    positions[i*3+1] = centerY + y;
+    positions[i*3+2] = centerZ + rz;
+    const c = base.clone().multiplyScalar(0.5 + r()*0.4);
+    colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  const mat = new THREE.PointsMaterial({
+    size: 0.4, sizeAttenuation: true, vertexColors: true,
+    transparent: true, opacity: 0.85, depthWrite: false,
+    map: makeDotTexture([(color>>16)&0xff,(color>>8)&0xff,color&0xff]),
+    alphaTest: 0.01
+  });
+  return new THREE.Points(geo, mat);
+}
+
+// ── LQG (类星体群): 散布的离散点 ──
+function makeLQG(centerX, centerY, centerZ, spread, seed, color, N=80) {
+  const r = rng(seed);
+  const positions = new Float32Array(N*3);
+  const colors = new Float32Array(N*3);
+  const base = new THREE.Color(color);
+  for (let i = 0; i < N; i++) {
+    const g1 = gaussRand(r), g2 = gaussRand(r), g3 = gaussRand(r);
+    positions[i*3]   = centerX + g1 * spread;
+    positions[i*3+1] = centerY + g2 * spread * 0.4;
+    positions[i*3+2] = centerZ + g3 * spread;
+    const c = base.clone().multiplyScalar(0.5 + r()*0.5);
+    colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  const mat = new THREE.PointsMaterial({
+    size: 0.5, sizeAttenuation: true, vertexColors: true,
+    transparent: true, opacity: 0.9, depthWrite: false,
+    map: makeDotTexture([(color>>16)&0xff,(color>>8)&0xff,color&0xff]),
+    alphaTest: 0.01
+  });
+  return new THREE.Points(geo, mat);
+}
+
+// 大尺度结构 3D 模型类型映射
+const STRUCT_COLORS = {
+  'cluster':       0x4fc3f7,
+  'supercluster':  0xffc060,
+  'wall':          0xff5a3c,
+  'arc':           0xc080ff,
+  'lqg':           0x80ff90,
+  'cmb-dipole':    0xff90c0
+};
+
+// 数据索引: name → {pos, type, info}
+const structIndex = new Map();
 
 function init() {
   // ─── 1. 真实星系点云 (2MRS 18856 颗) ────────────
@@ -164,13 +308,11 @@ function init() {
     const colors = new Float32Array(N * 3);
     for (let i = 0; i < N; i++) {
       const g = GALAXIES[i];
-      const xyz = celestialToXYZ(g.ra, g.dec, g.d / 1000 * 3.2616);  // Mpc → Gly
+      const xyz = celestialToXYZ(g.ra, g.dec, g.d / 1000 * 3.2616);
       if (!xyz) continue;
-      // 真实位置
       positions[i*3]   = xyz.x;
       positions[i*3+1] = xyz.y;
       positions[i*3+2] = xyz.z;
-      // 按距离着色: 近邻暖白, 远距冷蓝
       const bright = Math.max(0.3, 1 - g.d/130);
       const c = new THREE.Color(0xaaccff).multiplyScalar(bright);
       colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b;
@@ -181,35 +323,67 @@ function init() {
     const mat = new THREE.PointsMaterial({
       size: 0.5, sizeAttenuation: true, vertexColors: true,
       transparent: true, opacity: 0.9, depthWrite: false,
-      map: makeDotTexture([180,200,255])
+      map: makeDotTexture([180,200,255]),
+      alphaTest: 0.01
     });
     GROUP.add(new THREE.Points(geo, mat));
   }
 
-  // ─── 2. 大尺度结构 (12 个) ──────────────────────
-  const STRUCT_COLORS = {
-    'cluster':       0x4fc3f7,
-    'supercluster':  0xffc060,
-    'wall':          0xff5a3c,
-    'arc':           0xc080ff,
-    'lqg':           0x80ff90,
-    'cmb-dipole':    0xff90c0
-  };
-  STRUCTURES.structures.forEach(s => {
+  // ─── 2. 大尺度结构 3D 模型 (12 个) ────────────
+  STRUCTURES.structures.forEach((s, i) => {
     const xyz = celestialToXYZ(s.ra, s.dec, s.d_gly);
     if (!xyz) return;
     const color = STRUCT_COLORS[s.type] || 0xffffff;
+    let model = null;
+    let labelOffset = 1.5;
+    if (s.type === 'cluster') {
+      // 本星系群/室女座星系团: 紧凑粒子云
+      const radius = s.name.includes('本星系群') ? 2 : 4;
+      model = makeCloud(xyz.x, xyz.y, xyz.z, radius, i*100+7, false, 250);
+    } else if (s.type === 'supercluster') {
+      // 超团: 中等粒子云
+      const radius = s.name.includes('拉尼亚凯亚') ? 8 : 6;
+      model = makeCloud(xyz.x, xyz.y, xyz.z, radius, i*100+11, true, 400);
+    } else if (s.type === 'wall') {
+      // 长城: 长条形 (按距离定长度)
+      // 史隆长城 1.38 Gly 长, 武仙-北冕 10 Gly 长
+      const length = s.name.includes('史隆') ? 12 : (s.name.includes('武仙') ? 25 : 10);
+      const thickness = 1.5;
+      // dirDeg: 长城方向 (简化为 RA 方向)
+      const dir = s.ra + 90;
+      model = makeWall(xyz.x, xyz.y, xyz.z, length, thickness, dir, i*100+13, color, 400);
+    } else if (s.type === 'arc') {
+      // 弧: 巨弧 3.3 Gly 长, GRB 环 5.6 Gly 直径
+      const radius = s.name.includes('GRB') ? 18 : 12;
+      const sweep = s.name.includes('GRB') ? 360 : 120;
+      const dir = s.ra;
+      model = makeArc(xyz.x, xyz.y, xyz.z, radius, sweep, dir, 2, i*100+17, color, 400);
+    } else if (s.type === 'lqg') {
+      // LQG: 类星体点阵
+      model = makeLQG(xyz.x, xyz.y, xyz.z, 6, i*100+19, color, 80);
+    } else if (s.type === 'cmb-dipole') {
+      // CMB 偶极: 在原点的小标记
+      const origin = celestialToXYZ(0, 0, 0.01);
+      if (origin) model = makeCloud(origin.x, origin.y, origin.z, 3, 99, true, 100);
+    }
+    if (model) GROUP.add(model);
+
+    // 中心 sprite 标记
     const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
       color, transparent: true, opacity: 0.95, depthWrite: false,
-      map: makeDotTexture([(color>>16)&0xff, (color>>8)&0xff, color&0xff])
+      map: makeDotTexture([(color>>16)&0xff,(color>>8)&0xff,color&0xff])
     }));
-    sprite.scale.set(5, 5, 1);
+    sprite.scale.set(4, 4, 1);
     sprite.position.set(xyz.x, xyz.y, xyz.z);
     GROUP.add(sprite);
-    makeLabel(s.name + ' · ' + s.type, '#' + color.toString(16).padStart(6,'0'), sprite, '12px');
+
+    // 标签
+    const labelColor = '#' + color.toString(16).padStart(6, '0');
+    const label = makeLabel(s.name + ' · ' + s.type, labelColor, sprite, '12px', true);
+    structIndex.set(s.name, { pos: [xyz.x, xyz.y, xyz.z], info: s, sprite });
   });
 
-  // ─── 3. 著名星系 (11 个) ──────────────────────
+  // ─── 3. 著名星系 (11 个) ────────────
   STRUCTURES.famous_galaxies.forEach(g => {
     const xyz = celestialToXYZ(g.ra, g.dec, g.d_gly);
     if (!xyz) return;
@@ -223,7 +397,7 @@ function init() {
     makeLabel(g.name, '#fff0c0', sprite, '11px');
   });
 
-  // ─── 4. 银河系位置 (原点) ──────────────────────
+  // ─── 4. 银河系 (原点) ────────────
   {
     const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
       color: 0xffe080, transparent: true, opacity: 1.0, depthWrite: false,
@@ -232,10 +406,10 @@ function init() {
     sprite.scale.set(4, 4, 1);
     sprite.position.set(0, 0, 0);
     GROUP.add(sprite);
-    makeLabel('🌍 银河系 (你在这里)', '#ffe080', sprite, '13px');
+    makeLabel('🌍 银河系 (你在这里)', '#ffe080', sprite, '13px', true);
   }
 
-  // ─── 5. 可观测宇宙边界球壳 (46.5 Gly) ──────────
+  // ─── 5. 可观测宇宙边界球壳 ────────────
   {
     const r = distToUnits(46.5);
     const geo = new THREE.SphereGeometry(r, 64, 32);
@@ -243,11 +417,9 @@ function init() {
       color: 0x6080a0, wireframe: true, transparent: true, opacity: 0.15,
       side: THREE.BackSide
     });
-    const shell = new THREE.Mesh(geo, mat);
-    GROUP.add(shell);
-    // 边界标签 (顶部)
+    GROUP.add(new THREE.Mesh(geo, mat));
     const labelDiv = document.createElement('div');
-    Object.assign(labelDiv.style, LABEL_STYLE_BASE, {
+    Object.assign(labelDiv.style, LABEL_STYLE, {
       fontSize: '14px', fontWeight: '700',
       color: '#aaccff',
       background: 'rgba(0,0,20,0.6)',
@@ -260,7 +432,7 @@ function init() {
     GROUP.add(boundaryLabel);
   }
 
-  // ─── 6. 距离刻度环 (1 Gly / 5 Gly / 10 Gly) ─────
+  // ─── 6. 距离刻度环 ────────────
   [1, 5, 10].forEach(d => {
     const r = distToUnits(d);
     if (r < 0) return;
@@ -283,6 +455,44 @@ function init() {
 let action = null, prevX = 0, prevY = 0;
 const panTarget = new THREE.Vector3(0, 0, 0);
 let rotY = 0, rotX = 0.12, viewDist = 260;
+let camAnim = null;
+let focused = null;
+let focusDist = 30;
+
+function smoothStep(t) { return t * t * (3 - 2 * t); }
+function flyCameraTo(endPos, endLook, duration) {
+  camAnim = {
+    t: 0, dur: duration || 1.5,
+    startPos: camera.position.clone(),
+    startLook: panTarget.clone(),
+    endPos: endPos.clone(),
+    endLook: endLook.clone()
+  };
+}
+
+function focusOn(pos) {
+  const worldPos = new THREE.Vector3(...pos);
+  // 距离根据 z 远近: 近的用大距离, 远的用更大距离
+  const dist = worldPos.length() * 0.3 + 15;
+  focusDist = dist;
+  const offset = new THREE.Vector3(dist*0.5, dist*0.4, dist*0.8).normalize().multiplyScalar(dist);
+  const targetPos = worldPos.clone().add(offset);
+  flyCameraTo(targetPos, worldPos.clone(), 1.5);
+  focused = pos;
+  document.getElementById('focus-hint').textContent = `🔭 聚焦中 (右键旋转, 滚轮缩放, 点击空白返回)`;
+  document.getElementById('focus-hint').style.display = 'block';
+}
+
+function backToOverview() {
+  focused = null;
+  document.getElementById('focus-hint').style.display = 'none';
+  flyCameraTo(
+    new THREE.Vector3(60, 90, 180),
+    new THREE.Vector3(0, 0, 0),
+    1.5
+  );
+}
+
 container.addEventListener('contextmenu', e => e.preventDefault());
 container.addEventListener('mousedown', e => {
   action = (e.button === 2) ? 'rotate' : 'pan';
@@ -297,6 +507,7 @@ window.addEventListener('mousemove', e => {
     rotY += dx * 0.005;
     rotX = Math.max(-1.45, Math.min(1.45, rotX + dy*0.005));
   } else {
+    if (focused) return;
     const s = viewDist * 0.0022;
     const right = new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion);
     const up = new THREE.Vector3(0,1,0).applyQuaternion(camera.quaternion);
@@ -307,18 +518,63 @@ window.addEventListener('mousemove', e => {
 });
 container.addEventListener('wheel', e => {
   e.preventDefault();
-  viewDist *= (e.deltaY > 0 ? 1.1 : 0.9);
-  viewDist = Math.max(30, Math.min(900, viewDist));
+  if (focused) {
+    focusDist *= (e.deltaY > 0 ? 1.12 : 0.88);
+    focusDist = Math.max(5, Math.min(300, focusDist));
+  } else {
+    viewDist *= (e.deltaY > 0 ? 1.1 : 0.9);
+    viewDist = Math.max(30, Math.min(900, viewDist));
+  }
 }, { passive: false });
+
+// Raycast: 点击 sprite 聚焦
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+container.addEventListener('click', (e) => {
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const sprites = [];
+  GROUP.traverse(o => { if (o.isSprite) sprites.push(o); });
+  const hits = raycaster.intersectObjects(sprites, false);
+  if (hits.length > 0) {
+    const hit = hits[0].object;
+    for (const [k, v] of structIndex) {
+      if (v.sprite === hit) { focusOn(v.pos); return; }
+    }
+    // 银河系
+    const wp = new THREE.Vector3();
+    hit.getWorldPosition(wp);
+    if (wp.length() < 1) { focusOn([0,0,0]); return; }
+  } else if (focused) {
+    backToOverview();
+  }
+});
 
 function animate() {
   requestAnimationFrame(animate);
-  const dist = camera.position.distanceTo(panTarget);
-  camera.position.set(
-    panTarget.x + dist*Math.sin(rotY)*Math.cos(rotX),
-    panTarget.y + dist*Math.sin(rotX),
-    panTarget.z + dist*Math.cos(rotY)*Math.cos(rotX)
-  );
+  if (camAnim) {
+    camAnim.t += 1/60;
+    const t = Math.min(1, camAnim.t / camAnim.dur);
+    const e = smoothStep(t);
+    const pos = camera.position.clone().lerpVectors(camAnim.startPos, camAnim.endPos, e);
+    const look = new THREE.Vector3().lerpVectors(camAnim.startLook, camAnim.endLook, e);
+    camera.position.copy(pos);
+    panTarget.copy(look);
+    if (t >= 1) camAnim = null;
+  } else if (focused) {
+    const worldPos = new THREE.Vector3(...focused);
+    const offset = new THREE.Vector3(focusDist*0.4, focusDist*0.5, focusDist*0.8).normalize().multiplyScalar(focusDist);
+    camera.position.copy(worldPos).add(offset);
+    panTarget.copy(worldPos);
+  } else {
+    const dist = camera.position.distanceTo(panTarget);
+    camera.position.set(
+      panTarget.x + dist*Math.sin(rotY)*Math.cos(rotX),
+      panTarget.y + dist*Math.sin(rotX),
+      panTarget.z + dist*Math.cos(rotY)*Math.cos(rotX)
+    );
+  }
   camera.lookAt(panTarget);
   renderer.render(scene, camera);
   labelRenderer.render(scene, camera);
@@ -335,6 +591,29 @@ window.addEventListener('resize', () => {
 document.getElementById('close-btn').onclick = () => {
   window.parent.postMessage({ type: 'close-observable-3d' }, '*');
 };
+
+// 接收主窗口结构标签点击 → 飞到该结构
+window.addEventListener('message', (ev) => {
+  if (ev.data && ev.data.type === 'focus-structure') {
+    const name = ev.data.name;
+    if (name === 'overview') { backToOverview(); return; }
+    const entry = structIndex.get(name);
+    if (entry) focusOn(entry.pos);
+  }
+  if (ev.data && ev.data.type === 'focus-galaxy') {
+    // 也支持著名星系
+    const name = ev.data.name;
+    if (name === 'overview') { backToOverview(); return; }
+    // 在 STRUCTURES.famous_galaxies 里找
+    if (STRUCTURES) {
+      const g = STRUCTURES.famous_galaxies.find(x => x.name.startsWith(name) || x.name.includes(name));
+      if (g) {
+        const xyz = celestialToXYZ(g.ra, g.dec, g.d_gly);
+        if (xyz) focusOn([xyz.x, xyz.y, xyz.z]);
+      }
+    }
+  }
+});
 </script>
 </body>
 </html>

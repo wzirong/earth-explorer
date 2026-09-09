@@ -107,6 +107,12 @@
                      padding: 6px 8px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.08);
                      z-index: 90; flex-wrap: wrap; justify-content: center; max-width: 92vw; }
 
+    /* 底部可观测宇宙/大尺度结构导航 */
+    #observable-nav { position: absolute; bottom: 56px; left: 50%; transform: translateX(-50%);
+                      display: none; gap: 4px; background: rgba(32,33,36,0.85); backdrop-filter: blur(10px);
+                      padding: 6px 8px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.08);
+                      z-index: 90; flex-wrap: wrap; justify-content: center; max-width: 92vw; }
+
     #loading { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column;
                align-items: center; justify-content: center; z-index: 999; transition: opacity 0.5s; }
     #loading.hidden { opacity: 0; pointer-events: none; }
@@ -264,16 +270,16 @@
     <div style="display:flex;gap:4px;margin-top:4px;">
       <button id="btn-view-observable" class="view-mode-btn" data-view="observable" style="flex:1;padding:6px 3px;background:rgba(255,200,100,0.18);border:1px solid rgba(255,200,100,0.5);border-radius:6px;color:rgba(255,220,140,0.95);font-size:11px;cursor:pointer;font-weight:600;">🌐 可观测宇宙</button>
     </div>
-    <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:6px;margin-bottom:4px;letter-spacing:0.5px;">🌐 宇宙大尺度结构 (并列专题)</div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:6px;margin-bottom:4px;letter-spacing:0.5px;">🌐 宇宙大尺度结构 (点跳到可观测宇宙)</div>
     <div style="display:flex;gap:4px;">
-      <button id="btn-view-pisces-cetus" class="view-mode-btn" data-view="pisces-cetus" style="flex:1;padding:6px 2px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:rgba(255,255,255,0.7);font-size:10px;cursor:pointer;">🐟 双鱼-鲸鱼</button>
-      <button id="btn-view-sloan" class="view-mode-btn" data-view="sloan" style="flex:1;padding:6px 2px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:rgba(255,255,255,0.7);font-size:10px;cursor:pointer;">🧱 史隆长城</button>
-      <button id="btn-view-giant-arc" class="view-mode-btn" data-view="giant-arc" style="flex:1;padding:6px 2px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:rgba(255,255,255,0.7);font-size:10px;cursor:pointer;">🌙 巨弧</button>
+      <button class="view-mode-btn obs-jump" data-jump="双鱼-鲸鱼 SC" style="flex:1;padding:6px 2px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:rgba(255,255,255,0.7);font-size:10px;cursor:pointer;">🐟 双鱼-鲸鱼</button>
+      <button class="view-mode-btn obs-jump" data-jump="史隆长城" style="flex:1;padding:6px 2px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:rgba(255,255,255,0.7);font-size:10px;cursor:pointer;">🧱 史隆长城</button>
+      <button class="view-mode-btn obs-jump" data-jump="巨弧 (Giant Arc)" style="flex:1;padding:6px 2px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:rgba(255,255,255,0.7);font-size:10px;cursor:pointer;">🌙 巨弧</button>
     </div>
     <div style="display:flex;gap:4px;margin-top:4px;">
-      <button id="btn-view-huge-lqg" class="view-mode-btn" data-view="huge-lqg" style="flex:1;padding:6px 2px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:rgba(255,255,255,0.7);font-size:10px;cursor:pointer;">💫 Huge-LQG</button>
-      <button id="btn-view-giant-grb-ring" class="view-mode-btn" data-view="giant-grb-ring" style="flex:1;padding:6px 2px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:rgba(255,255,255,0.7);font-size:10px;cursor:pointer;">⭕ GRB 环</button>
-      <button id="btn-view-hercules-corona" class="view-mode-btn" data-view="hercules-corona" style="flex:1;padding:6px 2px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:rgba(255,255,255,0.7);font-size:10px;cursor:pointer;">🪨 武仙-北冕</button>
+      <button class="view-mode-btn obs-jump" data-jump="Huge-LQG" style="flex:1;padding:6px 2px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:rgba(255,255,255,0.7);font-size:10px;cursor:pointer;">💫 Huge-LQG</button>
+      <button class="view-mode-btn obs-jump" data-jump="GRB 大环" style="flex:1;padding:6px 2px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:rgba(255,255,255,0.7);font-size:10px;cursor:pointer;">⭕ GRB 环</button>
+      <button class="view-mode-btn obs-jump" data-jump="武仙-北冕长城" style="flex:1;padding:6px 2px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:rgba(255,255,255,0.7);font-size:10px;cursor:pointer;">🪨 武仙-北冕</button>
     </div>
     <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:6px;margin-bottom:4px;letter-spacing:0.5px;">🔬 观测专题 (非空间尺度)</div>
     <div style="display:flex;gap:4px;">
@@ -332,6 +338,21 @@
   <button class="cont-btn" data-lg="ngc 147">NGC 147</button>
   <button class="cont-btn" data-lg="ic 10">IC 10</button>
   <button class="cont-btn" data-lg="ic 1613">IC 1613</button>
+</div>
+
+<div id="observable-nav" style="display:none;">
+  <button class="cont-btn active" data-obs="overview">🌌 总览</button>
+  <button class="cont-btn" data-obs="本星系群">🌌 本星系群</button>
+  <button class="cont-btn" data-obs="室女座星系团">🔵 室女团</button>
+  <button class="cont-btn" data-obs="拉尼亚凯亚">✨ 拉尼亚凯亚</button>
+  <button class="cont-btn" data-obs="英仙-双鱼超团">🌟 英仙-双鱼</button>
+  <button class="cont-btn" data-obs="孔雀-印第安超团">🌟 孔雀-印第安</button>
+  <button class="cont-btn" data-obs="双鱼-鲸鱼 SC">🐟 双鱼-鲸鱼</button>
+  <button class="cont-btn" data-obs="史隆长城">🧱 史隆长城</button>
+  <button class="cont-btn" data-obs="武仙-北冕长城">🪨 武仙-北冕</button>
+  <button class="cont-btn" data-obs="巨弧 (Giant Arc)">🌙 巨弧</button>
+  <button class="cont-btn" data-obs="Huge-LQG">💫 Huge-LQG</button>
+  <button class="cont-btn" data-obs="GRB 大环">⭕ GRB环</button>
 </div>
 
 <div id="status-bar">

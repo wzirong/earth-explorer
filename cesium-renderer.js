@@ -1200,14 +1200,16 @@ function closeSolarSystemView() {
 }
 
 // 底部导航统一控制: 根据当前视图决定哪个显示
-// view: 'earth' / 'solar' / 'localgroup' / null (其他全部隐藏)
+// view: 'earth' / 'solar' / 'localgroup' / 'observable' / null (其他全部隐藏)
 function updateBottomNav(view) {
   const solarNav = document.getElementById('solar-nav');
   const contNav = document.getElementById('continent-nav');
   const lgNav = document.getElementById('localgroup-nav');
+  const obsNav = document.getElementById('observable-nav');
   if (solarNav) solarNav.style.display = view === 'solar' ? 'flex' : 'none';
   if (contNav) contNav.style.display = view === 'earth' ? 'flex' : 'none';
   if (lgNav) lgNav.style.display = view === 'localgroup' ? 'flex' : 'none';
+  if (obsNav) obsNav.style.display = view === 'observable' ? 'flex' : 'none';
 }
 // 太阳系底部导航开关: 切到太阳系显示, 其他隐藏 (保留为示名别名)
 function showSolarNav(show) {
@@ -1246,6 +1248,23 @@ function setupLocalGroupNav() {
   });
 }
 setupLocalGroupNav();
+
+// 可观测宇宙/大尺度结构导航: 点击按钮 → 3D 视图聚焦该结构
+function setupObservableNav() {
+  const obsNav = document.getElementById('observable-nav');
+  if (!obsNav) return;
+  obsNav.querySelectorAll('.cont-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      obsNav.querySelectorAll('.cont-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const key = btn.dataset.obs;
+      const iframe = document.querySelector('iframe[src*="observable-3d-view"]');
+      if (!iframe || !iframe.contentWindow) return;
+      iframe.contentWindow.postMessage({ type: 'focus-structure', name: key }, '*');
+    });
+  });
+}
+setupObservableNav();
 
 // ── 银河系 3D 视图 (Three.js iframe, 左键平移/右键旋转/滚轮缩放) ──
 let galaxy3DIframe = null;
@@ -1409,7 +1428,7 @@ function setViewMode(mode) {
     viewer.scene.globe.show = false;
     openLaniakea3DView();
   } else if (mode === 'observable') {
-    updateBottomNav(null);
+    updateBottomNav('observable');
     closeSolarSystemView();
     closeGalaxy3DView();
     closeLocalGroup3DView();
@@ -1457,7 +1476,27 @@ document.querySelectorAll('.cosmos-back').forEach(btn => {
 });
 
 document.querySelectorAll('.view-mode-btn').forEach(btn => {
-  btn.addEventListener('click', () => setViewMode(btn.dataset.view));
+  btn.addEventListener('click', () => {
+    if (btn.classList.contains('obs-jump')) {
+      // 跳转到可观测宇宙并定位到指定结构
+      const structName = btn.dataset.jump;
+      setViewMode('observable');
+      setTimeout(() => {
+        const iframe = document.querySelector('iframe[src*="observable-3d-view"]');
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage({ type: 'focus-structure', name: structName }, '*');
+        }
+        // 高亮底部对应按钮
+        const obsBtn = document.querySelector(`#observable-nav [data-obs="${structName}"]`);
+        if (obsBtn) {
+          document.querySelectorAll('#observable-nav .cont-btn').forEach(b => b.classList.remove('active'));
+          obsBtn.classList.add('active');
+        }
+      }, 1500);
+    } else {
+      setViewMode(btn.dataset.view);
+    }
+  });
 });
 
 // 太阳系 iframe 关闭时同步按钮状态

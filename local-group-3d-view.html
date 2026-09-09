@@ -292,6 +292,7 @@ function init() {
     'NGC 300':           'data/galaxy_tex/ngc300.png',
   };
   const diskTexCache = {};
+  const diskGeoCache = {};  // 按尺寸缓存几何体
   function getDiskTex(path) {
     if (diskTexCache[path]) return diskTexCache[path];
     const tex = new THREE.TextureLoader().load(path);
@@ -323,7 +324,10 @@ function init() {
     // 圆盘 (CircleGeometry + 程序化漩涡纹理)
     const texPath = TEX_MAP[g.name];
     if (texPath) {
-      const diskGeo = new THREE.CircleGeometry(baseSize * 0.5, 64);
+      // 缓存同尺寸几何体避免重复创建
+      const geoKey = baseSize.toFixed(3);
+      if (!diskGeoCache[geoKey]) diskGeoCache[geoKey] = new THREE.CircleGeometry(baseSize * 0.5, 64);
+      const diskGeo = diskGeoCache[geoKey];
       const tex = getDiskTex(texPath);
       const diskMat = new THREE.MeshBasicMaterial({
         map: tex,
