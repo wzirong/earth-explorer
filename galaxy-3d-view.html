@@ -93,25 +93,27 @@ galaxyGroup.rotation.y = 0.8;
 
 function rand(a, b) { return a + Math.random() * (b - a); }
 
-// ── 1. 盘面贴图 (真实 ESO 俯视图, 黑底已转透明) ──
+// ── 1. 盘面贴图 (CircleGeometry + alphaTest 消除矩形玻璃轮廓) ──
 const diskTex = new THREE.TextureLoader().load('data/galaxy_disk.png');
 diskTex.anisotropy = 16;
 diskTex.colorSpace = THREE.SRGBColorSpace;
 const diskPlane = new THREE.Mesh(
-  new THREE.PlaneGeometry(GALAXY_R * 2, GALAXY_R * 2),
+  new THREE.CircleGeometry(GALAXY_R, 64),
   new THREE.MeshBasicMaterial({
     map: diskTex, transparent: true, depthWrite: false,
-    blending: THREE.AdditiveBlending, side: THREE.DoubleSide
+    side: THREE.DoubleSide, alphaTest: 0.02
   })
 );
 diskPlane.rotation.x = -Math.PI / 2;
 galaxyGroup.add(diskPlane);   // 俯视正看
 
 // 盘面底部镜像 (侧看时也有厚度感)
-const diskPlane2 = diskPlane.clone();
+const diskPlane2 = new THREE.Mesh(
+  new THREE.CircleGeometry(GALAXY_R, 64),
+  diskPlane.material.clone()
+);
 diskPlane2.rotation.x = Math.PI / 2;
 diskPlane2.position.y = -0.4;
-diskPlane2.material = diskPlane.material.clone();
 diskPlane2.material.opacity = 0.6;
 galaxyGroup.add(diskPlane2);
 
