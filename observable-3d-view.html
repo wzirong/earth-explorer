@@ -193,128 +193,389 @@ function gaussRand(r) {
 }
 
 // ── 通用粒子云 (cluster/supercluster 用) ──
-function makeCloud(centerX, centerY, centerZ, radius, seed, colorWarm=true, N=200) {
-  const r = rng(seed);
-  const positions = new Float32Array(N*3);
-  const colors = new Float32Array(N*3);
-  for (let i = 0; i < N; i++) {
-    const g1 = gaussRand(r), g2 = gaussRand(r), g3 = gaussRand(r);
-    positions[i*3]   = centerX + g1 * radius;
-    positions[i*3+1] = centerY + g2 * radius * 0.7;
-    positions[i*3+2] = centerZ + g3 * radius;
-    const c = new THREE.Color(colorWarm ? (r()<0.5 ? 0xffe8c0 : 0xc8d8ff) : 0xa0c8ff)
-      .multiplyScalar(0.5 + r()*0.4);
-    colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b;
-  }
+// ── 工具: 生成 Points 对象 (传入位置+颜色数组, 颜色) ────────────
+function makePoints(positions, colors, size, opacity, colorHex) {
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   const mat = new THREE.PointsMaterial({
-    size: 0.5, sizeAttenuation: true, vertexColors: true,
-    transparent: true, opacity: 0.9, depthWrite: false,
-    map: makeDotTexture([200,210,240]),
+    size, sizeAttenuation: true, vertexColors: true,
+    transparent: true, opacity, depthWrite: false,
+    map: makeDotTexture(colorHex ? [(colorHex>>16)&0xff,(colorHex>>8)&0xff,colorHex&0xff] : [200,210,240]),
     alphaTest: 0.01
   });
   return new THREE.Points(geo, mat);
 }
-
-// ── 长城 (wall): 长条形粒子带 ──
-function makeWall(centerX, centerY, centerZ, length, thickness, dirDeg, seed, color, N=300) {
+// 工具: 生成一个明亮大星系 sprite
+function makeGalaxySprite(x, y, z, color, size=1.5) {
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+    color, transparent: true, opacity: 0.95, depthWrite: false,
+    map: makeDotTexture([(color.r*255)|0, (color.g*255)|0, (color.b*255)|0])
+  }));
+  sprite.scale.set(size, size, 1);
+  sprite.position.set(x, y, z);
+  return sprite;
+}
+// 工具: 生成一条 filament (两点之间的子云)
+function makeFilament(x1, y1, z1, x2, y2, z2, width, seed, color, N=80) {
   const r = rng(seed);
-  const dir = dirDeg * Math.PI / 180;
-  // dir 是赤经方向的偏移, 同时也要看 dec
-  // 简化: 用 sin/cos 描述在垂直于视线的平面内的长轴
-  // 实际上 wall 是"长条"——画一条沿经度方向的长条
+  const positions = new Float32Array(N*3);
+  const colors = new Float32Array(N*3);
+  const dx = x2-x1, dy = y2-y1, dz = z2-z1;
+  const base = new THREE.Color(color);
+  for (let i = 0; i < N; i++) {
+    const t = i / (N-1);
+    const g1 = gaussRand(r) * width;
+    const g2 = gaussRand(r) * width;
+    const g3 = gaussRand(r) * width;
+    positions[i*3]   = x1 + dx*t + g1;
+    positions[i*3+1] = y1 + dy*t + g2;
+    positions[i*3+2] = z1 + dz*t + g3;
+    const c = base.clone().multiplyScalar(0.5 + r()*0.4);
+    colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b;
+  }
+  return makePoints(positions, colors, 0.3, 0.7, color);
+}
+// 工具: 生成一个小子团 (密集核心+几个星系)
+function makeSubCluster(cx, cy, cz, size, seed, color, withBright=true) {
+  const r = rng(seed);
+  const group = new THREE.Group();
+  // 核心粒子
+  const N = 80;
   const positions = new Float32Array(N*3);
   const colors = new Float32Array(N*3);
   const base = new THREE.Color(color);
   for (let i = 0; i < N; i++) {
-    // 沿经度方向的偏移 (在赤道平面上)
-    const along = (r() - 0.5) * length;  // -L/2 ~ L/2
-    const across = (r() - 0.5) * thickness;
-    const vertical = (r() - 0.5) * thickness * 0.5;
-    // 旋转
-    const x = along * Math.cos(dir) - across * Math.sin(dir);
-    const z = along * Math.sin(dir) + across * Math.cos(dir);
-    positions[i*3]   = centerX + x;
-    positions[i*3+1] = centerY + vertical;
-    positions[i*3+2] = centerZ + z;
+    const g1 = gaussRand(r) * size * 0.4;
+    const g2 = gaussRand(r) * size * 0.3;
+    const g3 = gaussRand(r) * size * 0.4;
+    positions[i*3]   = cx + g1;
+    positions[i*3+1] = cy + g2;
+    positions[i*3+2] = cz + g3;
     const c = base.clone().multiplyScalar(0.5 + r()*0.4);
     colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b;
   }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  const mat = new THREE.PointsMaterial({
-    size: 0.4, sizeAttenuation: true, vertexColors: true,
-    transparent: true, opacity: 0.85, depthWrite: false,
-    map: makeDotTexture([(color>>16)&0xff,(color>>8)&0xff,color&0xff]),
-    alphaTest: 0.01
-  });
-  return new THREE.Points(geo, mat);
+  group.add(makePoints(positions, colors, 0.3, 0.85, color));
+  // 几个亮星系
+  if (withBright) {
+    const galaxyCount = 2 + Math.floor(r() * 3);
+    for (let i = 0; i < galaxyCount; i++) {
+      const g1 = gaussRand(r) * size * 0.35;
+      const g2 = gaussRand(r) * size * 0.25;
+      const g3 = gaussRand(r) * size * 0.35;
+      const hueShift = r() < 0.5 ? -0.05 : 0.05;
+      const c = base.clone().offsetHSL(hueShift, 0, 0.1);
+      group.add(makeGalaxySprite(cx + g1, cy + g2, cz + g3, c, 0.6 + r()*0.4));
+    }
+  }
+  return group;
 }
 
-// ── 弧形 (arc): 一段弧线上的粒子 ──
-function makeArc(centerX, centerY, centerZ, radius, sweepDeg, dirDeg, thickness, seed, color, N=300) {
+// ── Cluster (本星系群/室女团): 密集核心 + 多个子团 + 潮汐流 ─────
+function makeCluster(centerX, centerY, centerZ, radius, seed, color, N=300) {
   const r = rng(seed);
+  const group = new THREE.Group();
+  // 1. 主核心粒子
   const positions = new Float32Array(N*3);
   const colors = new Float32Array(N*3);
+  const base = new THREE.Color(color);
+  for (let i = 0; i < N; i++) {
+    const g1 = gaussRand(r) * radius;
+    const g2 = gaussRand(r) * radius * 0.6;
+    const g3 = gaussRand(r) * radius;
+    positions[i*3]   = centerX + g1;
+    positions[i*3+1] = centerY + g2;
+    positions[i*3+2] = centerZ + g3;
+    const c = base.clone().multiplyScalar(0.4 + r()*0.5);
+    colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b;
+  }
+  group.add(makePoints(positions, colors, 0.35, 0.85, color));
+  // 2. 几个亮大星系 (不同颜色) 作为标志
+  const brightCount = 5 + Math.floor(r() * 4);
+  for (let i = 0; i < brightCount; i++) {
+    const g1 = gaussRand(r) * radius * 0.6;
+    const g2 = gaussRand(r) * radius * 0.4;
+    const g3 = gaussRand(r) * radius * 0.6;
+    const c = base.clone().offsetHSL((r()-0.5)*0.1, 0.1, 0.15);
+    group.add(makeGalaxySprite(centerX + g1, centerY + g2, centerZ + g3, c, 1.0 + r()*0.6));
+  }
+  // 3. 2-3 条潮汐流 (曲线粒子带)
+  for (let s = 0; s < 2 + Math.floor(r()*2); s++) {
+    const streamN = 100;
+    const streamPos = new Float32Array(streamN*3);
+    const streamCol = new Float32Array(streamN*3);
+    const baseAng = r() * Math.PI * 2;
+    const length = radius * (2.5 + r() * 1.5);
+    for (let i = 0; i < streamN; i++) {
+      const t = i / (streamN-1);
+      const ang = baseAng + t * Math.PI * (0.3 + r()*0.4);
+      const dist = t * length;
+      const wob = Math.sin(t * 8) * radius * 0.15;
+      streamPos[i*3]   = centerX + Math.cos(ang) * dist + (r()-0.5)*radius*0.15;
+      streamPos[i*3+1] = centerY + (r()-0.5) * radius * 0.25;
+      streamPos[i*3+2] = centerZ + Math.sin(ang) * dist + (r()-0.5)*radius*0.15;
+      const c = base.clone().multiplyScalar(0.3 + t*0.4);
+      streamCol[i*3]=c.r; streamCol[i*3+1]=c.g; streamCol[i*3+2]=c.b;
+    }
+    group.add(makePoints(streamPos, streamCol, 0.25, 0.6, color));
+  }
+  return group;
+}
+
+// ── Supercluster (超团): 多个子团 + filament 连成网状结构 ─────────
+function makeSupercluster(centerX, centerY, centerZ, radius, seed, color, name='') {
+  const r = rng(seed);
+  const group = new THREE.Group();
+  // 1. 背景粒子云 (弥散)
+  const haloN = 400;
+  const haloPos = new Float32Array(haloN*3);
+  const haloCol = new Float32Array(haloN*3);
+  const base = new THREE.Color(color);
+  for (let i = 0; i < haloN; i++) {
+    const g1 = gaussRand(r) * radius;
+    const g2 = gaussRand(r) * radius * 0.4;
+    const g3 = gaussRand(r) * radius;
+    haloPos[i*3]   = centerX + g1;
+    haloPos[i*3+1] = centerY + g2;
+    haloPos[i*3+2] = centerZ + g3;
+    const c = base.clone().multiplyScalar(0.3 + r()*0.3);
+    haloCol[i*3]=c.r; haloCol[i*3+1]=c.g; haloCol[i*3+2]=c.b;
+  }
+  group.add(makePoints(haloPos, haloCol, 0.3, 0.6, color));
+  // 2. 多个子团 (拉尼亚凯亚有 9 个超团, 史隆有多个 rich cluster)
+  // 拉尼亚凯亚特殊: 9 个真实超团核心 (Virgo, Hydra-Centaurus, Pavo-Indus, etc.)
+  let subCenters;
+  if (name.includes('拉尼亚凯亚')) {
+    // 拉尼亚凯亚 9 个真实超团核心 (相对位置)
+    const ang9 = [0, 40, 80, 120, 160, 200, 240, 280, 320];
+    subCenters = ang9.map((a, i) => {
+      const ang = a * Math.PI / 180;
+      const dist = radius * (0.3 + 0.5 * (i % 3) / 2);
+      return {
+        x: centerX + Math.cos(ang) * dist,
+        y: centerY + (r() - 0.5) * radius * 0.2,
+        z: centerZ + Math.sin(ang) * dist,
+        size: radius * 0.25 * (0.7 + r() * 0.5)
+      };
+    });
+  } else {
+    // 通用: 3-5 个随机子团
+    const subCount = 3 + Math.floor(r() * 3);
+    subCenters = Array.from({length: subCount}, () => {
+      const ang = r() * Math.PI * 2;
+      const dist = r() * radius * 0.6;
+      return {
+        x: centerX + Math.cos(ang) * dist,
+        y: centerY + (r() - 0.5) * radius * 0.3,
+        z: centerZ + Math.sin(ang) * dist,
+        size: radius * 0.2 * (0.6 + r() * 0.5)
+      };
+    });
+  }
+  for (const c of subCenters) {
+    group.add(makeSubCluster(c.x, c.y, c.z, c.size, Math.floor(r()*99999), color, true));
+  }
+  // 3. 子团之间用 filament 连接
+  for (let i = 0; i < subCenters.length; i++) {
+    for (let j = i+1; j < subCenters.length; j++) {
+      const a = subCenters[i], b = subCenters[j];
+      const dist = Math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2 + (a.z-b.z)**2);
+      if (dist < radius * 1.5 && r() < 0.7) {
+        group.add(makeFilament(a.x, a.y, a.z, b.x, b.y, b.z, radius*0.1, Math.floor(r()*99999), color, 60));
+      }
+    }
+  }
+  // 4. 几个亮大星系
+  for (let i = 0; i < 4; i++) {
+    const c = subCenters[Math.floor(r() * subCenters.length)];
+    const g1 = gaussRand(r) * c.size * 0.3;
+    const g2 = gaussRand(r) * c.size * 0.2;
+    const g3 = gaussRand(r) * c.size * 0.3;
+    const hueShift = (r() - 0.5) * 0.1;
+    const col = base.clone().offsetHSL(hueShift, 0.1, 0.1);
+    group.add(makeGalaxySprite(c.x + g1, c.y + g2, c.z + g3, col, 0.8 + r()*0.4));
+  }
+  return group;
+}
+
+// ── Wall (长城): 厚度可见的 flat sheet + 子团 + 垂直 filament ──────
+function makeWall(centerX, centerY, centerZ, length, thickness, dirDeg, seed, color, name='') {
+  const r = rng(seed);
+  const group = new THREE.Group();
+  const dir = dirDeg * Math.PI / 180;
+  const base = new THREE.Color(color);
+  // 1. 主体 sheet: 多行粒子 (5-7 行表示厚度)
+  const rowCount = 5 + Math.floor(r() * 3);
+  for (let row = 0; row < rowCount; row++) {
+    const rowOffset = (row / (rowCount-1) - 0.5) * thickness;
+    const N = 200;
+    const positions = new Float32Array(N*3);
+    const colors = new Float32Array(N*3);
+    for (let i = 0; i < N; i++) {
+      const along = (r() - 0.5) * length;
+      const across = rowOffset + (r() - 0.5) * thickness * 0.2;
+      const vertical = (r() - 0.5) * thickness * 0.15;
+      const x = along * Math.cos(dir) - across * Math.sin(dir);
+      const z = along * Math.sin(dir) + across * Math.cos(dir);
+      positions[i*3]   = centerX + x;
+      positions[i*3+1] = centerY + vertical;
+      positions[i*3+2] = centerZ + z;
+      // 越靠中间行越亮 (厚度梯度)
+      const rowFactor = 1 - Math.abs(row/(rowCount-1) - 0.5) * 1.5;
+      const c = base.clone().multiplyScalar((0.4 + r()*0.4) * Math.max(0.2, rowFactor));
+      colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b;
+    }
+    group.add(makePoints(positions, colors, 0.3, 0.7, color));
+  }
+  // 2. 几个子团 (rich cluster) 沿着长轴
+  const subCount = 4 + Math.floor(r() * 4);
+  for (let i = 0; i < subCount; i++) {
+    const along = (r() - 0.5) * length * 0.85;
+    const across = (r() - 0.5) * thickness * 1.5;
+    const x = along * Math.cos(dir) - across * Math.sin(dir);
+    const z = along * Math.sin(dir) + across * Math.cos(dir);
+    const subSize = thickness * (1.5 + r() * 1.5);
+    group.add(makeSubCluster(centerX + x, centerY + (r()-0.5)*thickness*0.3, centerZ + z, subSize, Math.floor(r()*99999), color, true));
+  }
+  // 3. 垂直 filament (分支)
+  for (let i = 0; i < 3; i++) {
+    const along = (r() - 0.5) * length * 0.7;
+    const x = along * Math.cos(dir);
+    const z = along * Math.sin(dir);
+    const perpDir = dir + Math.PI/2;
+    const perpLen = thickness * (3 + r() * 4);
+    const px = Math.cos(perpDir) * perpLen;
+    const pz = Math.sin(perpDir) * perpLen;
+    group.add(makeFilament(centerX + x, centerY, centerZ + z, centerX + x + px, centerY, centerZ + z + pz, thickness*0.2, Math.floor(r()*99999), color, 50));
+  }
+  return group;
+}
+
+// ── Arc (弧): 多条平行弧线 + 沿弧子团 ─────────
+function makeArc(centerX, centerY, centerZ, radius, sweepDeg, dirDeg, thickness, seed, color, N=400) {
+  const r = rng(seed);
+  const group = new THREE.Group();
   const base = new THREE.Color(color);
   const startA = -sweepDeg/2 * Math.PI/180;
   const endA = sweepDeg/2 * Math.PI/180;
-  for (let i = 0; i < N; i++) {
-    const t = r();
+  const dir = dirDeg * Math.PI / 180;
+  // 多条平行弧线 (3-5 条, 形成厚度)
+  const lineCount = 3 + Math.floor(r() * 3);
+  for (let line = 0; line < lineCount; line++) {
+    const offset = (line - (lineCount-1)/2) * thickness * 0.5;
+    const positions = new Float32Array(N*3);
+    const colors = new Float32Array(N*3);
+    for (let i = 0; i < N; i++) {
+      const t = i / (N-1);
+      const ang = startA + t * (endA - startA);
+      const dist = radius + offset + (r() - 0.5) * thickness * 0.3;
+      const x = dist * Math.cos(ang);
+      const z = dist * Math.sin(ang);
+      const y = (r() - 0.5) * thickness * 0.3;
+      const rx = x * Math.cos(dir) - z * Math.sin(dir);
+      const rz = x * Math.sin(dir) + z * Math.cos(dir);
+      positions[i*3]   = centerX + rx;
+      positions[i*3+1] = centerY + y;
+      positions[i*3+2] = centerZ + rz;
+      const c = base.clone().multiplyScalar(0.4 + r()*0.5);
+      colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b;
+    }
+    group.add(makePoints(positions, colors, 0.3, 0.7, color));
+  }
+  // 沿弧几个子团
+  const subCount = 3 + Math.floor(sweepDeg / 30);
+  for (let i = 0; i < subCount; i++) {
+    const t = (i + 0.5) / subCount;
     const ang = startA + t * (endA - startA);
-    const dist = radius + (r() - 0.5) * thickness;
+    const dist = radius + (r()-0.5) * thickness;
     const x = dist * Math.cos(ang);
-    const y = (r() - 0.5) * thickness * 0.3;
     const z = dist * Math.sin(ang);
-    // 旋转到指定方向
-    const dir = dirDeg * Math.PI / 180;
     const rx = x * Math.cos(dir) - z * Math.sin(dir);
     const rz = x * Math.sin(dir) + z * Math.cos(dir);
-    positions[i*3]   = centerX + rx;
-    positions[i*3+1] = centerY + y;
-    positions[i*3+2] = centerZ + rz;
-    const c = base.clone().multiplyScalar(0.5 + r()*0.4);
-    colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b;
+    group.add(makeSubCluster(centerX + rx, centerY + (r()-0.5)*thickness*0.5, centerZ + rz, thickness*1.2, Math.floor(r()*99999), color, true));
   }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  const mat = new THREE.PointsMaterial({
-    size: 0.4, sizeAttenuation: true, vertexColors: true,
-    transparent: true, opacity: 0.85, depthWrite: false,
-    map: makeDotTexture([(color>>16)&0xff,(color>>8)&0xff,color&0xff]),
-    alphaTest: 0.01
-  });
-  return new THREE.Points(geo, mat);
+  return group;
 }
 
-// ── LQG (类星体群): 散布的离散点 ──
-function makeLQG(centerX, centerY, centerZ, spread, seed, color, N=80) {
+// ── Ring (GRB 大环): 完整 360° 多重圆环 + 径向 filament ────────
+function makeRing(centerX, centerY, centerZ, radius, thickness, seed, color, N=600) {
   const r = rng(seed);
+  const group = new THREE.Group();
+  const base = new THREE.Color(color);
+  // 主环
   const positions = new Float32Array(N*3);
   const colors = new Float32Array(N*3);
-  const base = new THREE.Color(color);
   for (let i = 0; i < N; i++) {
-    const g1 = gaussRand(r), g2 = gaussRand(r), g3 = gaussRand(r);
-    positions[i*3]   = centerX + g1 * spread;
-    positions[i*3+1] = centerY + g2 * spread * 0.4;
-    positions[i*3+2] = centerZ + g3 * spread;
-    const c = base.clone().multiplyScalar(0.5 + r()*0.5);
+    const t = i / N * Math.PI * 2;
+    const dist = radius + gaussRand(r) * thickness * 0.3;
+    const x = dist * Math.cos(t);
+    const z = dist * Math.sin(t);
+    const y = gaussRand(r) * thickness * 0.3;
+    positions[i*3]   = centerX + x;
+    positions[i*3+1] = centerY + y;
+    positions[i*3+2] = centerZ + z;
+    const c = base.clone().multiplyScalar(0.4 + r()*0.4);
     colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b;
   }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  const mat = new THREE.PointsMaterial({
-    size: 0.5, sizeAttenuation: true, vertexColors: true,
-    transparent: true, opacity: 0.9, depthWrite: false,
-    map: makeDotTexture([(color>>16)&0xff,(color>>8)&0xff,color&0xff]),
-    alphaTest: 0.01
-  });
-  return new THREE.Points(geo, mat);
+  group.add(makePoints(positions, colors, 0.3, 0.85, color));
+  // 外环 (稍微大一点)
+  const N2 = Math.floor(N * 0.5);
+  const positions2 = new Float32Array(N2*3);
+  const colors2 = new Float32Array(N2*3);
+  for (let i = 0; i < N2; i++) {
+    const t = i / N2 * Math.PI * 2;
+    const dist = radius * 1.15 + gaussRand(r) * thickness * 0.4;
+    const x = dist * Math.cos(t);
+    const z = dist * Math.sin(t);
+    const y = gaussRand(r) * thickness * 0.2;
+    positions2[i*3]   = centerX + x;
+    positions2[i*3+1] = centerY + y;
+    positions2[i*3+2] = centerZ + z;
+    const c = base.clone().multiplyScalar(0.3 + r()*0.3);
+    colors2[i*3]=c.r; colors2[i*3+1]=c.g; colors2[i*3+2]=c.b;
+  }
+  group.add(makePoints(positions2, colors2, 0.25, 0.5, color));
+  // 沿环 8 个子团
+  for (let i = 0; i < 8; i++) {
+    const t = i / 8 * Math.PI * 2;
+    const dist = radius;
+    const x = dist * Math.cos(t);
+    const z = dist * Math.sin(t);
+    group.add(makeSubCluster(centerX + x, centerY, centerZ + z, thickness*1.5, Math.floor(r()*99999), color, true));
+  }
+  return group;
+}
+
+// ── LQG: 离散亮类星体 + 背景粒子 ────────
+function makeLQG(centerX, centerY, centerZ, spread, seed, color, N=200) {
+  const r = rng(seed);
+  const group = new THREE.Group();
+  const base = new THREE.Color(color);
+  // 背景 (偏少)
+  const bgN = Math.floor(N * 0.6);
+  const bgPos = new Float32Array(bgN*3);
+  const bgCol = new Float32Array(bgN*3);
+  for (let i = 0; i < bgN; i++) {
+    const g1 = gaussRand(r) * spread;
+    const g2 = gaussRand(r) * spread * 0.4;
+    const g3 = gaussRand(r) * spread;
+    bgPos[i*3]   = centerX + g1;
+    bgPos[i*3+1] = centerY + g2;
+    bgPos[i*3+2] = centerZ + g3;
+    const c = base.clone().multiplyScalar(0.4 + r()*0.3);
+    bgCol[i*3]=c.r; bgCol[i*3+1]=c.g; bgCol[i*3+2]=c.b;
+  }
+  group.add(makePoints(bgPos, bgCol, 0.3, 0.6, color));
+  // 明亮类星体 sprite (稀疏但亮)
+  const quasarCount = 8 + Math.floor(r() * 6);
+  for (let i = 0; i < quasarCount; i++) {
+    const g1 = gaussRand(r) * spread * 0.7;
+    const g2 = gaussRand(r) * spread * 0.3;
+    const g3 = gaussRand(r) * spread * 0.7;
+    const c = base.clone().offsetHSL((r()-0.5)*0.05, 0.1, 0.2);
+    group.add(makeGalaxySprite(centerX + g1, centerY + g2, centerZ + g3, c, 0.8 + r()*0.6));
+  }
+  return group;
 }
 
 // 大尺度结构 3D 模型类型映射
@@ -368,34 +629,37 @@ function init() {
     let model = null;
     let labelOffset = 1.5;
     if (s.type === 'cluster') {
-      // 本星系群/室女座星系团: 紧凑粒子云
-      const radius = s.name.includes('本星系群') ? 2 : 4;
-      model = makeCloud(xyz.x, xyz.y, xyz.z, radius, i*100+7, false, 250);
+      // 本星系群/室女座星系团: 密集核心 + 亮星系 + 潮汐流
+      const radius = s.name.includes('本星系群') ? 3 : 5;
+      model = makeCluster(xyz.x, xyz.y, xyz.z, radius, i*100+7, color, 400);
     } else if (s.type === 'supercluster') {
-      // 超团: 中等粒子云
-      const radius = s.name.includes('拉尼亚凯亚') ? 8 : 6;
-      model = makeCloud(xyz.x, xyz.y, xyz.z, radius, i*100+11, true, 400);
+      // 超团: 多子团 + filament 连接
+      const radius = s.name.includes('拉尼亚凯亚') ? 12 : (s.name.includes('双鱼') ? 10 : 8);
+      model = makeSupercluster(xyz.x, xyz.y, xyz.z, radius, i*100+11, color, s.name);
     } else if (s.type === 'wall') {
-      // 长城: 长条形 (按距离定长度)
-      // 史隆长城 1.38 Gly 长, 武仙-北冕 10 Gly 长
-      const length = s.name.includes('史隆') ? 12 : (s.name.includes('武仙') ? 25 : 10);
-      const thickness = 1.5;
-      // dirDeg: 长城方向 (简化为 RA 方向)
+      // 长城: 多行 sheet + 亮子团 + 垂直分支
+      const length = s.name.includes('史隆') ? 18 : (s.name.includes('武仙') ? 35 : 15);
+      const thickness = s.name.includes('武仙') ? 2.5 : 2;
       const dir = s.ra + 90;
-      model = makeWall(xyz.x, xyz.y, xyz.z, length, thickness, dir, i*100+13, color, 400);
+      model = makeWall(xyz.x, xyz.y, xyz.z, length, thickness, dir, i*100+13, color, s.name);
     } else if (s.type === 'arc') {
-      // 弧: 巨弧 3.3 Gly 长, GRB 环 5.6 Gly 直径
-      const radius = s.name.includes('GRB') ? 18 : 12;
-      const sweep = s.name.includes('GRB') ? 360 : 120;
-      const dir = s.ra;
-      model = makeArc(xyz.x, xyz.y, xyz.z, radius, sweep, dir, 2, i*100+17, color, 400);
+      // 弧: 巨弧多平行线, GRB 环用专用 360° 环
+      if (s.name.includes('GRB')) {
+        model = makeRing(xyz.x, xyz.y, xyz.z, 20, 1.8, i*100+17, color, 600);
+      } else {
+        // 巨弧: sweep 跟实际近似
+        const radius = 14;
+        const sweep = 120;
+        const dir = s.ra;
+        model = makeArc(xyz.x, xyz.y, xyz.z, radius, sweep, dir, 2.5, i*100+17, color, 500);
+      }
     } else if (s.type === 'lqg') {
-      // LQG: 类星体点阵
-      model = makeLQG(xyz.x, xyz.y, xyz.z, 6, i*100+19, color, 80);
+      // LQG: 亮类星体 + 背景点
+      model = makeLQG(xyz.x, xyz.y, xyz.z, 7, i*100+19, color, 200);
     } else if (s.type === 'cmb-dipole') {
       // CMB 偶极: 在原点的小标记
       const origin = celestialToXYZ(0, 0, 0.01);
-      if (origin) model = makeCloud(origin.x, origin.y, origin.z, 3, 99, true, 100);
+      if (origin) model = makeCluster(origin.x, origin.y, origin.z, 2, 99, color, 100);
     }
     if (model) GROUP.add(model);
 
