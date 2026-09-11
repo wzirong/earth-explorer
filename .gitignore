@@ -10,7 +10,7 @@ dist/
 *.asar
 
 # Cesium SDK（子模块管理）
-cesium/
+# cesium/ (已提交, 保证 Pages 可用)
 
 # macOS
 .DS_Store

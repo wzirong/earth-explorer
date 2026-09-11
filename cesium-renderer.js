@@ -1189,7 +1189,7 @@ function openSolarSystemView() {
   if (window.__solarFocus) solarParams.push('focus=' + window.__solarFocus);
   if (window.__solarClickEarth) solarParams.push('clickEarth=1');
   solarIframe = document.createElement('iframe');
-  solarIframe.src = '/solar-system-view.html' + (solarParams.length ? '?' + solarParams.join('&') : '');
+  solarIframe.src = 'solar-system-view.html' + (solarParams.length ? '?' + solarParams.join('&') : '');
   solarIframe.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:none;z-index:60;background:#000;';
   document.body.appendChild(solarIframe);
 }
@@ -1271,7 +1271,7 @@ let galaxy3DIframe = null;
 function openGalaxy3DView() {
   if (galaxy3DIframe) { galaxy3DIframe.style.display = 'block'; return; }
   galaxy3DIframe = document.createElement('iframe');
-  galaxy3DIframe.src = '/galaxy-3d-view.html';
+  galaxy3DIframe.src = 'galaxy-3d-view.html';
   galaxy3DIframe.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:none;z-index:60;background:#000;';
   document.body.appendChild(galaxy3DIframe);
 }
@@ -1286,7 +1286,7 @@ let localGroup3DIframe = null;
 function openLocalGroup3DView() {
   if (localGroup3DIframe) { localGroup3DIframe.style.display = 'block'; return; }
   localGroup3DIframe = document.createElement('iframe');
-  localGroup3DIframe.src = '/local-group-3d-view.html';
+  localGroup3DIframe.src = 'local-group-3d-view.html';
   localGroup3DIframe.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:none;z-index:60;background:#000;';
   document.body.appendChild(localGroup3DIframe);
 }
@@ -1301,7 +1301,7 @@ let virgoSuper3DIframe = null;
 function openVirgoSuper3DView() {
   if (virgoSuper3DIframe) { virgoSuper3DIframe.style.display = 'block'; return; }
   virgoSuper3DIframe = document.createElement('iframe');
-  virgoSuper3DIframe.src = '/virgo-supercluster-3d-view.html';
+  virgoSuper3DIframe.src = 'virgo-supercluster-3d-view.html';
   virgoSuper3DIframe.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:none;z-index:60;background:#000;';
   document.body.appendChild(virgoSuper3DIframe);
 }
@@ -1316,7 +1316,7 @@ let laniakea3DIframe = null;
 function openLaniakea3DView() {
   if (laniakea3DIframe) { laniakea3DIframe.style.display = 'block'; return; }
   laniakea3DIframe = document.createElement('iframe');
-  laniakea3DIframe.src = '/laniakea-3d-view.html';
+  laniakea3DIframe.src = 'laniakea-3d-view.html';
   laniakea3DIframe.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:none;z-index:60;background:#000;';
   document.body.appendChild(laniakea3DIframe);
 }
@@ -1331,7 +1331,7 @@ let observable3DIframe = null;
 function openObservable3DView() {
   if (observable3DIframe) { observable3DIframe.style.display = 'block'; return; }
   observable3DIframe = document.createElement('iframe');
-  observable3DIframe.src = '/observable-3d-view.html';
+  observable3DIframe.src = 'observable-3d-view.html';
   observable3DIframe.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:none;z-index:60;background:#000;';
   document.body.appendChild(observable3DIframe);
 }
@@ -1533,7 +1533,7 @@ let bordersCountries = null;
 
 function addBorders() {
   // 中国省级边界
-  fetch('/data/china_provinces.json').then(r => r.json()).then(geo => {
+  fetch('data/china_provinces.json').then(r => r.json()).then(geo => {
     geo.features.forEach(f => {
       f.geometry.coordinates.forEach(poly => {
         const ring = poly[0].map(c => Cesium.Cartesian3.fromDegrees(c[0], c[1]));
@@ -1549,7 +1549,7 @@ function addBorders() {
     });
   }).catch(() => {});
   // 全球国家边界
-  fetch('/data/countries.geojson').then(r => r.json()).then(geo => {
+  fetch('data/countries.geojson').then(r => r.json()).then(geo => {
     geo.features.forEach(f => {
       if (!f.geometry) return;
       const ring = f.geometry.coordinates[0][0].map(c => Cesium.Cartesian3.fromDegrees(c[0], c[1]));
@@ -1622,7 +1622,7 @@ let citycostReady = false;
 
 async function loadGeoNames() {
   try {
-    const r = await fetch('/data/cities_top1500.json');
+    const r = await fetch('data/cities_top1500.json');
     const d = await r.json();
     gnData = d.cities;
     gnReady = true;
@@ -1637,7 +1637,7 @@ async function loadCitycost() {
   const urls = [
     'https://citycost.cn/api/cities.json',       // 生产 (citycost.cn)
     'http://citycost.cn/api/cities.json',       // 生产 http 备选
-    '/data/cities_cost.json'                    // 本地 fallback (打包在 App 里)
+    'data/cities_cost.json'                    // 本地 fallback (打包在 App 里)
   ];
   for (const url of urls) {
     try {

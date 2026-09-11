@@ -24,7 +24,7 @@
 
   <!-- 主题色 -->
   <meta name="theme-color" content="#0a0a14">
-  <link rel="stylesheet" href="/node_modules/cesium/Build/Cesium/Widgets/widgets.css">
+  <link rel="stylesheet" href="cesium/Widgets/widgets.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: -apple-system, BlinkMacSystemFont, sans-serif; color: #e0e0e0; }
@@ -168,7 +168,7 @@
 <div id="galaxy-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
   <button id="galaxy-back" style="position:absolute;top:16px;right:16px;padding:8px 16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);border-radius:8px;color:#fff;font-size:13px;cursor:pointer;z-index:60;font-weight:600;backdrop-filter:blur(4px);">返回地球</button>
   <div id="galaxy-spin" style="position:fixed;display:flex;align-items:center;justify-content:center;transform-origin:52% 40%;will-change:transform;">
-    <img src="/data/galaxy_diagram.jpg" id="galaxy-img" style="width:100%;height:100%;object-fit:contain;">
+    <img src="data/galaxy_diagram.jpg" id="galaxy-img" style="width:100%;height:100%;object-fit:contain;">
   </div>
   <style>@keyframes galaxySpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }</style>
   <div id="galaxy-sgr" style="display:none;" title="Sgr A* 黑洞"></div>
@@ -186,7 +186,7 @@
     <div style="font-size:12px;color:rgba(255,220,150,0.95);margin-top:4px;font-weight:600;letter-spacing:0.3px;">📍 上一级尺度: 🌌 银河系 (我们在这里)</div>
     <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">直径约 1000 万光年 · 150 颗真实星系 (McConnachie 2012 + Cosmicflows-2)</div>
   </div>
-  <img src="/data/local_group.png" style="width:100%;height:100%;object-fit:contain;">
+  <img src="data/local_group.png" style="width:100%;height:100%;object-fit:contain;">
 </div>
 
 
@@ -198,7 +198,7 @@
     <div style="font-size:12px;color:rgba(255,220,150,0.95);margin-top:4px;font-weight:600;letter-spacing:0.3px;">📍 上一级尺度: 🔭 室女团 (含本星系群)</div>
     <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">直径约 5.2 亿光年 · 10万星系 · 巨引源引力中心 · 2014 年命名</div>
   </div>
-  <img src="/data/laniakea.png" style="width:100%;height:100%;object-fit:contain;">
+  <img src="data/laniakea.png" style="width:100%;height:100%;object-fit:contain;">
 </div>
 
 <div id="sloan-overlay" class="cosmos-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
@@ -208,7 +208,7 @@
     <div style="font-size:12px;color:rgba(255,220,150,0.95);margin-top:4px;font-weight:600;letter-spacing:0.3px;">📍 上一级尺度: ✨ 拉尼亚凯亚</div>
     <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">长度约 13.8 亿光年 · 超星系团级别的丝状结构 · 与拉尼亚凯亚是不同尺度的结构(非包含) · 2003 年发现</div>
   </div>
-  <img src="/data/sloan_great_wall.png" style="width:100%;height:100%;object-fit:contain;">
+  <img src="data/sloan_great_wall.png" style="width:100%;height:100%;object-fit:contain;">
 </div>
 
 <div id="pisces-cetus-overlay" class="cosmos-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
@@ -218,7 +218,7 @@
     <div style="font-size:12px;color:rgba(255,220,150,0.95);margin-top:4px;font-weight:600;letter-spacing:0.3px;">📍 上一级尺度: ✨ 拉尼亚凯亚</div>
     <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">长约 10 亿光年 · 宽约 1.5 亿光年 · 6 个超星系团串成丝状 · 1987 年发现</div>
   </div>
-  <img src="/data/pisces_cetus.png" style="width:100%;height:100%;object-fit:contain;">
+  <img src="data/pisces_cetus.png" style="width:100%;height:100%;object-fit:contain;">
 </div>
 
 <div id="giant-arc-overlay" class="cosmos-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
@@ -228,7 +228,7 @@
     <div style="font-size:12px;color:rgba(255,220,150,0.95);margin-top:4px;font-weight:600;letter-spacing:0.3px;">📍 上一级尺度: ✨ 拉尼亚凯亚</div>
     <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">横跨天空约 1/4 圈 · 距 ~9.2 Gly · 长度约 3.3 Gly · MgII 吸收体巡天 · 2021 年发现</div>
   </div>
-  <img src="/data/giant_arc.png" style="width:100%;height:100%;object-fit:contain;">
+  <img src="data/giant_arc.png" style="width:100%;height:100%;object-fit:contain;">
 </div>
 
 <div id="huge-lqg-overlay" class="cosmos-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
@@ -238,7 +238,7 @@
     <div style="font-size:12px;color:rgba(255,220,150,0.95);margin-top:4px;font-weight:600;letter-spacing:0.3px;">📍 上一级尺度: ✨ 拉尼亚凯亚</div>
     <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">73 颗类星体 · 长约 4 Gly · 宽约 2 Gly · 距 z~1.27 · 2012 年 Clowes 发现</div>
   </div>
-  <img src="/data/huge_lqg.png" style="width:100%;height:100%;object-fit:contain;">
+  <img src="data/huge_lqg.png" style="width:100%;height:100%;object-fit:contain;">
 </div>
 
 <div id="giant-grb-ring-overlay" class="cosmos-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
@@ -248,7 +248,7 @@
     <div style="font-size:12px;color:rgba(255,220,150,0.95);margin-top:4px;font-weight:600;letter-spacing:0.3px;">📍 上一级尺度: ✨ 拉尼亚凯亚</div>
     <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">9 个 GRB 排列成环 · 直径约 5.6 Gly · 距 5.5-7.5 Gly · 2015 年 Balazs 发现</div>
   </div>
-  <img src="/data/giant_grb_ring.png" style="width:100%;height:100%;object-fit:contain;">
+  <img src="data/giant_grb_ring.png" style="width:100%;height:100%;object-fit:contain;">
 </div>
 
 <div id="hercules-corona-overlay" class="cosmos-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
@@ -258,7 +258,7 @@
     <div style="font-size:12px;color:rgba(255,220,150,0.95);margin-top:4px;font-weight:600;letter-spacing:0.3px;">📍 上一级尺度: ✨ 拉尼亚凯亚</div>
     <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">长度约 10 Gly · 宽约 7.2 Gly · 距 z~2 · 已知最大单一结构 · 2013 年发现</div>
   </div>
-  <img src="/data/hercules_corona.png" style="width:100%;height:100%;object-fit:contain;">
+  <img src="data/hercules_corona.png" style="width:100%;height:100%;object-fit:contain;">
 </div>
 
 <div id="hubble-overlay" class="cosmos-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
@@ -267,7 +267,7 @@
     <div style="font-size:20px;font-weight:600;letter-spacing:1px;">🔭 哈勃深空场 (Hubble Deep Field)</div>
     <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">1995 年 HDF · 在 “小月球”大小的天区拍了 10 天 · 含数千个远古星系</div>
   </div>
-  <img src="/data/hubble_deep_field.png" style="width:100%;height:100%;object-fit:contain;">
+  <img src="data/hubble_deep_field.png" style="width:100%;height:100%;object-fit:contain;">
 </div>
 
 <div id="cmb-overlay" class="cosmos-overlay" style="display:none;position:fixed;inset:0;z-index:40;background:#02040c;">
@@ -276,7 +276,7 @@
     <div style="font-size:20px;font-weight:600;letter-spacing:1px;">🌡️ 宇宙微波背景辐射 (CMB)</div>
     <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;">Planck 卫星 2013 观测 · 宇宙 38 万岁时发出的余晖 · 今日 2.725K · 紫色=冷区, 黄色=暖区 · 注：此为"时间切片"专题，非空间尺度</div>
   </div>
-  <img src="/data/cmb_radiation.png" style="width:100%;height:100%;object-fit:contain;">
+  <img src="data/cmb_radiation.png" style="width:100%;height:100%;object-fit:contain;">
 </div>
   <div id=
 </div>
@@ -386,8 +386,8 @@
 </div>
 
 <!-- Cesium 资源 -->
-<script>window.CESIUM_BASE_URL = '/node_modules/cesium/Build/Cesium/';</script>
-<script src="/node_modules/cesium/Build/Cesium/Cesium.js"></script>
+<script>window.CESIUM_BASE_URL = 'cesium/';</script>
+<script src="cesium/Cesium.js"></script>
 <script src="cesium-renderer.js"></script>
 </body>
 </html>
