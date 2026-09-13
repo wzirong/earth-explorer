@@ -1341,14 +1341,6 @@ function closeObservable3DView() {
   viewer.scene.globe.show = true;
 }
 
-// 宇宙大尺度 overlay 切换
-function showCosmosOverlay(which) {
-  // 隐藏所有宇宙 overlay
-  document.querySelectorAll('.cosmos-overlay').forEach(el => el.style.display = 'none');
-  // 显示目标
-  const el = document.getElementById(which + '-overlay');
-  if (el) el.style.display = 'block';
-}
 function hideCosmosOverlays() {
   document.querySelectorAll('.cosmos-overlay').forEach(el => el.style.display = 'none');
 }
@@ -1438,18 +1430,6 @@ function setViewMode(mode) {
     hideCesium();
     viewer.scene.globe.show = false;
     openObservable3DView();
-  } else if (mode === 'sloan' || mode === 'pisces-cetus' || mode === 'giant-arc' || mode === 'huge-lqg' || mode === 'giant-grb-ring' || mode === 'hercules-corona') {
-    updateBottomNav(null);
-    closeSolarSystemView();
-    closeGalaxy3DView();
-    closeLocalGroup3DView();
-    clearGalaxy();
-    // 宇宙视图是纯 2D overlay: 隐藏 Cesium 画布, 避免 globe.show=false 时
-    // Cesium 触发 'RangeError: Invalid array length' 渲染崩溃 + 错误弹窗遮挡图片
-    hideCesium();
-    closeObservable3DView();
-    viewer.scene.globe.show = false;
-    showCosmosOverlay(mode);
   }
 }
 

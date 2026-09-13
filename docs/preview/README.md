@@ -27,7 +27,6 @@
 | 🔭 **室女座星系团** | 600万光年(M87 + 喷流) | [`virgo_cluster.png`](./virgo_cluster.png) |
 | ✨ **拉尼亚凯亚超星系团(示意)** | 5.2亿光年(巨引源+长丝) | [`laniakea.png`](./laniakea.png) |
 | ✨ **拉尼亚凯亚(5万颗 SIMBAD 真实数据)** | 3亿光年(z<0.08) | [`laniakea_real.png`](./laniakea_real.png) |
-| 🧱 **史隆长城** | 13.8亿光年(已知最大结构) | [`sloan_great_wall.png`](./sloan_great_wall.png) |
 
 ### 全天尺度
 
