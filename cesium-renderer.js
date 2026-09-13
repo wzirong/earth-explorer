@@ -1438,7 +1438,7 @@ function setViewMode(mode) {
     hideCesium();
     viewer.scene.globe.show = false;
     openObservable3DView();
-  } else if (mode === 'sloan' || mode === 'hubble' || mode === 'cmb'  || mode === 'pisces-cetus' || mode === 'giant-arc' || mode === 'huge-lqg' || mode === 'giant-grb-ring' || mode === 'hercules-corona') {
+  } else if (mode === 'sloan' || mode === 'pisces-cetus' || mode === 'giant-arc' || mode === 'huge-lqg' || mode === 'giant-grb-ring' || mode === 'hercules-corona') {
     updateBottomNav(null);
     closeSolarSystemView();
     closeGalaxy3DView();
