@@ -1387,7 +1387,8 @@ function setViewMode(mode) {
   } else if (mode === 'solar') {
     clearGalaxy();
     hideCosmosOverlays();
-    showCesium();
+    // 太阳系 iframe 是 inset:0 全屏不透明, 地球被完全遮挡 → 隐藏并暂停 Cesium
+    hideCesium();
     updateBottomNav('solar');
     openSolarSystemView();
   } else if (mode === 'galaxy') {
@@ -1395,7 +1396,8 @@ function setViewMode(mode) {
     closeSolarSystemView();
     closeLocalGroup3DView();
     hideCosmosOverlays();
-    showCesium();
+    // 银河系 iframe 是 inset:0 全屏不透明, 地球被完全遮挡 → 隐藏并暂停 Cesium
+    hideCesium();
     openGalaxy3DView();
   } else if (mode === 'localgroup') {
     updateBottomNav('localgroup');
@@ -1458,12 +1460,20 @@ function hideCesium() {
   // 隐藏 Cesium 状态栏 (海拔/经纬度不适用于 3D 星系视图)
   const sb = document.getElementById('status-bar');
   if (sb) sb.style.display = 'none';
+  // 暂停 Cesium 渲染循环: 此时地球不可见, 继续每帧渲染纯属浪费 CPU/GPU/电量
+  if (viewer && viewer.useDefaultRenderLoop !== false) viewer.useDefaultRenderLoop = false;
 }
 function showCesium() {
   const c = document.getElementById('cesiumContainer');
   if (c) c.style.display = '';
   const sb = document.getElementById('status-bar');
   if (sb) sb.style.display = '';
+  // 恢复渲染循环; 补一次 resize + render, 避免暂停期间窗口尺寸变化导致花屏
+  if (viewer && viewer.useDefaultRenderLoop === false) {
+    viewer.useDefaultRenderLoop = true;
+    viewer.resize();
+    viewer.render();
+  }
 }
 
 // 绑定宇宙 overlay 返回按钮
